@@ -1,0 +1,11 @@
+function [S,b,c] = to_quadratic_form(m,Nd)
+c=m(end);
+id= tril(ones(Nd,Nd))-eye(Nd);
+S = NaN(Nd,Nd);
+S(logical(id(:)))=0;
+S(~logical(id(:)))=m;
+b= S(1:end-1,end);
+S=(S+S')/2;
+% id=eye(Nd-1);
+% S(logical(id(:)))=S(logical(id(:)))*2;
+S=S(1:Nd-1, 1:Nd-1);
