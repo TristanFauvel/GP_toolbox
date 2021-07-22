@@ -1,6 +1,7 @@
 function [mu_y, sigma2_y,dmu_dx, dsigma2_dx, Sigma2_y, K, k, ks, dSigma2_dx, post] =  prediction(theta, xtrain, ytrain, xtest, kernelfun, meanfun, varargin)
 opts = namevaluepairtostruct(struct( ...
-    'post', [] ...
+    'post', [], ...
+    'regularization', 'nugget' ...
     ), varargin);
 
 UNPACK_STRUCT(opts, false)
@@ -11,7 +12,7 @@ ytrain = ytrain(:);
 ntest = size(xtest,2);
 nd=size(xtrain,1);
 if ~exist('post','var')
-    K = kernelfun(theta.cov, xtrain, xtrain, true, 'nugget');
+    K = kernelfun(theta.cov, xtrain, xtrain, true, regularization);
     L = chol(K)'; %in Rasmussen and Williams L = cholesky(K) is a lower triangular matrix, whereas in matlab it is an upper one
     invK = inv(K);
 else

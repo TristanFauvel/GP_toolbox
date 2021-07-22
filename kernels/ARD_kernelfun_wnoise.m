@@ -1,4 +1,4 @@
-function [C, dC, dC_dx] = ARD_kernelfun_wnoise(theta, x0, x, training)
+function [C, dC, dC_dx] = ARD_kernelfun_wnoise(theta, x0, x, training, regularization)
 %% C = covfun(theta, x0)
 % compute covariance of outputs
 %

@@ -23,3 +23,7 @@
 
 ## License
    This software is distributed under the MIT License. Please refer to the file LICENCE.txt included for details.
+
+## Future features
+- [ ] Allow for non-zero mean in expectation-propagation approximation.
+- [ ] Allow for non-zero mean when using approximate sampling methods.

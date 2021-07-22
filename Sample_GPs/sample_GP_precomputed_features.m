@@ -17,11 +17,16 @@ if decoupled_bases
         sigma = sqrt(exp(theta(end)));
         noise =  sigma*randn(N,1);
     end
-    K = kernelfun(theta,xtrain,xtrain, 1);
-    v =  (K\(ytrain - sample_prior(xtrain)'+noise))';
-    update =  @(x) v*kernelfun(theta,xtrain,x, 0);
-    sample_g = @(x) sample_prior(x) + update(x);
-    dsample_g_dx = @(x) dprior_dx(x,w, dphi_dx) + dupdate_dx(x, v, theta, xtrain, kernelfun);
+     if isempty(ytrain)
+        sample_g = @(x) sample_prior(x);
+        dsample_g_dx = @(x) dprior_dx(x,w, dphi_dx)';        
+    else
+        K = kernelfun(theta,xtrain,xtrain, 1);
+        v =  (K\(ytrain(:) - sample_prior(xtrain)'+noise))';
+        update =  @(x) v*kernelfun(theta,xtrain,x, 0);
+        sample_g = @(x) sample_prior(x) + update(x);
+        dsample_g_dx = @(x) dprior_dx(x,w, dphi_dx)' + dupdate_dx(x, v, theta, xtrain, kernelfun)';
+     end
 else
     sig = 1e-9;
     A=Phi'*Phi+sig*eye(nfeatures); % A = nugget_regularization(A);

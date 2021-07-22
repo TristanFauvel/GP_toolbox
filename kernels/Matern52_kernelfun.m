@@ -95,38 +95,28 @@ if nargout>2
     
     
     dC_dx = zeros(n0,n,n,nd);
-<<<<<<< HEAD
     if ~isequal(x0,x)
         if nd>1
             for i =1:n0
                 for j= 1:n
-                    for d= 1:nd
-                        dC_dx(i,j,j,d) = dC_dr(i,j)*(x(d,j)-x0(d,i))./(r(i,j)); % lambda(d).*(x0(d,i)-x(d,j))*C(i,j);
+                    if r(i,j)~=0
+                        for d= 1:nd
+                            dC_dx(i,j,j,d) = dC_dr(i,j)*(x(d,j)-x0(d,i))./(r(i,j)); % lambda(d).*(x0(d,i)-x(d,j))*C(i,j);
+                        end
                     end
-=======
-        if ~isequal(x0,x)       
-    if nd>1
-        for i =1:n0
-            for j= 1:n
-                for d= 1:nd
-                    dC_dx(i,j,j,d) = dC_dr(i,j)*(x(d,j)-x0(d,i))./(r(i,j)); % lambda(d).*(x0(d,i)-x(d,j))*C(i,j);
->>>>>>> 7bc7a13... dkdx in the case where x0 = x
                 end
             end
         else
             for i =1:n0
                 for j= 1:n
-                    dC_dx(i,j,j) = dC_dr(i,j)*(x(j)-x0(i))./(r(i,j)); % lambda(d).*(x0(d,i)-x(d,j))*C(i,j);
+                    if r(i,j)~=0
+                        dC_dx(i,j,j) = dC_dr(i,j)*(x(j)-x0(i))./(r(i,j)); % lambda(d).*(x0(d,i)-x(d,j))*C(i,j);
+                    end
                 end
             end
         end
         dC_dx(isnan(dC_dx)) = 0;
     end
-<<<<<<< HEAD
-=======
-     dC_dx(isnan(dC_dx)) = 0;
-        end
->>>>>>> 7bc7a13... dkdx in the case where x0 = x
 end
 return
 
