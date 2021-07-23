@@ -7,22 +7,20 @@ maxiter= 1000;
 options_theta.method = 'lbfgs';
 options_theta.verbose = 1;
 
-objectives = {'ackley'; 'beale'; 'boha1'; 'camel3'; 'camel6'; 'colville'; 'crossit'; ...
-    'dixonpr'; 'drop'; 'egg'; 'forretal08'; 'goldpr'; 'griewank'; 'grlee12';  ...
-    'hart3'; 'hart4'; 'hart6'; 'holder'; 'langer';'levy';'levy13';'perm0db';'permdb';...
-    'powell'; 'rosen'; 'rothyp'; 'schaffer4'; 'schwef'; 'shekel'; 'shubert'; ...
-    'spheref'; 'sumsqu'; 'trid'; 'Ursem_waves'};
+% filename = [pathname, '/Benchmarks/benchmarks_table.mat'];
+filename = [pathname, '/1D_Benchmarks/1D_benchmarks_table.mat'];
 
+load(filename, 'benchmarks_table')
+objectives = benchmarks_table.fName;
 kernelnames= {'ARD', 'Matern32', 'Matern52'};
 kernelfuns= {'ARD_kernelfun', 'Matern32_kernelfun', 'Matern52_kernelfun'};
 
 nk = numel(kernelnames);
 N= numel(objectives);
-load([pathname, '/Benchmarks/benchmarks_table.mat'], 'benchmarks_table')
 T = benchmarks_table;
 for j = 1:N 
     bias = 0;
-    objective = objectives{j};
+    objective = char(objectives(j));
     for i = 1:nk
         disp(['Function : ' , num2str(j), ', Kernel : ', num2str(i)]) 
         kernelname = kernelnames{i};
@@ -33,13 +31,8 @@ for j = 1:N
         rng(seed)
         %% Initialize the experiment
         xtrain = rand_interval(lb,ub,'nsamples',maxiter);
-        %Generate a binary sample
-%         ytrain = NaN(1,maxiter);
-%         for k = 1:maxiter
-%         ytrain(k) = g(xtrain(:,k));
-%         end
         ytrain = g(xtrain);
-        if size(ytrain, 2) ~= maxiter%%%%%%%%%%%%%%%%
+        if size(ytrain, 2) ~= maxiter
            error('ouput_size') 
         end
         %% Normalize data so that the bound of the search space are 0 and 1.
@@ -69,7 +62,7 @@ for j = 1:N
     end
 end
 benchmarks_table = T;
-save([pathname, '/Benchmarks/benchmarks_table.mat'], 'benchmarks_table')
+save(filename, 'benchmarks_table')
 
 % if strcmp(objective, 'forretal08')
 %         theta = [4.7312 0.7403];

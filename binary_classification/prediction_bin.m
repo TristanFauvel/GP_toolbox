@@ -3,6 +3,7 @@ opts = namevaluepairtostruct(struct( ...
     'tol', 1e-7, ...
     'MaxIt', 1e3,...
     'post', [], ...
+    'regularization', 'nugget', ...
     'modeltype', 'exp_prop' ...
     ), varargin);
 
@@ -26,18 +27,18 @@ if any(ctrain ~= 1 & ctrain~= 0)
 end
 % kernel functions
 if ~exist('post','var')
-    K = kernelfun(theta, xtrain, xtrain,true);
+    K = kernelfun(theta, xtrain, xtrain,true, regularization);
     K =(K+K')/2;
 else
     K = post.K;
 end
 
 if nargout>4
-    [k,~,dk_dx] = kernelfun(theta, xtrain, xtest, false);
+    [k,~,dk_dx] = kernelfun(theta, xtrain, xtest, false, regularization);
 else
-    k = kernelfun(theta, xtrain, xtest, false);
+    k = kernelfun(theta, xtrain, xtest, false, regularization);
 end
-ks = kernelfun(theta, xtest, xtest,false);
+ks = kernelfun(theta, xtest, xtest,false, regularization);
 
 if strcmp(modeltype, 'laplace')
     if ~exist('post','var')
