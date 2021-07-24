@@ -11,7 +11,7 @@ classdef problem12
             if size(xx,1)~=obj.D
                 error('Problem with input size')
             end
-            y = sin(x).^3+cos(x).^3;
+            y = sin(xx).^3+cos(xx).^3;
             
             y(xx > obj.xbounds(:,2) | xx <  obj.xbounds(:,1)) = NaN;
             if strcmp(obj.opt, 'max')

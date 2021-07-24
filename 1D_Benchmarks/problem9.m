@@ -11,7 +11,7 @@ classdef problem9
             if size(xx,1)~=obj.D
                 error('Problem with input size')
             end
-            y =sin(x) + sin(2/3*x);
+            y =sin(xx) + sin(2/3*xx);
             
             
             y(xx > obj.xbounds(:,2) | xx <  obj.xbounds(:,1)) = NaN;

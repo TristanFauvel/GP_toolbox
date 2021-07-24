@@ -55,7 +55,7 @@ for j = 1:N
         theta = theta(1:end-1);
         
 %         if strcmp(kernelname,'ARD')
-        T(T.fName == objectives{j}, i + 3) = mat2cell(theta, size(theta,1),size(theta,2));
+        T(T.fName == objectives(j), i + 3) = mat2cell(theta, size(theta,1),size(theta,2));
 %         else
 %             T(T.fName == objectives{i}, i + 3) = theta(:)';
 %         end

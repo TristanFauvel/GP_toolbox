@@ -12,7 +12,7 @@ classdef problem5
                 error('Problem with input size')
             end
             
-            y = -(1.4-3*x).*sin(18*x);
+            y = -(1.4-3*xx).*sin(18*xx);
             
             y(xx > obj.xbounds(:,2) | xx <  obj.xbounds(:,1)) = NaN;
             if strcmp(obj.opt, 'max')

@@ -11,10 +11,10 @@ classdef problem18
             if size(xx,1)~=obj.D
                 error('Problem with input size')
             end
-            if x<=3
-                y=(x-2).^2;
+            if xx<=3
+                y=(xx-2).^2;
             else
-                y=2*log10(x-2)+1;
+                y=2*log10(xx-2)+1;
             end
             y(xx > obj.xbounds(:,2) | xx <  obj.xbounds(:,1)) = NaN;
             if strcmp(obj.opt, 'max')

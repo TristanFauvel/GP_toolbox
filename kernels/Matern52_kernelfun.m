@@ -31,19 +31,8 @@ n = size(x, 2);
 rho  =  exp(theta(1));
 k0           =  exp(theta(2));
 
-% compute sum_i nu_i^2(x_i - x_i')^2
-x02 = sum(x0.*x0, 1);
-x2  = sum(x.*x, 1);
-
-% dx2 = (x02' + x2- 2*x0'*x);
-% dx2(dx2<0) = 0;
-% r = sqrt(dx2);
-
 r = pdist2(x0',x');
 
-% nu = 5/2;
-
-% C0 =2^(1-nu)*(sqrt(2*nu)*r/rho)^nu*Knu*(sqrt(2*nu)*r/rho)/gamma(nu);
 C0 = (1 + sqrt(5)*r/rho + 5*r.^2/(3*rho^2)).*exp(-sqrt(5)*r/rho);
 
 if strcmp(regularization, 'nugget')
@@ -65,33 +54,9 @@ if nargout>1   % && nargout<3
 end
 
 if nargout>2
-    %
-    %     xtemp0 = permute(x0, [2 3 1]);
-    %     xtemp  =  permute(x, [2 3 1]);
-    %     dx = (xtemp0-permute(xtemp, [2 1, 3]));
-    %
-    %     dr_dx = zeros(n, n0, n, nd);
-    %
-    %     if nd>1
-    %         for i = 1:n0
-    %             for j = 1:n
-    %                 for d= 1:nd
-    %                     dr_dx(j,i,j,d) = (x(j,d)-x0(i,d))./(r(i,j)^2);
-    %                 end
-    %             end
-    %         end
-    %     else
-    %         for i = 1:n0
-    %             for j = 1:n
-    %                 dr_dx(j,i,j) = (x(j)-x0(i))./(r(i,j)^2);
-    %             end
-    %         end
-    %     end
-    %     dr_dx(isnan(dr_dx)) = 0;
-    %
+ 
     dC_dr = k0*(sqrt(5)/rho +10*r/(3*rho^2)).*exp(-sqrt(5)*r/rho) - sqrt(5)/rho*C;
-    %     dC_dx = dC_dr * dr_dx;
-    
+   
     
     
     dC_dx = zeros(n0,n,n,nd);

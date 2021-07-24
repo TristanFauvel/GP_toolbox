@@ -12,7 +12,7 @@ classdef problem7
                 error('Problem with input size')
             end
             
-            y = sin(x)+sin(10*x/3) + log10(x) -0.84*x+3;
+            y = sin(xx)+sin(10*xx/3) + log10(xx) -0.84*xx+3;
             
             y(xx > obj.xbounds(:,2) | xx <  obj.xbounds(:,1)) = NaN;
             if strcmp(obj.opt, 'max')

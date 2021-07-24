@@ -31,18 +31,8 @@ end
 rho  =  exp(theta(1));
 k0           =  exp(theta(2));
 
-% compute sum_i nu_i^2(x_i - x_i')^2
-x02 = sum(x0.*x0, 1);
-x2  = sum(x.*x, 1);
-
-% dx2 = (x02'+ x2 - 2*x0'*x);
-% dx2(dx2<0) = 0;
-% r = sqrt(dx2);
-
 r = pdist2(x0',x');
-% nu = 5/2;
 
-% C0 = (1 + sqrt(5)*r/l + 5*r.^2/(3*l^2)).*exp(-sqrt(5)*r/l);
 C0 = (1 + sqrt(3)*r/rho).*exp(-sqrt(3)*r/rho);
 if strcmp(regularization, 'nugget')
     C0= nugget_regularization(C0);
@@ -62,26 +52,7 @@ if nargout>1   % && nargout<3
 end
 
 if nargout>2
-    
-    %      xtemp0 = permute(x0, [2 3 1]);
-    %     xtemp  =  permute(x, [2 3 1]);
-    %     dx = (xtemp0-permute(xtemp, [2 1, 3]));
-    %
     dC_dr = sqrt(3)/rho*k0*exp(-sqrt(3)*r/rho)-sqrt(3)/rho*C;
-    %      dC_dx = dC_dr*dx_dr;
-    
-    %     xtemp0 = permute(x0, [2 3 1]);
-    %     xtemp  =  permute(x, [2 3 1]);
-    %     dx = (xtemp0-permute(xtemp, [2 1, 3]));
-    %     dr_dx = - sign(x0 - x);
-    %     dC_dx =0;% dC_dr*dr_dx;
-    %dC = 0;
-    
-    %
-    %     xtemp0 = permute(x0, [2 3 1]);
-    %     xtemp  =  permute(x, [2 3 1]);
-    %     dx = (xtemp0-permute(xtemp, [2 1, 3]));
-    %     dC_dx = k0*(sqrt(5)/rho +10*r/(3*rho^2)).*exp(-sqrt(5)*r/rho) - sqrt(5)/rho*C; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FAUX
     dC_dx = zeros(n0,n,n,nd);
     
     if ~isequal(x0,x)

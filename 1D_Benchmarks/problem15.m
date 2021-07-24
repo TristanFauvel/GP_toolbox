@@ -11,7 +11,7 @@ xbounds = [-5,5];
             if size(xx,1)~=obj.D
                 error('Problem with input size')
             end
-            y=(x.^2-5*x+6)./(x.^2+1);            
+            y=(xx.^2-5*xx+6)./(xx.^2+1);            
             y(xx > obj.xbounds(:,2) | xx <  obj.xbounds(:,1)) = NaN;
             if strcmp(obj.opt, 'max')
                 y = -y;

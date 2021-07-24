@@ -11,7 +11,7 @@ xbounds = [-pi/2, 2*pi];
             if size(xx,1)~=obj.D
                 error('Problem with input size')
             end
-            y = 2*cos(x) + cos(2*x);
+            y = 2*cos(xx) + cos(2*xx);
             
             y(xx > obj.xbounds(:,2) | xx <  obj.xbounds(:,1)) = NaN;
             if strcmp(obj.opt, 'max')

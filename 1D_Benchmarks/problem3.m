@@ -13,7 +13,7 @@ classdef problem3
             end
             
             k = 1:6;
-            y = -sum(k'.*sin((k+1)'.*x+k'),1);
+            y = -sum(k'.*sin((k+1)'.*xx+k'),1);
             
             
             

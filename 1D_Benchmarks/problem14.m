@@ -11,7 +11,7 @@ classdef problem14
             if size(xx,1)~=obj.D
                 error('Problem with input size')
             end
-            y=-exp(-x).*sin(2*pi*x);
+            y=-exp(-xx).*sin(2*pi*xx);
             
             y(xx > obj.xbounds(:,2) | xx <  obj.xbounds(:,1)) = NaN;
             if strcmp(obj.opt, 'max')
