@@ -57,10 +57,10 @@ ytrain= f(rd_idx);
 ctrain = link(ytrain)>rand(nsamp,1);
 
 
-% [mu_c,  mu_f, sigma2_f] = prediction_bin_preference(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, kernelfun, 'modeltype', modeltype);
+% [mu_c,  mu_f, sigma2_f] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, kernelfun, modeltype, post, regularization);
 
-[~,  mu_g, sigma2_g, Sigma2_g, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc, dvar_muc_dx,post] = prediction_bin_preference(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], kernelfun, 'modeltype', modeltype);
-mu_g = -mu_g; %(because prediction_bin_preference considers P(x1 > x2);
+[~,  mu_g, sigma2_g, Sigma2_g, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc, dvar_muc_dx,post] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], kernelfun, modeltype, post, regularization);
+mu_g = -mu_g; %(because prediction_bin considers P(x1 > x2);
 
 
 

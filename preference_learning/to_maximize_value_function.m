@@ -5,8 +5,8 @@ if any(isnan(x(:)))
 end
 [D,n]= size(x);
 
-
-[~,  g_mu_y, ~, ~, ~, dmuy_dx] = prediction_bin_preference(theta, xtrain_norm, ctrain, [x;x0*ones(1,n)], kernelfun, 'modeltype', modeltype,'post', post);
+regularization = 'nugget';
+[~,  g_mu_y, ~, ~, ~, dmuy_dx] = prediction_bin(theta, xtrain_norm, ctrain, [x;x0*ones(1,n)], kernelfun, modeltype, post, regularization);
 
 
 g_mu_y = -g_mu_y;

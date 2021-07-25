@@ -45,9 +45,11 @@ y_test = y;
 
 % GP classification with the correct hyperparameters
 theta =theta_true ; % rand(size(theta_true));
+post = [];
+regularization = 'nugget';
 
-[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc, dvar_muc_dx]= prediction_bin(theta, xtrain, ctrain, x_test, kernelfun, 'modeltype', modeltype);
-fun = @(x_test) prediction_bin(theta, xtrain, ctrain, x_test, kernelfun, 'modeltype', modeltype);
+[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc, dvar_muc_dx]= prediction_bin(theta, xtrain, ctrain, x_test, kernelfun, modeltype, post, regularization);
+fun = @(x_test) prediction_bin(theta, xtrain, ctrain, x_test, kernelfun, modeltype, post, regularization);
 dF = test_matrix_deriv(fun, x_test, 1e-8);
 
 %Xlim= [min(x),max(x)];
@@ -223,7 +225,7 @@ box off
 [a,b]= max(I)
 new_x = x(b);
 new_c = p(b)>rand;
-[mu_c2,  mu_y2, sigma2_y2, Sigma2_y2, ~, ~,~,~, var_muc]= prediction_bin(theta, [xtrain,new_x], [ctrain, new_c], x_test, kernelfun, 'modeltype', modeltype);
+[mu_c2,  mu_y2, sigma2_y2, Sigma2_y2, ~, ~,~,~, var_muc]= prediction_bin(theta, [xtrain,new_x], [ctrain, new_c], x_test, kernelfun, modeltype, post, regularization);
 
 mr = 1;
 mc = 2;
@@ -261,7 +263,7 @@ title('Epistemic uncertainty')
 % % GP classification with the wrong hyperparameters
 % theta = rand(size(theta_true));
 % 
-% [mu_c,  mu_y, sigma2_y]= prediction_bin(theta, xtrain, ctrain, x_test, kernelfun, 'modeltype', modeltype);
+% [mu_c,  mu_y, sigma2_y]= prediction_bin(theta, xtrain, ctrain, x_test, kernelfun, modeltype, post, regularization);
 % 
 % Ylim = [-5,5];
 % h=figure(3);
@@ -295,7 +297,7 @@ title('Epistemic uncertainty')
 % theta = minFunc(@(hyp)negloglike_bin(hyp, xtrain, ctrain, kernelfun), theta, options);
 % 
 % %% Prediction with the new hyperparameters
-% [mu_c,  mu_y, sigma2_y]= prediction_bin(theta, xtrain, ctrain, x_test, kernelfun);
+% [mu_c,  mu_y, sigma2_y]= prediction_bin(theta, xtrain, ctrain, x_test, kernelfun, modeltype, post, regularization);
 % 
 % h=figure(5);
 % h.Color =  [1 1 1];

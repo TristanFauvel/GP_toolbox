@@ -10,6 +10,9 @@ graphics_style_paper;
 
 n=30;
 modeltype = 'exp_prop';
+post = [];
+regularization = 'nugget';
+
 kernelfun = @ARD_kernelfun;
 d= 2; % Dimension of the input space
 
@@ -41,8 +44,7 @@ ptest = p;
 %% With true hyperparameters
 theta = theta_true;
 
-[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx,var_muc, dvar_muc_dx]= prediction_bin(theta, xtrain, ctrain, xtest, kernelfun, 'modeltype', modeltype);
-
+[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx,var_muc, dvar_muc_dx]= prediction_bin(theta, xtrain, ctrain, xtest, kernelfun, modeltype, post, regularization);
 Xlim= [0,10];
 Ylim = [-5,5];
 
@@ -88,7 +90,7 @@ title('$\mu_c$, true hyperparameters')
 %% With wrong hyperparameters
 theta = 0*rand(size(theta_true));
 
-[mu_c,  mu_y, sigma2_y]= prediction_bin(theta, xtrain, ctrain, xtest, kernelfun, 'modeltype', modeltype);
+[mu_c,  mu_y, sigma2_y]= prediction_bin(theta, xtrain, ctrain, xtest, kernelfun, modeltype, post, regularization);
 
 i = i +1;
 subplot(mr, mc, i)
@@ -113,7 +115,7 @@ options=[];
 theta = minFunc(@(hyp)negloglike_bin(hyp, xtrain, ctrain, kernelfun), theta, options);
 
 % Prediction with the new hyperparameters
-[mu_c,  mu_y, sigma2_y]= prediction_bin(theta, xtrain, ctrain, xtest, kernelfun);
+[mu_c,  mu_y, sigma2_y]= prediction_bin(theta, xtrain, ctrain, xtest, kernelfun, modeltype, post, regularization);
 
 i = i +1;
 subplot(mr, mc,i)

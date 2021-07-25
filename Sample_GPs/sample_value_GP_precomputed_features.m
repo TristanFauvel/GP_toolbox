@@ -4,10 +4,12 @@ function [sample_g, dsample_g_dx, decomposition] = sample_value_GP_precomputed_f
 D = (size(xtrain,1))/2; %dimension
 % xtrain : (2*dimension)*n
 %y_data : n x 1
+
+regularization = 'nugget';
 if isempty(post)
-[~,  mu_y, ~, Sigma2_y,~,~,~,~,~,~,post] =prediction_bin_preference(theta, xtrain, ctrain, xtrain, kernelfun, 'modeltype', modeltype, 'post', post);
+[~,  mu_y, ~, Sigma2_y,~,~,~,~,~,~,post] =prediction_bin(theta, xtrain, ctrain, xtrain, kernelfun, modeltype, post, regularization);
 else
-    [~,  mu_y, ~, Sigma2_y] =prediction_bin_preference(theta, xtrain, ctrain, xtrain, kernelfun, 'modeltype', modeltype, 'post', post);
+    [~,  mu_y, ~, Sigma2_y] =prediction_bin(theta, xtrain, ctrain, xtrain, kernelfun, modeltype, post, regularization);
 end
 
 Sigma2_y = nugget_regularization(Sigma2_y);
@@ -26,19 +28,19 @@ if isfield(condition, 'y0')
 
     sample_prior = @(x) (phi(x)*w)';
 
-    K = base_kernelfun(theta,condition.x0, condition.x0, 'true', 'nugget');
+    K = base_kernelfun(theta,condition.x0, condition.x0, 'true', regularization);
 
     v1 =  (K\(condition.y0 - sample_prior(condition.x0)'))';
-    update_1 =  @(x) v1*base_kernelfun(theta,condition.x0,x, 0);
+    update_1 =  @(x) v1*base_kernelfun(theta,condition.x0,x, 0, regularization);
 
     cond_sample_prior = @(x) sample_prior(x) + update_1(x);
      cond_sample_prior_pref = @(x) cond_sample_prior(x(1:D,:)) - cond_sample_prior(x(D+1:end,:));
 
     K = post.K;
     v2 =  (K\(y_data - cond_sample_prior_pref(xtrain)'))';
-    update_2 =  @(x) v2*kernelfun(theta,xtrain,x, 0);
+    update_2 =  @(x) v2*kernelfun(theta,xtrain,x, 0, regularization);
     sample_g = @(x) cond_sample_prior(x) + update_2([x;condition.x0.*ones(D,size(x,2))]);
-    dsample_g_dx = @(x) dcond_prior_dx(x, D, w, v1, dphi_dx, base_kernelfun, theta, xtrain, condition.x0) + dupdate_dx(x, x0, D, v2, theta, xtrain, kernelfun); % Dxntest
+    dsample_g_dx = @(x) dcond_prior_dx(x, D, w, v1, dphi_dx, base_kernelfun, theta, xtrain, condition.x0, regularization) + dupdate_dx(x, x0, D, v2, theta, xtrain, kernelfun, regularization); % Dxntest
 
 
     decomposition.update_1 = update_1;
@@ -55,7 +57,7 @@ else
         v =  (post.K\(y_data - sample_prior(xtrain)'))';
         update =  @(x) v*kernelfun(theta,xtrain,x, 0);
         sample_g = @(x) sample_prior([x;x0.*ones(D,size(x,2))]) + update([x;x0.*ones(D,size(x,2))]);
-        dsample_g_dx = @(x) dprior_dx(x, x0, D, w, dphi_pref_dx) + dupdate_dx(x, x0, D, v, theta, xtrain, kernelfun);
+        dsample_g_dx = @(x) dprior_dx(x, x0, D, w, dphi_pref_dx, regularization) + dupdate_dx(x, x0, D, v, theta, xtrain, kernelfun, regularization);
         decomposition.update = update;
         decomposition.sample_prior = sample_prior;
     else
@@ -68,11 +70,11 @@ else
     end
 end
 end
-function dudx = dupdate_dx(x, x0, D, v, theta, xtrain, kernelfun)
+function dudx = dupdate_dx(x, x0, D, v, theta, xtrain, kernelfun, regularization)
 if size(x,2) >1
     error('Derivative only implemented for size(x,2) == 1')
 end
-[~, ~, dkdx]= kernelfun(theta,xtrain,[x;x0.*ones(D,size(x,2))], 0);
+[~, ~, dkdx]= kernelfun(theta,xtrain,[x;x0.*ones(D,size(x,2))], 0, regularization);
 dkdx = squeeze(dkdx); % ntr*d
 dkdx = dkdx(:,1:D);
 dudx =mtimesx(v,dkdx)';
@@ -82,11 +84,11 @@ function dpdx = dprior_dx(x, x0, D,w, dphi_pref_dx)
 dpdx =dphi_pref_dx([x;x0.*ones(D,size(x,2))])*w; %D x n
 end
 
-function dpdx = dcond_prior_dx(x, D, w, v1, dphi_dx, base_kernelfun, theta, xtrain,x0)
+function dpdx = dcond_prior_dx(x, D, w, v1, dphi_dx, base_kernelfun, theta, xtrain,x0, regularization)
 if size(x,2) >1
     error('Derivative only implemented for size(x,2) == 1')
 end
-[~, ~, dkdx]= base_kernelfun(theta,x0,x, 0); % 1 x 1 x 1 x D
+[~, ~, dkdx]= base_kernelfun(theta,x0,x, 0, regularization); % 1 x 1 x 1 x D
 if ~ (isequal(size(dkdx), [1, 1, 1, D])  || isequal(size(dkdx), [1, 1]))
     error('Error in the kernel derivative dimensions')
 end

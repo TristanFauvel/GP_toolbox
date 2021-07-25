@@ -8,6 +8,8 @@ graphics_style_paper;
 
 % Define the likelihood approximation method
 modeltype = 'exp_prop'; % or 'laplace'
+post = [];
+regularization = 'nugget';
 
 % Choose a link function
 link = @normcdf;
@@ -39,7 +41,7 @@ y_test = y;
 theta =theta_true ; 
 
 % Compute the predictive distribution
-[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx,var_muc, dvar_muc_dx]= prediction_bin(theta, x_tr, c_tr, x_test, kernelfun, 'modeltype', modeltype);
+[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx,var_muc, dvar_muc_dx]= prediction_bin(theta, x_tr, c_tr, x_test, kernelfun, modeltype, post, regularization);
 
 
 %% Plotting !
@@ -77,7 +79,7 @@ title('True hyperparameters');
 % GP classification with the wrong hyperparameters
 theta = rand(size(theta_true));
 
-[mu_c,  mu_y, sigma2_y]= prediction_bin(theta, x_tr, c_tr, x_test, kernelfun, 'modeltype', modeltype);
+[mu_c,  mu_y, sigma2_y]= prediction_bin(theta, x_tr, c_tr, x_test, kernelfun, modeltype, post, regularization);
 
 subplot(mr,mc,3)
 b = plot_gp(x, mu_y, sigma2_y, C(1,:), linewidth); hold on

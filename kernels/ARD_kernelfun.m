@@ -1,4 +1,4 @@
-function [C, dC, dC_dx] = ARD_kernelfun(theta, x0, x, training, regularization)
+function [C, dC, dC_dx] = ARD_kernelfun(theta, x0, x, ~, regularization)
 %% C = covfun(theta, x0)
 % compute covariance of outputs
 % 
@@ -14,7 +14,6 @@ function [C, dC, dC_dx] = ARD_kernelfun(theta, x0, x, training, regularization)
 % OUTPUT
 % C  = [N, N]:           covariance of p(y|x)
 % dC = [N, N, ntheta]:   derivative of C w.r.t theta 
-DEFAULT('regularization', 'nugget'); % do not regularize the base kernels
 
 if nargin==2
     x = x0;

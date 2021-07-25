@@ -60,11 +60,14 @@ scatter(xdata, cdata, 25,'k', 'filled'); hold off
 legend('true', 'new mvncdf', 'matlab', 'Genz', 'data')
 
 mu_c = mu_c_newmvncdf;
+post = [];
+regularization = 'nugget';
+
 %% Comparison with Laplace approximation
-mu_c_Laplace =  prediction_bin(theta, xdata, cdata, x, kernelfun, 'modeltype', 'laplace');
+mu_c_Laplace =  prediction_bin(theta, xdata, cdata, x, kernelfun, 'laplace', post, regularization);
 
 %% Comparison with EP
-mu_c_EP =  prediction_bin(theta, xdata, cdata, x, kernelfun, 'modeltype', 'exp_prop');
+mu_c_EP =  prediction_bin(theta, xdata, cdata, x, kernelfun, 'exp_prop', post, regularization);
 
 
 figure();

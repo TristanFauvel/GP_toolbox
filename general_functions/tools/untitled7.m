@@ -7,7 +7,7 @@ plot(x, y)
 [d,n]= size(x);
 
 kernelname = base_name;
-[~,  g_mu_y, g_sigma2_y, g_Sigma2_y, dmuc_dx, dmuy_dx, dsigmay_dx] = prediction_bin_preference(theta, xtrain_norm, ctrain, [x;x0*ones(1,n)], kernelfun,kernelname, 'modeltype', modeltype);
+[~,  g_mu_y, g_sigma2_y, g_Sigma2_y, dmuc_dx, dmuy_dx, dsigmay_dx] = prediction_bin_preference(theta, xtrain_norm, ctrain, [x;x0*ones(1,n)], kernelfun,kernelname, modeltype, post, regularization);
 
 figure();
 plot(x, g_mu_y);

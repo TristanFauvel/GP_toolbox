@@ -16,7 +16,6 @@ function [C, dC, dC_dx] = Matern52_kernelfun(theta, x0, x,  training, regulariza
 % dC = [N, N, ntheta]:   derivative of C w.r.t theta
 % alpha : normalizing constant of the spectral density
 
-DEFAULT('regularization', 'nugget'); % do not regularize the base kernels
 
 if nargin==2
     x = x0;

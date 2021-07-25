@@ -56,13 +56,16 @@ hyp = theta.cov;
 
 m=10000;
 fx = NaN(m, n);
+modeltype = 'exp_prop';
+post = [];
+regularization = 'nugget';
 
-[mu_c,  mu_f, sigma2_f, Sigma2_f, ~, ~,~,~,var_muc, ~, post] = prediction_bin(hyp, x_data, c_data, x, kernelfun);
+[mu_c,  mu_f, sigma2_f, Sigma2_f, ~, ~,~,~,var_muc, ~, post] = prediction_bin(hyp, x_data, c_data, x, kernelfun, modeltype, post, regularization);
 
 D= 1;
 decoupled_bases = 1;
 nfeatures = 256*2;
-modeltype = 'exp_prop';
+
 for i =1:m  
     [gs, dgsdx, decomposition]= sample_binary_GP(theta.cov, x_data, c_data, kernelname, approximation_method, nfeatures, decoupled_bases, kernelfun, modeltype, post);
     fx(i, :)=gs(x);

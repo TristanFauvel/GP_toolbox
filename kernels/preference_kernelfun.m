@@ -1,8 +1,4 @@
-function [C, dC, dC_dx] = preference_kernelfun(theta, kernelfun, x0, x, training, reg)
-DEFAULT('x', x0);
-DEFAULT('training', false);
-DEFAULT('reg', 'no'); % do not regularize the base kernels
-DEFAULT('noise', 0); % do not regularize the base kernels
+function [C, dC, dC_dx] = preference_kernelfun(theta, kernelfun, x0, x, training, regularization)
 
 d =size(x0,1)/2;
 
@@ -10,7 +6,7 @@ xi= x0(1:d,:);
 xj = x0(d+1:end,:);
 xk = x(1:d,:);
 xl = x(d+1:end,:);
-
+reg = 'no'; % do not regularize the base kernels
 if nargout < 2
     Kik = kernelfun(theta, xi, xk, training, reg);
     Kjl = kernelfun(theta, xj, xl, training, reg);
@@ -43,7 +39,9 @@ if isequal(x0,x)
     C = (C+C')/2; %to ensure symmetry;
 end
 
+if strcmp(regularization, 'nugget')
 C = nugget_regularization(C);
+end
 % try chol(C);
 % catch ME
 %     disp('Matrix is not symmetric positive definite, added jitter of 1e-08 to the diagonal')

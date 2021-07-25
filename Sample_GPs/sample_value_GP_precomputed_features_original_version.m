@@ -15,7 +15,7 @@ D = size(x_data,1)/2; %dimension
 Phi = phi_pref(x_data); % n x m
     nfeatures = size(Phi,2);
 
-[mu_c,  mu_y, sigma2_y, Sigma2_y, ~, ~, ~, ~, ~, ~, post] =prediction_bin_preference(hyp, x_data, c_data, x_data, kernelfun, 'modeltype', modeltype, 'post', post);
+[mu_c,  mu_y, sigma2_y, Sigma2_y, ~, ~, ~, ~, ~, ~, post] =prediction_bin(hyp, x_data, c_data, x_data, kernelfun, modeltype, post, regularization);
 Sigma2_y = (Sigma2_y + Sigma2_y')/2;
 
 y_data =  mvnrnd(mu_y(:), Sigma2_y)';

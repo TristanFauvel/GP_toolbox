@@ -52,13 +52,13 @@ ytrain= f(rd_idx);
 ctrain = link(ytrain)>rand(nsamp,1);
 
 
-[mu_c,  mu_f, sigma2_f] = prediction_bin_preference(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, kernelfun, 'modeltype', modeltype);
-[~,  mu_g, sigma2_g, Sigma2_g] = prediction_bin_preference(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], kernelfun, 'modeltype', modeltype);
-mu_g = -mu_g; %(because prediction_bin_preference considers P(x1 > x2);
+[mu_c,  mu_f, sigma2_f] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, kernelfun, modeltype, post, regularization);
+[~,  mu_g, sigma2_g, Sigma2_g] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], kernelfun, modeltype, post, regularization);
+mu_g = -mu_g; %(because prediction_bin considers P(x1 > x2);
     
-[mu_c_cond,  mu_f_cond, sigma2_f_cond] = prediction_bin_preference(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, kernelfun_cond, 'modeltype', modeltype);
-[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = prediction_bin_preference(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(d,n^d)], kernelfun_cond, 'modeltype', modeltype);
-mu_g_cond = -mu_g_cond; %(because prediction_bin_preference considers P(x1 > x2);
+[mu_c_cond,  mu_f_cond, sigma2_f_cond] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, kernelfun_cond, modeltype, post, regularization);
+[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(d,n^d)], kernelfun_cond, modeltype, post, regularization);
+mu_g_cond = -mu_g_cond; %(because prediction_bin considers P(x1 > x2);
 
 
 %% Find the true global optimum of g
