@@ -34,7 +34,7 @@ classdef hart6
     properties
         D = 6;
         xbounds = [0,1;0,1;0,1;0,1;0,1;0,1];
-        name = 'Six-Hump Camel';
+        name = 'Hartmann 6D';
         opt = 'max';
                 mean
         var

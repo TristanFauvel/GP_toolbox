@@ -1,6 +1,6 @@
-function [g, theta, lb, ub, lb_norm, ub_norm, theta_lb, theta_ub, kernelfun, kernelname] = load_benchmarks(objective, kernelname, benchmarks_table)
+function [g, theta, lb, ub, lb_norm, ub_norm, theta_lb, theta_ub, kernelfun, kernelname] = load_benchmarks(objective, kernelname, benchmarks_table, rescaling)
 obj = str2func(objective);
-obj = obj();
+obj = obj(rescaling);
 g = @(xx) obj.do_eval(xx);
 xbounds = obj.xbounds;
 D = obj.D;

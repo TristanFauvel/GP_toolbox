@@ -38,7 +38,7 @@ classdef forretal08
         
     end
     methods
-        function obj = forretal(rescaling)
+        function obj = forretal08(rescaling)
             if nargin<1
                 obj.rescaling = 0;
             else

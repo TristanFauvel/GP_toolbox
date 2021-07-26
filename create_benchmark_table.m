@@ -6,15 +6,15 @@ fName = {'ackley'; 'beale'; 'boha1'; 'camel3'; 'camel6'; 'colville'; 'crossit'; 
     'powell'; 'rosen'; 'rothyp'; 'schaffer4'; 'schwef'; 'shekel'; 'shubert'; ...
     'spheref'; 'sumsqu'; 'trid'; 'Ursem_waves'};
 
-fName = {'forretal08';'grlee12'; 'problem2'; 'problem3';'problem4';'problem5'; ...
-    'problem6';'problem7';'problem8';'problem9';'problem10';'problem11';'problem12';...
-    'problem13';'problem14';'problem15';'problem18';'problem20';'problem21';};
+% fName = {'forretal08';'grlee12'; 'problem2'; 'problem3';'problem4';'problem5'; ...
+%     'problem6';'problem7';'problem8';'problem9';'problem10';'problem11';'problem12';...
+%     'problem13';'problem14';'problem15';'problem18';'problem20';'problem21';};
 
 N = numel(fName);
 
 for i = 1:N
     fun = str2func(fName{i});
-    fun = fun();
+    fun = fun(0);
     D(i,1) = fun.D;
     Name{i,1} = fun.name;
     ARD{i,1} = NaN(D(i,1)+1,1);
@@ -35,8 +35,8 @@ benchmarks_table.Kernel_name  = Kernel_name ;
 Kernel= categorical(benchmarks_table.Kernel);
 benchmarks_table.Kernel  = Kernel ;
 
-% save([pathname, '/Benchmarks/benchmarks_table.mat'],'benchmarks_table')
-save([pathname, '/1D_Benchmarks/1D_benchmarks_table.mat'],'benchmarks_table')
+save([pathname, '/Benchmarks/benchmarks_table.mat'],'benchmarks_table')
+% save([pathname, '/1D_Benchmarks/1D_benchmarks_table.mat'],'benchmarks_table')
 
 % load([pathname, '/Benchmarks/benchmarks_table.mat'],'benchmarks_table')
 

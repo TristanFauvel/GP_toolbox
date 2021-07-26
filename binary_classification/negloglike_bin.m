@@ -3,7 +3,8 @@ function [negL, dnegL] = negloglike_bin(theta, xtrain, ctrain,kernelfun, varargi
 opts = namevaluepairtostruct(struct( ...
     'tol', 1e-7, ...
     'MaxIt', 1e3,...
-    'modeltype', 'exp_prop' ...
+    'modeltype', 'exp_prop', ...
+    'regularization', 'nugget' ...
     ), varargin);
 
 UNPACK_STRUCT(opts, false)
@@ -11,9 +12,9 @@ UNPACK_STRUCT(opts, false)
 ctrain = ctrain(:);
 % covariance and derivative
 if nargout>1
-    [K, dK] = kernelfun(theta, xtrain, xtrain, true);
+    [K, dK] = kernelfun(theta, xtrain, xtrain, true, regularization);
 else
-    K = kernelfun(theta, xtrain, xtrain, true);
+    K = kernelfun(theta, xtrain, xtrain, true, regularization);
 end
 % toc
 

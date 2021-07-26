@@ -26,7 +26,7 @@ for j = 1:N
     objective = char(objectives(j));
     
     disp(['Function : ' , num2str(j)])
-    [g, theta.cov, lb, ub, lb_norm, ub_norm, theta_lb, theta_ub] = load_benchmarks(objective, [], benchmarks_table);
+    [g, theta.cov, lb, ub, lb_norm, ub_norm, theta_lb, theta_ub] = load_benchmarks(objective, [], benchmarks_table,1);
     
     xsamples = rand_interval(lb,ub,'nsamples', nsamps);
     ysamples= -g(xsamples);
@@ -46,4 +46,4 @@ TakeLog = take_log(:);
 Names = T.Name;
 t = table(Names, Mean, Variance, TakeLog);
 
-save([folder,'benchmarks_rescaling'], 't')
+% save([folder,'benchmarks_rescaling'], 't')

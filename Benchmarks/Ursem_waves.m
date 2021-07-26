@@ -11,7 +11,7 @@ classdef Ursem_waves
 
     end
     methods
-         function obj = Ursem_Waves(rescaling)
+         function obj = Ursem_waves(rescaling)
             if nargin<1
                 obj.rescaling = 0;
             else

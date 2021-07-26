@@ -7,8 +7,13 @@ maxiter= 1000;
 options_theta.method = 'lbfgs';
 options_theta.verbose = 1;
 
-% filename = [pathname, '/Benchmarks/benchmarks_table.mat'];
-filename = [pathname, '/1D_Benchmarks/1D_benchmarks_table.mat'];
+rescaling = 1;
+if rescaling == 1
+    filename = [pathname, '/Benchmarks/benchmarks_table_rescaled.mat'];
+else
+    filename = [pathname, '/Benchmarks/benchmarks_table.mat'];
+% filename = [pathname, '/1D_Benchmarks/1D_benchmarks_table.mat'];
+end
 
 load(filename, 'benchmarks_table')
 objectives = benchmarks_table.fName;
@@ -25,7 +30,7 @@ for j = 1:N
         disp(['Function : ' , num2str(j), ', Kernel : ', num2str(i)]) 
         kernelname = kernelnames{i};
         kernelfun = str2func(kernelfuns{i});
-        [g, theta_init, lb, ub, lb_norm, ub_norm, theta_lb, theta_ub] = load_benchmarks(objective, kernelname, benchmarks_table);
+        [g, theta_init, lb, ub, lb_norm, ub_norm, theta_lb, theta_ub] = load_benchmarks(objective, kernelname, benchmarks_table, rescaling);
         theta= theta_init;
         
         rng(seed)
@@ -63,7 +68,6 @@ for j = 1:N
 end
 benchmarks_table = T;
 save(filename, 'benchmarks_table')
-
 % if strcmp(objective, 'forretal08')
 %         theta = [4.7312 0.7403];
 %

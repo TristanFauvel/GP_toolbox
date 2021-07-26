@@ -34,7 +34,7 @@ classdef hart4
     properties
         D = 4;
         xbounds = [0,1;0,1;0,1;0,1];
-        name = 'Hartmann 6D';
+        name = 'Hartmann 4D';
                 opt = 'max';
         mean
         var
