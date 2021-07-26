@@ -36,15 +36,29 @@ classdef schwef
         D
         name = 'Schwefel';
         opt = 'max';
+        mean
+        var
+        takelog
+        rescaling
+        
     end
     methods
-        function obj = schwef(D)
-            if nargin == 0
+        function obj = schwef(rescaling, D)
+            if nargin ==0
+                D = 2;
+                rescaling = 0;
+            elseif nargin == 1
                 D = 2;
             end
+            obj.rescaling = rescaling;
             obj.D = D;
             obj.xbounds = repmat([-500, 500], D, 1);
-            
+            if obj.rescaling
+                load('benchmarks_rescaling.mat', 't');
+                obj.var = t(t.Names == obj.name,:).Variance;
+                obj.mean = t(t.Names == obj.name,:).Mean;
+                obj.takelog = t(t.Names == obj.name,:).TakeLog;
+            end
         end
         function y = do_eval(obj, xx)
             if size(xx,1)~=obj.D
@@ -56,7 +70,14 @@ classdef schwef
                 sum = sum + xi.*sin(sqrt(abs(xi)));
             end
             
-            y = 418.9829*obj.D - sum;     
+            y = 418.9829*obj.D - sum;
+            
+            if obj.rescaling
+                if obj.takelog
+                    y = log(y);
+                end
+                y = (y- obj.mean)./sqrt(obj.var);
+            end
             if strcmp(obj.opt, 'max')
                 y = -y;
             end

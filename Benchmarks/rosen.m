@@ -37,15 +37,30 @@ classdef rosen
         D
         name = 'Rosenbrock';
         opt = 'max';
+                mean
+        var
+        takelog
+        rescaling
+
     end
     methods
-        function obj = rosen(D)
-            if nargin == 0
+        function obj = rosen(rescaling, D)
+             if nargin ==0
+                D = 2;
+                rescaling = 0;
+            elseif nargin == 1
                 D = 2;
             end
+            obj.rescaling = rescaling;
+
             obj.D = D;
             obj.xbounds = repmat([-2.048, 2.048], D, 1);
-          
+          if obj.rescaling
+                load('benchmarks_rescaling.mat', 't');
+                obj.var = t(t.Names == obj.name,:).Variance;
+                obj.mean = t(t.Names == obj.name,:).Mean;
+                obj.takelog = t(t.Names == obj.name,:).TakeLog;
+            end
         end
         function y = do_eval(obj, xx)
             if size(xx,1)~=obj.D
@@ -59,7 +74,12 @@ classdef rosen
                 sum = sum + new;
             end
             y = sum;    
-            
+            if obj.rescaling
+                if obj.takelog
+                    y = log(y);
+                end
+                y = (y- obj.mean)./sqrt(obj.var);
+            end
             if strcmp(obj.opt, 'max')
                 y = -y;
             end

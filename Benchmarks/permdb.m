@@ -40,17 +40,33 @@ classdef permdb
         name = 'Perm d,$\beta$';
         b = 0.5;
         opt = 'max';
+        mean
+        var
+        takelog
+        rescaling
+        
     end
     methods
-        function obj = permdb(D,b)
+        function obj = permdb(rescaling, D,b)
             if nargin ==0
+                rescaling = 0;
                 D = 2;
-            elseif nargin ==1
+            elseif  nargin ==1
+                D = 2;
+            elseif nargin ==2
                 obj.b = b;
             end
-                        obj.D = D;
+            obj.rescaling = rescaling;
+            
+            obj.D = D;
             obj.xbounds = repmat([-D, D], D, 1);
-
+            if obj.rescaling
+                load('benchmarks_rescaling.mat', 't');
+                obj.var = t(t.Names == obj.name,:).Variance;
+                obj.mean = t(t.Names == obj.name,:).Mean;
+                obj.takelog = t(t.Names == obj.name,:).TakeLog;
+            end
+            
         end
         function y = do_eval(obj, xx)
             if size(xx,1)~=obj.D
@@ -71,7 +87,12 @@ classdef permdb
             end
             
             y = outer;
-            
+            if obj.rescaling
+                if obj.takelog
+                    y = log(y);
+                end
+                y = (y- obj.mean)./sqrt(obj.var);
+            end
             if strcmp(obj.opt, 'max')
                 y = -y;
             end

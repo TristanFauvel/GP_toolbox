@@ -36,17 +36,35 @@ classdef goldpr
         D = 2;
         xbounds = [-2, 2; -2, 2];
         name = 'Goldstein-Price';
-                opt = 'max';
-
+        opt = 'max';
+        mean
+        var
+        takelog
+        rescaling
+        
     end
     methods
+        function obj = goldpr(rescaling)
+            if nargin<1
+                obj.rescaling = 0;
+            else
+                obj.rescaling =rescaling;
+            end
+            if obj.rescaling
+                load('benchmarks_rescaling.mat', 't');
+                obj.var = t(t.Names == obj.name,:).Variance;
+                obj.mean = t(t.Names == obj.name,:).Mean;
+                obj.takelog = t(t.Names == obj.name,:).TakeLog;
+            end
+        end
+        
         function y = do_eval(obj, xx)
             if size(xx,1)~=obj.D
                 error('Problem with input size')
             end
-                        x1 = xx(1,:);
+            x1 = xx(1,:);
             x2 = xx(2,:);
-
+            
             fact1a = (x1 + x2 + 1).^2;
             fact1b = 19 - 14*x1 + 3*x1.^2 - 14*x2 + 6*x1.*x2 + 3*x2.^2;
             fact1 = 1 + fact1a.*fact1b;
@@ -54,9 +72,16 @@ classdef goldpr
             fact2a = (2*x1 - 3*x2).^2;
             fact2b = 18 - 32*x1 + 12*x1.^2 + 48*x2 - 36*x1.*x2 + 27*x2.^2;
             fact2 = 30 + fact2a.*fact2b;
-
+            
             y = fact1.*fact2;
-if strcmp(obj.opt, 'max')
+            if obj.rescaling
+                if obj.takelog
+                    y = log(y);
+                end
+                y = (y- obj.mean)./sqrt(obj.var);
+            end
+            
+            if strcmp(obj.opt, 'max')
                 y = -y;
             end
             y(xx > obj.xbounds(:,2) | xx <  obj.xbounds(:,1)) = NaN;

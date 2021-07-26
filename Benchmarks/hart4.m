@@ -36,9 +36,26 @@ classdef hart4
         xbounds = [0,1;0,1;0,1;0,1];
         name = 'Hartmann 6D';
                 opt = 'max';
+        mean
+        var
+        takelog
+        rescaling
 
     end
     methods
+        function obj = hart4(rescaling)
+            if nargin<1
+                obj.rescaling = 0;
+            else
+                obj.rescaling =rescaling;
+            end
+            if obj.rescaling
+                load('benchmarks_rescaling.mat', 't');
+                obj.var = t(t.Names == obj.name,:).Variance;
+                obj.mean = t(t.Names == obj.name,:).Mean;
+                obj.takelog = t(t.Names == obj.name,:).TakeLog;
+            end
+        end
         function y = do_eval(obj, xx)
             if size(xx,1)~=obj.D
                 error('Problem with input size')
@@ -67,6 +84,14 @@ classdef hart4
             end
             
             y = (1.1 - outer) / 0.839;
+            
+          if obj.rescaling
+                if obj.takelog
+                    y = log(y);
+                end
+                y = (y- obj.mean)./sqrt(obj.var);
+            end
+    
             if strcmp(obj.opt, 'max')
                 y = -y;
             end

@@ -4,18 +4,16 @@ add_gp_module
 seed=1;
 maxiter= 1000;
 
-objectives = {'ackley'; 'beale'; 'boha1'; 'camel3'; 'camel6'; 'colville'; 'crossit'; ...
-    'dixonpr'; 'drop'; 'egg'; 'forretal08'; 'goldpr'; 'griewank'; 'grlee12';  ...
-    'hart3'; 'hart4'; 'hart6'; 'holder'; 'langer';'levy';'levy13';'perm0db';'permdb';...
-    'powell'; 'rosen'; 'rothyp'; 'schaffer4'; 'schwef'; 'shekel'; 'shubert'; ...
-    'spheref'; 'sumsqu'; 'trid'; 'Ursem_waves'};
+% filename = [pathname, '/1D_Benchmarks/1D_benchmarks_table.mat'];
+filename = [pathname, '/Benchmarks/benchmarks_table.mat'];
 
-kernelnames= {'ARD', 'Matern32', 'Matern52'};
-kernelfuns= {'ARD_kernelfun', 'Matern32_kernelfun', 'Matern52_kernelfun'};
+load(filename, 'benchmarks_table')
+objectives = benchmarks_table.fName;
+
+
 
 nk = numel(kernelnames);
 N= numel(objectives);
-load([pathname, '/Benchmarks/benchmarks_table.mat'], 'benchmarks_table')
 T = benchmarks_table;
 scores = zeros(N,nk);
 
@@ -23,7 +21,7 @@ theta.mean = 0;
         meanfun= @constant_mean;
 for j = 1:N 
     bias = 0;
-    objective = objectives{j};
+    objective = char(objectives(j));
     for i = 1:nk
         disp(['Function : ' , num2str(j), ', Kernel : ', num2str(i)]) 
         kernelname = kernelnames{i};

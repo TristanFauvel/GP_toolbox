@@ -39,9 +39,27 @@ classdef egg
         xbounds = [-512, 512; -512, 512];
         name = 'Eggholder';
                 opt = 'max';
+        mean
+        var
+        takelog
+        rescaling
 
     end
     methods
+        function obj = egg(rescaling)
+            if nargin<1
+                obj.rescaling = 0;
+            else
+                obj.rescaling =rescaling;
+            end
+            if obj.rescaling
+                load('benchmarks_rescaling.mat', 't');
+                obj.var = t(t.Names == obj.name,:).Variance;
+                obj.mean = t(t.Names == obj.name,:).Mean;
+                obj.takelog = t(t.Names == obj.name,:).TakeLog;
+            end
+        end
+        
         function y = do_eval(obj, xx)
             if size(xx,1)~=obj.D
                 error('Problem with input size')
@@ -53,6 +71,14 @@ classdef egg
             term2 = -x1 .* sin(sqrt(abs(x1-(x2+47))));
             
             y = term1 + term2;
+            
+           if obj.rescaling
+                if obj.takelog
+                    y = log(y);
+                end
+                y = (y- obj.mean)./sqrt(obj.var);
+            end
+            
             y(xx > obj.xbounds(:,2) | xx <  obj.xbounds(:,1)) = NaN;
             
             if strcmp(obj.opt, 'max')

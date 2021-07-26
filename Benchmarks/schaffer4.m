@@ -35,8 +35,26 @@ classdef schaffer4
         xbounds = [-100, 100;-100, 100];
         name = 'Schaffer n4';
         opt = 'max';
+                mean
+        var
+        takelog
+        rescaling
+
     end
     methods
+         function obj = schaffer4(rescaling)
+            if nargin<1
+                obj.rescaling = 0;
+            else
+                obj.rescaling =rescaling;
+            end
+            if obj.rescaling
+                load('benchmarks_rescaling.mat', 't');
+                obj.var = t(t.Names == obj.name,:).Variance;
+                obj.mean = t(t.Names == obj.name,:).Mean;
+                obj.takelog = t(t.Names == obj.name,:).TakeLog;
+            end
+        end
         function y = do_eval(obj, xx)
             x1 = xx(1,:);
             x2 = xx(2,:);
@@ -44,7 +62,12 @@ classdef schaffer4
             fact2 = (1 + 0.001*(x1.^2+x2.^2)).^2;
             
             y = 0.5 + fact1./fact2;
-            
+            if obj.rescaling
+                if obj.takelog
+                    y = log(y);
+                end
+                y = (y- obj.mean)./sqrt(obj.var);
+            end
             if strcmp(obj.opt, 'max')
                 y = -y;
             end

@@ -35,15 +35,30 @@ classdef levy
         name = 'Levy';
         xbounds
         D
-        opt = 'max';
+        opt = 'max'; 
+        mean
+        var
+        takelog
+        rescaling
+
     end
     methods
-        function obj = levy(D)
-            if nargin == 0
+        function obj = levy(rescaling, D)
+            if nargin <1
+                rescaling = 0;
+                D =2;
+            elseif nargin <2
                 D = 2;
             end
+            obj.rescaling = rescaling;
             obj.D = D;
             obj.xbounds = repmat([-10, 10], D, 1);
+            if obj.rescaling
+                load('benchmarks_rescaling.mat', 't');
+                obj.var = t(t.Names == obj.name,:).Variance;
+                obj.mean = t(t.Names == obj.name,:).Mean;
+                obj.takelog = t(t.Names == obj.name,:).TakeLog;
+            end
             
         end
         function y = do_eval(obj, xx)
@@ -67,6 +82,14 @@ classdef levy
             end
             
             y = term1 + sum + term3;
+            
+            if obj.rescaling
+                if obj.takelog
+                    y = log(y);
+                end
+                y = (y- obj.mean)./sqrt(obj.var);
+            end
+            
            if strcmp(obj.opt, 'max')
                 y = -y;
             end

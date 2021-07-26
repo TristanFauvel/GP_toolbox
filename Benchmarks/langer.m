@@ -46,23 +46,38 @@ classdef langer
         c = [1, 2, 5, 2, 3];
         A = [3, 5; 5, 2; 2, 1; 1, 4; 7, 9];
         opt = 'max';
+                mean
+        var
+        takelog
+        rescaling
+
     end
     methods
-        function obj = langer(D, m, c, A)
+        function obj = langer(rescaling, D, m, c, A)
             if nargin == 0
+                rescaling = 0;
+                D = 2;
+            elseif nargin ==1
                 D = 2;           
-            elseif nargin == 2
-                obj.m = m;
             elseif nargin == 3
                 obj.m = m;
-                obj.c = c;
             elseif nargin == 4
                 obj.m = m;
                 obj.c = c;
+            elseif nargin == 5
+                obj.m = m;
+                obj.c = c;
                 obj.A = A;
-            end            
+            end      
+            obj.rescaling = rescaling;
             obj.D = D;
             obj.xbounds = repmat([0,10], D, 1);
+            if obj.rescaling
+                load('benchmarks_rescaling.mat', 't');
+                obj.var = t(t.Names == obj.name,:).Variance;
+                obj.mean = t(t.Names == obj.name,:).Mean;
+                obj.takelog = t(t.Names == obj.name,:).TakeLog;
+            end
         end
         function y = do_eval(obj, xx)
             if size(xx,1)~=obj.D
@@ -79,7 +94,15 @@ classdef langer
                 new = obj.c(ii) * exp(-inner/pi) .* cos(pi*inner);
                 outer = outer + new;
             end
-            y = outer;     
+            y = outer; 
+            
+            
+            if obj.rescaling
+                if obj.takelog
+                    y = log(y);
+                end
+                y = (y- obj.mean)./sqrt(obj.var);
+            end
             if strcmp(obj.opt, 'max')
                 y = -y;
             end

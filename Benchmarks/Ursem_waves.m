@@ -4,9 +4,26 @@ classdef Ursem_waves
         xbounds = [-0.9, 1.2; -1.2, 1.2];
         name = 'Ursem Waves';
                         opt = 'max';
+        mean
+        var
+        takelog
+        rescaling
 
     end
     methods
+         function obj = Ursem_Waves(rescaling)
+            if nargin<1
+                obj.rescaling = 0;
+            else
+                obj.rescaling =rescaling;
+            end
+            if obj.rescaling
+                load('benchmarks_rescaling.mat', 't');
+                obj.var = t(t.Names == obj.name,:).Variance;
+                obj.mean = t(t.Names == obj.name,:).Mean;
+                obj.takelog = t(t.Names == obj.name,:).TakeLog;
+            end
+        end
         function y = do_eval(obj, xx)
             if size(xx,1)~=obj.D
                 error('Problem with input size')
@@ -14,6 +31,14 @@ classdef Ursem_waves
             x1 = xx(1,:);
             x2 = xx(2,:);
             y=-(0.3*x1).^3+(x2.^2-4.5*x2.^2).*x1.*x2+4.7*cos(3*x1-(x2.^2).*(2+x1)).*sin(2.5*pi*x1);
+            
+            if obj.rescaling
+                if obj.takelog
+                    y = log(y);
+                end
+                y = (y- obj.mean)./sqrt(obj.var);
+            end
+            
             if strcmp(obj.opt, 'max')
                 y = -y;
             end

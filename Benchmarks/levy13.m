@@ -36,8 +36,26 @@ classdef levy13
         xbounds = [-10,10;-10,10];
         name = 'Levy N.13';
         opt = 'max';
+                mean
+        var
+        takelog
+        rescaling
+
     end
     methods
+         function obj = levy13(rescaling)
+            if nargin<1
+                obj.rescaling = 0;
+            else
+                obj.rescaling =rescaling;
+            end
+            if obj.rescaling
+                load('benchmarks_rescaling.mat', 't');
+                obj.var = t(t.Names == obj.name,:).Variance;
+                obj.mean = t(t.Names == obj.name,:).Mean;
+                obj.takelog = t(t.Names == obj.name,:).TakeLog;
+            end
+        end
         function y = do_eval(obj, xx)
             if size(xx,1)~=obj.D
                 error('Problem with input size')
@@ -50,7 +68,12 @@ classdef levy13
             term3 = (x2-1).^2 .* (1+(sin(2*pi*x2)).^2);
             
             y = term1 + term2 + term3;
-            
+            if obj.rescaling
+                if obj.takelog
+                    y = log(y);
+                end
+                y = (y- obj.mean)./sqrt(obj.var);
+            end
             if strcmp(obj.opt, 'max')
                 y = -y;
             end

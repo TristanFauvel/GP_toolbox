@@ -36,15 +36,31 @@ classdef griewank
         xbounds
         name = 'Griewank';
                 opt = 'max';
+        mean
+        var
+        takelog
+        rescaling
 
     end
     methods
-        function obj = griewank(D)
-            if nargin == 0
-                D= 2;
+        function obj = griewank(rescaling, D)
+            if nargin ==0
+                D = 2;
+                rescaling = 0;
+            elseif nargin == 1
+                D = 2;
             end
+            obj.rescaling = rescaling;
+                        
+            obj.rescaling = rescaling;
             obj.D = D;
             obj.xbounds = repmat([-600, 600], D, 1);
+            if obj.rescaling
+                load('benchmarks_rescaling.mat', 't');
+                obj.var = t(t.Names == obj.name,:).Variance;
+                obj.mean = t(t.Names == obj.name,:).Mean;
+                obj.takelog = t(t.Names == obj.name,:).TakeLog;
+            end
         end
         function y = do_eval(obj, xx)
             if size(xx,1)~=obj.D
@@ -58,7 +74,15 @@ classdef griewank
                 prod = prod .* cos(xi/sqrt(ii));
             end
             
-            y = sum - prod + 1;            
+            y = sum - prod + 1;   
+            
+            if obj.rescaling
+                if obj.takelog
+                    y = log(y);
+                end
+                y = (y- obj.mean)./sqrt(obj.var);
+            end
+            
             if strcmp(obj.opt, 'max')
                 y = -y;
             end

@@ -42,22 +42,34 @@ classdef ackley
         a = 20;
         xbounds
         opt = 'max';
-
+        mean
+        var
+        takelog
+        rescaling 
     end
     methods
-        function obj = ackley(D,a,b,c)
+        function obj = ackley(rescaling, D,a,b,c)
+            if (nargin < 5)
+                c = 2*pi;
+            end
             if (nargin < 4)
-                obj.c = 2*pi;
+                b = 0.2;
             end
             if (nargin < 3)
-                obj.b = 0.2;
+                a = 20;
             end
             if (nargin < 2)
-                obj.a = 20;
+                D = 2;
             end
-            if (nargin < 1)
-                obj.D = 2;
-            end
+            obj.c = c;
+            obj.D = D;
+            obj.a = a;
+            obj.b = b;
+            obj.rescaling =rescaling;
+            load('benchmarks_rescaling.mat', 't');
+            obj.var = t(t.Names == obj.name,:).Variance; 
+            obj.mean = t(t.Names == obj.name,:).Mean; 
+            obj.takelog = t(t.Names == obj.name,:).TakeLog; 
             obj.xbounds = repmat([-32.768, 32.768], obj.D, 1);
         end
 
@@ -74,6 +86,14 @@ classdef ackley
 
             y = term1 + term2 + obj.a + exp(1);
             y(xx > obj.xbounds(:,2) | xx <  obj.xbounds(:,1)) = NaN;
+            
+            if obj.rescaling
+                if obj.takelog
+                    y = log(y);
+                end
+                y = (y- obj.mean)./sqrt(obj.var);
+            end
+            
             if strcmp(obj.opt, 'max')
                 y = -y;
             end
