@@ -8,7 +8,7 @@ end
 MaxIt = 1e3;
 tol = 1e-7;
 
-if isempty(post) || nargout == 11
+if isempty(post) || nargout == 11 || isempty(xtest)
     clear('post')
     comp_post = true;
 else

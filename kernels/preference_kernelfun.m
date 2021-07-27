@@ -12,13 +12,13 @@ if nargout < 2
     Kjl = kernelfun(theta, xj, xl, training, reg);
     Kil = kernelfun(theta, xi, xl, training, reg);
     Kjk = kernelfun(theta, xj, xk, training, reg);
-    C = Kik + Kjl - Kil - Kjk + noise;
+    C = Kik + Kjl - Kil - Kjk;
 elseif nargout ==2
     [Kik, dKik] = kernelfun(theta, xi, xk, training, reg);
     [Kjl, dKjl] = kernelfun(theta, xj, xl, training, reg);
     [Kil, dKil] = kernelfun(theta, xi, xl, training, reg);
     [Kjk, dKjk] = kernelfun(theta, xj, xk, training, reg);
-    C = Kik + Kjl - Kil - Kjk + noise;
+    C = Kik + Kjl - Kil - Kjk;
     dC = dKik + dKjl - dKil - dKjk;
 elseif nargout ==3
     [Kik, dKik, dKik_dxk] = kernelfun(theta, xi, xk, training, reg);
@@ -42,10 +42,5 @@ end
 if strcmp(regularization, 'nugget')
 C = nugget_regularization(C);
 end
-% try chol(C);
-% catch ME
-%     disp('Matrix is not symmetric positive definite, added jitter of 1e-08 to the diagonal')
-%     C= C + 1E-8*eye(size(C));
-% end
 
 return
