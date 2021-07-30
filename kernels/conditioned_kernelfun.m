@@ -1,6 +1,4 @@
 function [C, dC, dC_dxj] = conditioned_kernelfun(theta, kernelfun, xi, xj, training, x0, reg)
-DEFAULT('training', false);
-DEFAULT('reg', 'no'); % do not regularize the base kernels
 %Condition : g(x0) = 0
 
 nj = size(xj,2);

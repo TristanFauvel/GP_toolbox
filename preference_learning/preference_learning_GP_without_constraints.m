@@ -5,7 +5,8 @@ figure_path = '/home/tfauvel/Documents/PhD/Figures/Thesis_figures/Chapter_1/';
 graphics_style_paper
 close all
 rng(1)
-
+regularization = 'nugget';
+post = [];
 letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 link = @normcdf; %inverse link function
@@ -25,7 +26,7 @@ modeltype = 'exp_prop'; % Approximation method
 base_kernelfun =  @Matern52_kernelfun;%kernel used within the preference learning kernel, for subject = computer
 base_kernelname = 'Matern52';
 kernel_approximation = 'RRGP';
-kernelfun = @(theta, xi, xj, training) preference_kernelfun(theta, base_kernelfun, xi, xj, training);
+kernelfun = @(theta, xi, xj, training, reg) preference_kernelfun(theta, base_kernelfun, xi, xj, training, reg);
 link = @normcdf; %inverse link function for the classification model
 
 % gfunc = @(x) forretal08(x)/10;
@@ -33,7 +34,7 @@ link = @normcdf; %inverse link function for the classification model
 % g = gfunc(x)-gfunc(x0);
 
 theta= [-1;1];
-g = mvnrnd(zeros(1,n),base_kernelfun(theta, x, x, 'false'));
+g = mvnrnd(zeros(1,n),base_kernelfun(theta, x, x, 'false', regularization));
 g = g-g(1);
 
 f = g'-g;
@@ -140,11 +141,4 @@ text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalize
 box off
 pbaspect([1 1 1])
 
-
-
-figname  = 'preference_learning_GP';
-folder = [figure_path,figname];
-savefig(fig, [folder,'\', figname, '.fig'])
-exportgraphics(fig, [folder,'\' , figname, '.pdf']);
-exportgraphics(fig, [folder,'\' , figname, '.png'], 'Resolution', 300);
 

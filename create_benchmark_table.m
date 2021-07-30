@@ -40,3 +40,7 @@ save([pathname, '/Benchmarks/benchmarks_table.mat'],'benchmarks_table')
 
 % load([pathname, '/Benchmarks/benchmarks_table.mat'],'benchmarks_table')
 
+T = benchmarks_table(:,[1,3,8]);
+T.Name= char(T.Name);
+T.Kernel_name= char(T.Kernel_name);
+table2latex(T, [pathname, '/benchmarks.tex'])

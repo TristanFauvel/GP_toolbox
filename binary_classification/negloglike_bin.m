@@ -27,8 +27,7 @@ n = size(xtrain, 2);
 if strcmp(modeltype, 'laplace')
     
     % find y= maximum of p(y_tr|c_tr, xtrain), (19.5.19 in Barber book)
-    ystar = siteparams(ctrain, K, 'tol', tol, 'MaxIt', MaxIt, ...
-        modeltype, post, regularization);
+    ystar = siteparams(ctrain, K, 'tol', tol, 'MaxIt', MaxIt);
     
     % compute 'noise' matrix (Eq 19.5.17 in Barber book)
     D = diag(logistic(ystar).*(1-logistic(ystar)));

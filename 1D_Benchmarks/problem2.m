@@ -1,3 +1,4 @@
+%From http://infinity77.net/global_optimization/test_functions_1d.html
 classdef problem2
     properties
         D = 1;
@@ -21,3 +22,4 @@ classdef problem2
         end
     end
 end
+

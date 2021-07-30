@@ -7,7 +7,8 @@ graphics_style_paper;
 letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 link = @normcdf; %inverse link function
-
+regularization = 'nugget';
+post = [];
 %% Define the range of parameters
 n = 50;
 x = linspace(0,1, n);
@@ -29,8 +30,8 @@ kernel_approximation = 'RRGP';
 
 base_kernelfun = @(theta, xi, xj, training, reg) conditioned_kernelfun(theta, original_kernelfun, xi, xj, training, x0, reg);
 % kernelfun = @(theta, xi, xj, training) preference_kernelfun(theta, base_kernelfun, xi, xj, training);
-kernelfun_cond= @(theta, xi, xj, training) conditional_preference_kernelfun(theta, original_kernelfun, xi, xj, training, x0);
-kernelfun= @(theta, xi, xj, training) preference_kernelfun(theta, original_kernelfun, xi, xj, training);
+kernelfun_cond= @(theta, xi, xj, training, reg) conditional_preference_kernelfun(theta, original_kernelfun, xi, xj, training, reg,x0);
+kernelfun= @(theta, xi, xj, training, reg) preference_kernelfun(theta, original_kernelfun, xi, xj, training, reg);
 
 link = @normcdf; %inverse link function for the classification model
 
@@ -69,7 +70,7 @@ legend_pos = [-0.2,1];
 mr = 1;
 mc = 3;
 i = 0;
-fig=figure('units','centimeters','outerposition',1+[0 0 width height(mr)]);
+fig=figure('units','centimeters','outerposition',1+[0 0 fwidth fheight(mr)]);
 fig.Color =  [1 1 1];
 
 
