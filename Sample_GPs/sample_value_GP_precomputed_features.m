@@ -49,15 +49,15 @@ if isfield(condition, 'y0')
     decomposition.cond_sample_prior = cond_sample_prior;
 
 else
-    warning('There is no conditioning on the value function offset')
+%     warning('There is no conditioning on the value function offset')
     if decoupled_bases
         w =randn(nfeatures,1);
         sample_prior = @(x) (phi_pref(x)*w)';
 
         v =  (post.K\(y_data - sample_prior(xtrain)'))';
-        update =  @(x) v*kernelfun(theta,xtrain,x, 0);
+        update =  @(x) v*kernelfun(theta,xtrain,x, 0, regularization);
         sample_g = @(x) sample_prior([x;x0.*ones(D,size(x,2))]) + update([x;x0.*ones(D,size(x,2))]);
-        dsample_g_dx = @(x) dprior_dx(x, x0, D, w, dphi_pref_dx, regularization) + dupdate_dx(x, x0, D, v, theta, xtrain, kernelfun, regularization);
+        dsample_g_dx = @(x) dprior_dx(x, x0, D, w, dphi_pref_dx) + dupdate_dx(x, x0, D, v, theta, xtrain, kernelfun, regularization);
         decomposition.update = update;
         decomposition.sample_prior = sample_prior;
     else

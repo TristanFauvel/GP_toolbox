@@ -67,6 +67,9 @@ if nargout>2
     dC_dx = exp(theta(1))*dC_dx;
 end
 
+if strcmp(regularization ,'nugget')
+    C = nugget_regularization(C);
+end
 
 % C0 = x0'*x;
 % C = theta(1)^2*C0 + theta(2)^2;

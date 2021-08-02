@@ -10,15 +10,7 @@ if isempty(kernelname)
     kernelfun = str2func(char(benchmarks_table(benchmarks_table.fName == objective, :).Kernel));
 end
 
-if strcmp(kernelname, 'ARD')
-    theta = benchmarks_table(benchmarks_table.fName == objective, :).ARD;
-elseif strcmp(kernelname, 'Matern32')
-    theta = benchmarks_table(benchmarks_table.fName == objective, :).Matern32;
-elseif strcmp(kernelname, 'Matern52')
-    theta = benchmarks_table(benchmarks_table.fName == objective, :).Matern52;
-else
-    error('The hyperparameters corresponding to this benchmark function were not computed with this kernel')
-end
+theta = benchmarks_table(benchmarks_table.fName == objective, :).(kernelname);
 theta = theta{:};
 theta_init = theta;
 theta_lb = -10*ones(size(theta_init));
