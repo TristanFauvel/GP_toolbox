@@ -7,7 +7,7 @@ add_gp_module;
 figure_path = '/home/tfauvel/Documents/PhD/Figures/Thesis_figures/Chapter_1/';
 n=100;
 
-rng(2)
+rng(3)
 graphics_style_paper;
 letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -17,7 +17,7 @@ modeltype = 'exp_prop'; % or 'laplace'
 link = @normcdf;
 
 kernelfun = @ARD_kernelfun; 
-theta_true= [3;3];
+theta_true= [3;1.2];
 
 % Generate a function 
 x = linspace(0,1,n);
@@ -55,11 +55,11 @@ dF = test_matrix_deriv(fun, x_test, 1e-8);
 %Xlim= [min(x),max(x)];
 %Ylim = [-5,5];
 
-legend_pos = [-0.18,1];
+legend_pos = [-0.2,1];
 
 mr = 1;
 mc = 3;
-fig=figure('units','centimeters','outerposition',1+[0 0 width height(mr)]);
+fig=figure('units','centimeters','outerposition',1+[0 0 fwidth fheight(mr)]);
 fig.Color =  [1 1 1];
 layout = tiledlayout(mr,mc, 'TileSpacing', 'tight', 'padding','compact');
 
@@ -80,6 +80,7 @@ box off
 pbaspect([1 1 1])
 set(gca, 'Fontsize', Fontsize);
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+ylabel('$P(c=1)$')
 
 
 nexttile();
@@ -88,7 +89,7 @@ p1 = plot_gp(x,mu_y, sqrt(sigma2_y), C(1,:),linewidth);
 p2 = plot(x,y,'LineWidth',linewidth,'Color', C(2,:)); hold off;
 % errorshaded(x,mu_y, sqrt(sigma2_y), 'Color',  C(1,:),'LineWidth', linewidth, 'Fontsize', Fontsize); hold off
 % legend('True function', 'Inferred function','Fontsize',Fontsize)
-legend([p1, p2], {'$\mu_y(x)$','$g(x)$'},'Fontsize',Fontsize, 'Location', 'northeast')
+legend([p1, p2], {'$\mu_f(x)$','$f(x)$'},'Fontsize',Fontsize, 'Location', 'northeast')
 xlabel('$x$','Fontsize',Fontsize)
 legend boxoff
 grid off
@@ -96,6 +97,7 @@ box off
 pbaspect([1 1 1])
 set(gca, 'Fontsize', Fontsize);
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+ylabel('$f(x)$')
 
 nexttile();
 i=i+1;
@@ -133,7 +135,7 @@ plot(x, mu_c_samples, 'color', C(1,:), 'linewidth', 1)
 mr = 3;
 mc = 3;
 i = 0;
-fig=figure('units','centimeters','outerposition',1+[0 0 width height(mr)]);
+fig=figure('units','centimeters','outerposition',1+[0 0 fwidth fheight(mr)]);
 fig.Color =  [1 1 1];
 tiledlayout(mr,mc, 'TileSpacing' , 'tight', 'Padding', 'tight')
 nexttile()

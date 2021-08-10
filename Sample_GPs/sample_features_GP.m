@@ -37,6 +37,10 @@ switch approximation_method
         phi = @(x) sqrt(2*alpha/nfeatures)*cos(W*x*(2*pi)+b)'; % phi : ntest x nfeatures
         dphi_dx = @(x) (-2*pi*sqrt(2*alpha/nfeatures)*sin((2*pi)*W*x+b).*W); % nfeatures x D
     case 'RRGP' %Reduced-rank approximation_method, Solin 2019
+        
+        if numel(theta) ~=2
+           error('The number of hyperparameters for Matérn kernels is 2') 
+        end
         if D ~= 8
             m =floor(nfeatures^(1/D)); %/D;6561
             j= myndgrid(1:m,D);

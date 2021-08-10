@@ -55,7 +55,7 @@ for i = 1:nplots
     end
     
 end
-colors =  colororder;
+colors =  options.colors;
 plots = [];
 % Plotting the result
 figure(options.handle);

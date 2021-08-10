@@ -43,7 +43,7 @@ theta= [-1;1];
 g = mvnrnd(zeros(1,n),base_kernelfun(theta, x, x, 'false', 'no'));
 %g = g-g(1);
 
-f = g'-g;
+f = g-g';
 f= f(:);
 
 nsamp= 500;
@@ -55,12 +55,10 @@ ctrain = link(ytrain)>rand(nsamp,1);
 
 [mu_c,  mu_f, sigma2_f] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, kernelfun, modeltype, post, regularization);
 [~,  mu_g, sigma2_g, Sigma2_g] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], kernelfun, modeltype, post, regularization);
-mu_g = -mu_g; %(because prediction_bin considers P(x1 > x2);
-    
+     
 [mu_c_cond,  mu_f_cond, sigma2_f_cond] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, kernelfun_cond, modeltype, post, regularization);
 [mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(d,n^d)], kernelfun_cond, modeltype, post, regularization);
-mu_g_cond = -mu_g_cond; %(because prediction_bin considers P(x1 > x2);
-
+ 
 
 %% Find the true global optimum of g
 [gmax, id_xmax] = max(g);
@@ -83,13 +81,13 @@ i=i+1;
 imagesc(x, x, reshape(link(f),n,n), cl); hold on;
 xlabel('$x$','Fontsize', Fontsize)
 ylabel('$x''$','Fontsize', Fontsize)
-title('$P(x''>x)$','Fontsize', Fontsize)
+title('$P(x>x'')$','Fontsize', Fontsize)
 set(gca,'YDir','normal')
 set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1],'Fontsize', Fontsize)
 pbaspect([1 1 1])
-% c = colorbar;
-% c.Limits = [0,1];
-% set(c, 'XTick', [0,1]);
+c = colorbar;
+c.Limits = [0,1];
+set(c, 'XTick', [0,1]);
 colormap(cmap)
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 
@@ -97,8 +95,8 @@ text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalize
 nexttile
 i=i+1;
 imagesc(x, x, reshape(mu_c_cond, n,n),cl); hold on;
-scatter(xtrain(1, ctrain(1:ntr)==1),xtrain(2, ctrain(1:ntr)==1), markersize, 'o', 'k','filled'); hold on;
-scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o','k'); hold off;
+p1 = scatter(xtrain(1, ctrain(1:ntr)==1),xtrain(2, ctrain(1:ntr)==1), markersize, 'o', 'k','filled'); hold on;
+p2 = scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o','k'); hold off;
 xlabel('$x$', 'Fontsize', Fontsize)
 ylabel('$x''$', 'Fontsize', Fontsize)
 title('$\mu_c(x,x'')$','Fontsize', Fontsize)
@@ -106,12 +104,13 @@ title('$\mu_c(x,x'')$','Fontsize', Fontsize)
 set(gca,'YDir','normal')
 set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1], 'Fontsize', Fontsize)
 pbaspect([1 1 1])
-% c = colorbar;
-% c.Limits = [0,1];
-% set(c, 'XTick', [0,1]);
+c = colorbar;
+c.Limits = [0,1];
+set(c, 'XTick', [0,1]);
 colormap(cmap)
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
-
+legend([p1, p2], '$c=1$', '$c=0$','Fontsize',Fontsize, 'Location', 'northeast')
+legend boxoff
 % nexttile([1,2])
 % nexttile
 % i=i+1;
@@ -132,7 +131,8 @@ text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalize
 nexttile
 i=i+1;
 
-plot_gp(x, mu_g_cond, sigma2_g_cond, C(1,:), linewidth); 
+plot_gp(x, mu_g_cond, sigma2_g_cond, C(1,:), linewidth); hold on;
+plot(x, g, 'color', C(2,:), 'linewidth', linewidth);  hold off;
 
 xlabel('$x$', 'Fontsize', Fontsize)
 ylabel('$g(x)$', 'Fontsize', Fontsize)
@@ -148,7 +148,7 @@ pbaspect([1 1 1])
 
 figname  = 'preference_learning_GP';
 folder = [figure_path,figname];
-savefig(fig, [folder,'\', figname, '.fig'])
-exportgraphics(fig, [folder,'\' , figname, '.pdf']);
-exportgraphics(fig, [folder,'\' , figname, '.png'], 'Resolution', 300);
+savefig(fig, [folder,'/', figname, '.fig'])
+exportgraphics(fig, [folder,'/' , figname, '.pdf']);
+exportgraphics(fig, [folder,'/' , figname, '.png'], 'Resolution', 300);
 

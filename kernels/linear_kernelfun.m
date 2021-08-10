@@ -41,7 +41,7 @@ if nargout>1   % && nargout<3
     
     dC(:, :, 1) = exp(theta(1))*C0;
 
-    dC(:, :, 2) =   exp(theta(1))*(2*theta(2)-x-x0');
+    dC(:, :, 2) =  exp(theta(1))*(-(x' - theta(2))*ones(nd,1) -ones(nd,1)'*(x-theta(2))); % exp(theta(1))*(2*theta(2)-x-x0');
     
     dC(:, :, 3) =   exp(theta(3));
 end

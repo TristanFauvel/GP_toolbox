@@ -40,7 +40,23 @@ save([pathname, '/Benchmarks/benchmarks_table.mat'],'benchmarks_table')
 
 % load([pathname, '/Benchmarks/benchmarks_table.mat'],'benchmarks_table')
 
+load([pathname, '/Benchmarks/benchmarks_table.mat'],'benchmarks_table')
+% 
+% %% To add the bounds to the table
+% N = size(benchmarks_table,1);
+% tb = zeros(
+% for i = 1:N
+%      fun = str2func(fName{i});
+%      obj = fun(0);
+%      bounds= obj.xbounds;
+% end
+% 
 T = benchmarks_table(:,[1,3,8]);
 T.Name= char(T.Name);
 T.Kernel_name= char(T.Kernel_name);
-table2latex(T, [pathname, '/benchmarks.tex'])
+% table2latex(T, [pathname, '/benchmarks.tex'])
+
+
+
+
+

@@ -5,6 +5,14 @@ if ~isempty(xtest) && size(xtrain,1) ~= size(xtest,1)
     error("Dimensions of test and training sets are not consistent")
 end
 
+
+%%%%%%%%%%%%
+dmuc_dx = [];
+dmuy_dx=[];
+dsigma2y_dx=[];
+dSigma2y_dx= [];
+
+%%%%%%%%%%%
 MaxIt = 1e3;
 tol = 1e-7;
 
@@ -35,7 +43,7 @@ end
 if ~isempty(xtest)
     ntst = size(xtest, 2);
 
-    if nargout>4
+    if nargout>4  && nargout ~= 9 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         [k, ~, dk_dx] = kernelfun(theta, xtrain, xtest, false, 'false');
         post.dk_dx = dk_dx;
     else
@@ -45,7 +53,7 @@ if ~isempty(xtest)
 end
 
 if ~isempty(xtest)
-    if nargout>4
+    if nargout>4  && nargout ~= 9 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         [ks, ~, dks_dx] = kernelfun(theta, xtest, xtest, false, 'false');  %%%% Careful : normally here it's 'false', but I put 'true'in order to get a correct computation of the derivative, only ok if noise = 0
         diag_ks= diag(ks);
         n=size(xtest,2);
@@ -132,7 +140,7 @@ else
 end
 
 if ~isempty(xtest)
-    if nargout>4
+    if nargout>4 && nargout ~= 9 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if strcmp(modeltype, 'laplace')
             sigma_y = sqrt(sigma2_y);
             % derivative of mu_c with respect to mu_y and sigma_y
@@ -179,23 +187,24 @@ if ~isempty(xtest)
 
     if nargout >= 9 
         if strcmp(modeltype, 'exp_prop')
-        h = mu_y./sqrt(1+sigma2_y);
-        a = 1./sqrt(1+2*sigma2_y);
-
-        [tfn_output, dTdh, dTda] = tfn(h, a);
-
-        indexat = @(expr, varargin) expr(varargin{:});
-        dmcdx = indexat(reshape(dmuc_dx, size(xtest,2)^2, D),1:size(xtest,2)+1:(size(xtest,2)^2), 1:D);
-        dmydx =  indexat(reshape(dmuy_dx, size(xtest,2)^2, D),1:size(xtest,2)+1:(size(xtest,2)^2), 1:D);
-        ds2dx = indexat(reshape(dsigma2y_dx, size(xtest,2)^2, D),1:size(xtest,2)+1:(size(xtest,2)^2), 1:D);
-        dhdx = dmydx./sqrt(1+sigma2_y) - 0.5*mu_y.*ds2dx.*((1+sigma2_y).^(-3/2));
-        dadx =  -ds2dx.*((1+2*sigma2_y).^(-1.5));
-        dTdx = dTdh.*dhdx +dTda.*dadx;
-        dvar_muc_dx = dmcdx-2*mu_c.*dmcdx-2*dTdx;
-
-        var_muc = (mu_c - 2*tfn_output) - mu_c.^2;
-
-        var_muc(sigma2_y==0) = 0;
+            h = mu_y./sqrt(1+sigma2_y);
+            a = 1./sqrt(1+2*sigma2_y);
+            
+            [tfn_output, dTdh, dTda] = tfn(h, a);
+            
+            if nargout > 9
+                indexat = @(expr, varargin) expr(varargin{:});
+                dmcdx = indexat(reshape(dmuc_dx, size(xtest,2)^2, D),1:size(xtest,2)+1:(size(xtest,2)^2), 1:D);
+                dmydx =  indexat(reshape(dmuy_dx, size(xtest,2)^2, D),1:size(xtest,2)+1:(size(xtest,2)^2), 1:D);
+                ds2dx = indexat(reshape(dsigma2y_dx, size(xtest,2)^2, D),1:size(xtest,2)+1:(size(xtest,2)^2), 1:D);
+                dhdx = dmydx./sqrt(1+sigma2_y) - 0.5*mu_y.*ds2dx.*((1+sigma2_y).^(-3/2));
+                dadx =  -ds2dx.*((1+2*sigma2_y).^(-1.5));
+                dTdx = dTdh.*dhdx +dTda.*dadx;
+                dvar_muc_dx = dmcdx-2*mu_c.*dmcdx-2*dTdx;
+            end
+            var_muc = (mu_c - 2*tfn_output) - mu_c.^2;
+            
+            var_muc(sigma2_y==0) = 0;
         else
             var_muc = [];
         end
