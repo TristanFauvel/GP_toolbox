@@ -1,10 +1,9 @@
-function [output1,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc, dvar_muc_dx,post] =  prediction_bin(theta, xtrain, ctrain, xtest, kernelfun, modeltype, post, regularization)
+function [output1,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc, dvar_muc_dx,post] =  prediction_bin(theta, xtrain, ctrain, xtest, kernelfun, modeltype, post, regularization, link)
 % mu_c corresponds to P(x1 > x2)
 
 if ~isempty(xtest) && size(xtrain,1) ~= size(xtest,1)
     error("Dimensions of test and training sets are not consistent")
 end
-
 
 %%%%%%%%%%%%
 dmuc_dx = [];
@@ -42,7 +41,7 @@ else
 end
 if ~isempty(xtest)
     ntst = size(xtest, 2);
-
+    
     if nargout>4  && nargout ~= 9 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         [k, ~, dk_dx] = kernelfun(theta, xtrain, xtest, false, 'false');
         post.dk_dx = dk_dx;
@@ -60,7 +59,7 @@ if ~isempty(xtest)
         L= reshape(dks_dx, n*n, [], D);
         ddiagks_dx = L(1:n+1:end,:,:);
     else
-
+        
         try ks = kernelfun(theta, xtest, xtest, false, 'false');
             diag_ks= diag(ks);
         catch
@@ -75,24 +74,66 @@ end
 if strcmp(modeltype, 'laplace')
     if comp_post
         % find y= maximum of p(y_tr|c_tr, xtrain), (19.5.19 in Barber book)
-        ystar = siteparams(ctrain, K, 'tol', tol, 'MaxIt', MaxIt);
+        ystar = siteparams(ctrain, K, link, 'tol', tol, 'MaxIt', MaxIt);
         % compute 'noise' matrix (Eq 19.5.17 in Barber book)
-        invS = diag(1./(logistic(ystar).*(1-logistic(ystar))+1e-12));
+        
+        if strcmp(func2str(link),'logistic')
+            D = diag(logistic(ystar).*(1-logistic(ystar)));            
+            invS = diag(1./(logistic(ystar).*(1-logistic(ystar))+1e-12));
+             dloglike = (ctrain - logistic(ystar));
+        elseif strcmp(func2str(link),'normcdf')
+            y = 2*ctrain-1;
+            a = normpdf(ystar);
+            b = normcdf(y.*ystar);
+            D = diag((a./b).^2 + y.*ystar.*(a./b));
+            dloglike = y.*a./b;
+            
+            invS = diag(1./((a./b).^2 + y.*ystar.*(a./b)+1e-12));
+        end
+        
         invKS = inv(K + invS);
-
+        
         post.ystar = ystar;
         post.invKS = invKS;
         post.invS = invS;
+        post.dloglike =  dloglike; 
     else
         ystar = post.ystar;
         invKS = post.invKS;
         invS = post.invS;
+        dloglike = post.dloglike;
     end
-    if ~isempty(xtest)
+    
+elseif strcmp(modeltype, 'exp_prop')
+    if comp_post
+        [nu_tilde, tau_tilde] = siteparams(ctrain, K, link, 'modeltype', 'exp_prop', 'tol', tol);
+        
+        invS = diag(1./tau_tilde);
+        invKS = inv(K+invS);
+        
+        dloglike = invKS*(invS*nu_tilde); % mu_y = (k'*invKS)*invS*nu_tilde;
+         
+        post.nu_tilde = nu_tilde;
+        post.invS = invS;
+        post.invKS = invKS;
+        post.tau_tilde = tau_tilde;
+        post.dloglike = dloglike;
+    else
+        invKS = post.invKS;
+        nu_tilde = post.nu_tilde;
+        invS = post.invS;
+        dloglike = post.dloglike;
+    end    
+else
+    error('modeltype must be ''laplace'' or ''exp_prop''')
+end
+    
 
+if ~isempty(xtest)
+        
         % mean of p(y|x, c_tr, xtrain) (Eq 19.5.24 in Barber book)
-        mu_y = k'*(ctrain - logistic(ystar));
-
+        mu_y = k'*dloglike;
+                
         % standard deviation of p(y|x, c_tr, xtrain) (Eq 19.5.26 in Barber book)
         %sigma2_y = diag_ks-sum((k'/(K + invS)).*k', 2);
         sigma2_y = diag_ks-sum((k'*invKS).*k', 2);
@@ -104,89 +145,53 @@ if strcmp(modeltype, 'laplace')
             end
         end
         % mean of p(c|x, c_tr, xtrain) (Eq 19.5.27 in Barber book)
-        nu = sqrt(pi)/4;
-        mu_c = 0.5+0.5*erf(nu.*mu_y./sqrt(1+2*nu*sigma2_y));
-    end
-elseif strcmp(modeltype, 'exp_prop')
-    if comp_post
-        [nu_tilde, tau_tilde] = siteparams(ctrain, K, 'modeltype', 'exp_prop', 'tol', tol);
-
-        invS = diag(1./tau_tilde);
-        invKS = inv(K+invS);
-
-        post.nu_tilde = nu_tilde;
-        post.invS = invS;
-        post.invKS = invKS;
-        post.tau_tilde = tau_tilde;
-    else
-        invKS = post.invKS;
-        nu_tilde = post.nu_tilde;
-        invS = post.invS;
-    end
-    if ~isempty(xtest)
-        mu_y = (k'*invKS)*invS*nu_tilde;
-        sigma2_y = diag_ks- sum((k'*invKS).*k', 2);
-
-        if nargout>=4
-            Sigma2_y = ks - k'*invKS*k;
-            if isequal(xtrain,xtest)
-                Sigma2_y = (Sigma2_y + Sigma2_y')/2;
-            end
+        if strcmp(func2str(link),'logistic')
+            nu = sqrt(pi)/4;
+            mu_c = 0.5+0.5*erf(nu.*mu_y./sqrt(1+2*nu*sigma2_y));
+        elseif strcmp(func2str(link),'normcdf')
+            mu_c =  normcdf(mu_y./sqrt(1+sigma2_y));
         end
-        mu_c = normcdf(mu_y./sqrt(1+sigma2_y));
-    end
-else
-    error('modeltype must be ''laplace'' or ''exp_prop''')
-end
-
-if ~isempty(xtest)
+       
     if nargout>4 && nargout ~= 9 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        if strcmp(modeltype, 'laplace')
+        if strcmp(func2str(link),'logistic')
             sigma_y = sqrt(sigma2_y);
             % derivative of mu_c with respect to mu_y and sigma_y
             arg = nu.*mu_y.*(1+2*nu*sigma_y.^2).^(-0.5);
-
+            
             darg_muy = nu./sqrt(1+2*nu*sigma_y.^2);
-
-            %darg_sigmay = -2*nu^2.*mu_y.*sigma_y.*(1 + 2*nu*sigma_y.^2).^(-1.5);
+            
             darg_sigma2y = -nu^2.*mu_y.*(1 + 2*nu*sigma_y.^2).^(-1.5);
-
+            
             dmuc_dmuy = exp(-arg.^2)./sqrt(pi).*darg_muy;
-
-            %dmuc_dsigmay = exp(-arg.^2)./sqrt(pi).*darg_sigmay;
+            
             dmuc_dsigma2y = exp(-arg.^2)./sqrt(pi).*darg_sigma2y;
-
-            % derivative of mu_y with respect to x
-            dmuy_dx = squeeze(mtimesx(dk_dx, 'T',ctrain-logistic(ystar)));
-
-            % derivative of sigma_y with respect to x
-            %dsigma2y_dx = -2*ddiagks_dx -sum(mtimesx(dk_dx, 'T', invKS).*k', 2)./sigma_y;
-
-        elseif strcmp(modeltype, 'exp_prop')
-
+            
+            
+        elseif strcmp(func2str(link),'normcdf')
+            
             % derivative of mu_c with respect to mu_y and sigma_y
             arg = normpdf(mu_y./sqrt(1+sigma2_y));
-
+            
             dmuc_dmuy = arg./sqrt(1+sigma2_y);
-
+            
             dmuc_dsigma2y = -0.5*arg.*mu_y./((1+sigma2_y).^(1.5));
-            % derivative of mu_y with respect to x
-            %         dmuy_dx = squeeze(mtimesx(dk_dx, 'T', (K+invS)\(invS*nu_tilde)));
-            dmuy_dx = squeeze(mtimesx(dk_dx, 'T', post.invKS*(invS*nu_tilde)));
         else
             error('modeltype must be ''laplace'' or ''exp_prop''')
         end
-           dsigma2y_dx = 2*squeeze(ddiagks_dx) -2*squeeze(sum(mtimesx(dk_dx, 'T', invKS).*k', 2));
-            dSigma2y_dx = squeeze(dks_dx) - 2*mtimesx(mtimesx(dk_dx, 'T', invKS),k);
+        % derivative of mu_y with respect to x
+        dmuy_dx = squeeze(mtimesx(dk_dx, 'T', post.dloglike));
 
-                    % derivative of mu_c with respect to x
-            dmuc_dx = dmuc_dsigma2y.*dsigma2y_dx + dmuc_dmuy.*dmuy_dx;
-
+        dsigma2y_dx = 2*squeeze(ddiagks_dx) -2*squeeze(sum(mtimesx(dk_dx, 'T', invKS).*k', 2));
+        dSigma2y_dx = squeeze(dks_dx) - 2*mtimesx(mtimesx(dk_dx, 'T', invKS),k);
+        
+        % derivative of mu_c with respect to x
+        dmuc_dx = dmuc_dsigma2y.*dsigma2y_dx + dmuc_dmuy.*dmuy_dx;
+        
     end
-
-
-    if nargout >= 9 
-        if strcmp(modeltype, 'exp_prop')
+    
+    
+    if nargout >= 9
+        if strcmp(func2str(link),'normcdf')
             h = mu_y./sqrt(1+sigma2_y);
             a = 1./sqrt(1+2*sigma2_y);
             
@@ -207,6 +212,7 @@ if ~isempty(xtest)
             var_muc(sigma2_y==0) = 0;
         else
             var_muc = [];
+            warning('The computation of $V(\pi(x))$ is not implemented')
         end
     end
 end

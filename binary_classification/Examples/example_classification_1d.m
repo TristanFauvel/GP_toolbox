@@ -7,11 +7,12 @@ graphics_style_paper;
 
 
 % Define the likelihood approximation method
-modeltype = 'exp_prop'; % or 'laplace'
+modeltype = 'laplace'; % 'exp_prop' or 'laplace'
 post = [];
-regularization = 'nugget';
+regularization = 'none';
 
 % Choose a link function
+link = @logistic;
 link = @normcdf;
 
 % Choose a kernel
@@ -23,7 +24,7 @@ theta_true= [3;3];
 % Generate a function by sampling from the GP prior
 n=100;
 x = linspace(0,1,n);
-y = mvnrnd(constant_mean(x,0), kernelfun(theta_true, x,x)); % Latent function
+y = mvnrnd(constant_mean(x,0), kernelfun(theta_true, x,x, false, 'none')); % Latent function
 p= link(y); % P(c = 1)
 
 % Create data points
@@ -41,7 +42,7 @@ y_test = y;
 theta =theta_true ; 
 
 % Compute the predictive distribution
-[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx,var_muc, dvar_muc_dx]= prediction_bin(theta, x_tr, c_tr, x_test, kernelfun, modeltype, post, regularization);
+[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx,var_muc, dvar_muc_dx]= prediction_bin(theta, x_tr, c_tr, x_test, kernelfun, modeltype, post, regularization, link);
 
 
 %% Plotting !
@@ -79,7 +80,7 @@ title('True hyperparameters');
 % GP classification with the wrong hyperparameters
 theta = rand(size(theta_true));
 
-[mu_c,  mu_y, sigma2_y]= prediction_bin(theta, x_tr, c_tr, x_test, kernelfun, modeltype, post, regularization);
+[mu_c,  mu_y, sigma2_y]= prediction_bin(theta, x_tr, c_tr, x_test, kernelfun, modeltype, post, regularization, link);
 
 subplot(mr,mc,3)
 b = plot_gp(x, mu_y, sigma2_y, C(1,:), linewidth); hold on
@@ -110,7 +111,7 @@ options=[];
 theta = minFunc(@(hyp)negloglike_bin(hyp, x_tr, c_tr, kernelfun), theta, options); % Minimize the negative log-likelihood
 
 %% Prediction with the new hyperparameters
-[mu_c,  mu_y, sigma2_y]= prediction_bin(theta, x_tr, c_tr, x_test, kernelfun);
+[mu_c,  mu_y, sigma2_y]= prediction_bin(theta, x_tr, c_tr, x_test, kernelfun, modeltype, [], regularization, link);
 
 subplot(mr,mc,5)
 b = plot_gp(x, mu_y, sigma2_y, C(1,:), linewidth); hold on
