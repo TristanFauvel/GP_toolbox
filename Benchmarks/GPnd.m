@@ -30,16 +30,16 @@ classdef GPnd
             obj.xbounds = repmat([0, 1], D, 1);
            
             if strcmp(kernelname, 'Matern52') || strcmp(kernelname, 'Matern32') 
-               approximation_method = 'RRGP';
+               approximation.method = 'RRGP';
             else
-                approximation_method = 'SSGP';
+                approximation.method = 'SSGP';
             end
             nfeatures = 4096;
             decoupled_bases = 1;
             kernelfun = str2func([kernelname, '_kernelfun']);
             obj.kernelfun = kernelfun;
             obj.kernelname=  kernelname;
-            obj.sample_f = sample_GP(obj.theta, zeros(D,1), [], kernelname, approximation_method, decoupled_bases,nfeatures, kernelfun);
+            obj.sample_f = sample_GP(obj.theta, zeros(D,1), [], obj, approximation);
         end
         function y = do_eval(obj, xx)
             if size(xx,1)~=obj.D

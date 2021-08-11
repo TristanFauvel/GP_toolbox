@@ -41,7 +41,7 @@ for j = 1:N
         ytest = ytest - mean(ytest);
 
         %% Normalize data so that the bound of the search space are 0 and 1.
-        xtrain_norm = (xtrain - lb)./(ub-lb);
+        xtrain_norm = (xtrain -model.lb)./(model.ub - model.lb);
         predictions = prediction(theta, xtrain_norm, ytrain_norm, xtest, kernelfun, meanfun);
         scores(j, i)  = mean((ytest(:) - predictions).^2);
     end

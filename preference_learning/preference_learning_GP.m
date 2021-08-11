@@ -26,7 +26,7 @@ x0 = 0;
 base_kernelname = 'Matern52';
 
 
-kernel_approximation = 'RRGP';
+approximationimation = 'RRGP';
 
 base_kernelfun = @(theta, xi, xj, training, reg) conditioned_kernelfun(theta, original_kernelfun, xi, xj, training, x0, reg);
 % kernelfun = @(theta, xi, xj, training) preference_kernelfun(theta, base_kernelfun, xi, xj, training);
@@ -52,12 +52,16 @@ xtrain= x2d(:,rd_idx);
 ytrain= f(rd_idx);
 ctrain = link(ytrain)>rand(nsamp,1);
 
+model.regularization = 'nugget';
+model.kernelfun = kernelfun;
+model.link = link;
+model.modeltype = modeltype;
 
-[mu_c,  mu_f, sigma2_f] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, kernelfun, modeltype, post, regularization);
-[~,  mu_g, sigma2_g, Sigma2_g] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], kernelfun, modeltype, post, regularization);
+[mu_c,  mu_f, sigma2_f] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, model, post);
+[~,  mu_g, sigma2_g, Sigma2_g] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], model, post);
      
-[mu_c_cond,  mu_f_cond, sigma2_f_cond] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, kernelfun_cond, modeltype, post, regularization);
-[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(d,n^d)], kernelfun_cond, modeltype, post, regularization);
+[mu_c_cond,  mu_f_cond, sigma2_f_cond] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, model, post);
+[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(d,n^d)], model, post);
  
 
 %% Find the true global optimum of g

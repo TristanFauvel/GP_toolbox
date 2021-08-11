@@ -1,4 +1,4 @@
-function [sample_g, dsample_g_dx] = sample_GP_precomputed_features(theta,phi, dphi_dx, xtrain, ytrain, kernelname, decoupled_bases, kernelfun)
+function [sample_g, dsample_g_dx] = sample_GP_precomputed_features(theta,phi, dphi_dx, xtrain, ytrain, model,approximation)
 %% SSGP : Method based on the Sparse-Spectrum GP, Lazaro-Gredilla 2010
 %% RRGP: Method based on the Reduced-Rank GP, Solin 2019
 %D = size(xtrain,1); %dimension
@@ -8,6 +8,10 @@ function [sample_g, dsample_g_dx] = sample_GP_precomputed_features(theta,phi, dp
 
 Phi = phi(xtrain); % n x m
 nfeatures = size(Phi,2);
+
+kernelfun = model.kernelfun;
+kernelname = model.kernelname;
+decoupled_bases = approximation.decoupled_bases;
 
 if decoupled_bases
     noise = 0;
@@ -21,9 +25,9 @@ if decoupled_bases
         sample_g = @(x) sample_prior(x);
         dsample_g_dx = @(x) dprior_dx(x,w, dphi_dx)';        
     else
-        K = kernelfun(theta,xtrain,xtrain, 1);
+        K = kernelfun(theta,xtrain,xtrain, 1, model.regularization);
         v =  (K\(ytrain(:) - sample_prior(xtrain)'+noise))';
-        update =  @(x) v*kernelfun(theta,xtrain,x, 0);
+        update =  @(x) v*kernelfun(theta,xtrain,x, 0, model.regularization);
         sample_g = @(x) sample_prior(x) + update(x);
         dsample_g_dx = @(x) dprior_dx(x,w, dphi_dx)' + dupdate_dx(x, v, theta, xtrain, kernelfun)';
      end

@@ -1,16 +1,18 @@
-function [negL, dnegL] = negloglike_bin(theta, xtrain, ctrain,kernelfun, varargin)
+function [negL, dnegL] = negloglike_bin(theta, xtrain, ctrain, model, varargin)
 % c = 0 or 1
 opts = namevaluepairtostruct(struct( ...
     'tol', 1e-7, ...
-    'MaxIt', 1e3,...
-    'modeltype', 'exp_prop', ...
-    'regularization', 'nugget', ...
-    'link', @normcdf ...
+    'MaxIt', 1e3 ...
     ), varargin);
 
 UNPACK_STRUCT(opts, false)
 
+kernelfun = model.kernelfun;
+modeltype = model.modeltype;
+regularization = model.regularization;
+link = model.link;
 ctrain = ctrain(:);
+
 % covariance and derivative
 if nargout>1
     [K, dK] = kernelfun(theta, xtrain, xtrain, true, regularization);

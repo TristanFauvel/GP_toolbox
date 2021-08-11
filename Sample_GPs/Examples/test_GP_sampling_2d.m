@@ -46,16 +46,16 @@ xtrain = x2d(:,idxtrain);
 ytrain = y(idxtrain)';
 
 theta.mean =0;
-[posterior_mean, posterior_variance, ~, ~, Sigma2_y]=prediction(theta, xtrain, ytrain', xtrain, kernelfun, @constant_mean);
+[posterior_mean, posterior_variance, ~, ~, Sigma2_y]=prediction(theta, xtrain, ytrain', xtrain, model);
 
 m = 10;
 sample_g_x2d = NaN(n^nd, m);
 for i =1:m
-   sample= sample_GP(theta.cov, xtrain, ytrain, kernelname,approximation_method, decoupled_bases, nfeatures, kernelfun);
+   sample= sample_GP(theta.cov, xtrain, ytrain, model, approximation);
  sample_g_x2d(:,i) = sample(x2d);
 end
 
-[posterior_mean, posterior_variance]=prediction(theta, xtrain, ytrain', x2d, kernelfun, @constant_mean);
+[posterior_mean, posterior_variance]=prediction(theta, xtrain, ytrain', x2d, model);
 
 h=figure(2);
 h.Color =  [1 1 1];

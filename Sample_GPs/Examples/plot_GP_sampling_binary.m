@@ -12,24 +12,35 @@ x = linspace(0,1,n);
 gen_kernelfun = @Matern52_kernelfun;
 kernelfun = @Matern52_kernelfun;
 kernelname = 'Matern52';
-approximation_method = 'RRGP';
+approximation.method = 'RRGP';
+link = @normcdf;
 
+modeltype = 'exp_prop';
+post = [];
+regularization = 'nugget';
+ 
+model.regularization = regularization;
+model.kernelfun = kernelfun;
+model.link = link;
+model.modeltype = modeltype;
+model.kernelname = kernelname;
+ 
 % gen_kernelfun = @ARD_kernelfun;
 % kernelfun = @ARD_kernelfun;
 % kernelname = 'ARD';
-% approximation_method = 'SSGP';
+% approximation.method = 'SSGP';
 % 
 % 
 theta.cov = [log(1/10),0];
 theta_gen.cov = theta.cov;
 theta.mean= 0;
 
-Sigma =gen_kernelfun(theta_gen.cov,x,x);
+Sigma =gen_kernelfun(theta_gen.cov, x,x, true, 'nugget');
 
-g =  mvnrnd(constant_mean(x,0), gen_kernelfun(theta_gen.cov, x,x)); %generate a function
+g =  mvnrnd(constant_mean(x,0), gen_kernelfun(theta_gen.cov, x,x, true, 'nugget')); %generate a function
 
 
-figure(); plot(normcdf(g))
+figure(); plot(link(g))
 
 
 graphics_style_paper;
@@ -51,23 +62,22 @@ idx_data = 50:70;
 N = numel(idx_data);
 x_data = x(idx_data);
 y_data = g(idx_data)';
-c_data = normcdf(y_data)>rand(N,1);
+c_data = link(y_data)>rand(N,1);
 hyp = theta.cov;
 
 m=10000;
 fx = NaN(m, n);
-modeltype = 'exp_prop';
-post = [];
-regularization = 'nugget';
 
-[mu_c,  mu_f, sigma2_f, Sigma2_f, ~, ~,~,~,var_muc, ~, post] = prediction_bin(hyp, x_data, c_data, x, kernelfun, modeltype, post, regularization);
+[mu_c,  mu_f, sigma2_f, Sigma2_f, ~, ~,~,~,var_muc, ~, post] = prediction_bin(hyp, x_data, c_data, x, model, post);
 
 D= 1;
 decoupled_bases = 1;
 nfeatures = 256*2;
+approximation.decoupled_bases = 1;
+approximation.nfeatures = nfeatures;
 
 for i =1:m  
-    [gs, dgsdx, decomposition]= sample_binary_GP(theta.cov, x_data, c_data, kernelname, approximation_method, nfeatures, decoupled_bases, kernelfun, modeltype, post);
+    [gs, dgsdx, decomposition]= sample_binary_GP(theta.cov, x_data, c_data, model, approximation, post);
     fx(i, :)=gs(x);
 end
 
@@ -79,18 +89,18 @@ subplot(2,1,1)
 errorshaded(x,mu_c, sqrt(var_muc), 'Color',  cmap(11,:),'LineWidth', linewidth, 'Fontsize', Fontsize); hold on
 box off;
 subplot(2,1,2)
-errorshaded(x,mean(normcdf(fx),1), std(normcdf(fx),1), 'Color',  cmap(11,:),'LineWidth', linewidth, 'Fontsize', Fontsize); hold on
+errorshaded(x,mean(link(fx),1), std(link(fx),1), 'Color',  cmap(11,:),'LineWidth', linewidth, 'Fontsize', Fontsize); hold on
 box off;
 
 fig=figure('units','centimeters','outerposition',1+[0 0 16 1.3/2*16]);
 fig.Color =  [1 1 1];
 subplot(2,1,1)
 plot(x,mu_c,'LineWidth', linewidth); hold on
-plot(x, mean(normcdf(fx),1),'LineWidth', linewidth); hold off
+plot(x, mean(link(fx),1),'LineWidth', linewidth); hold off
 box off;
 subplot(2,1,2)
 plot(x,sqrt(var_muc),'LineWidth', linewidth); hold on
-plot(x,std(normcdf(fx),1),'LineWidth', linewidth); hold off
+plot(x,std(link(fx),1),'LineWidth', linewidth); hold off
 box off;
 
 sqrt(var_muc)
@@ -99,7 +109,7 @@ mc = 4;
 legend_pos = [-0.18,1.0];
 letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-fig=figure('units','centimeters','outerposition',1+[0 0 width height(mr)]);
+fig=figure('units','centimeters','outerposition',1+[0 0 fwidth fheight(mr)]);
 fig.Color =  [1 1 1];
 layout = tiledlayout(mr,mc, 'TileSpacing', 'tight', 'padding','compact');
 i = 0;

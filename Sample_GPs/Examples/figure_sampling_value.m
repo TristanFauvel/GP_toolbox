@@ -22,7 +22,7 @@ x0 = x(:,1);
 modeltype = 'exp_prop'; % Approximation method
 base_kernelfun =  @Matern52_kernelfun;%kernel used within the preference learning kernel, for subject = computer
 base_kernelname = 'Matern52';
-approximation_method = 'RRGP'; %%RRGP
+approximation.method = 'RRGP'; %%RRGP
 theta = [log(1/10),0];
 
 decoupled_bases = 1;
@@ -30,7 +30,7 @@ condition.x0 = 0;
 condition.y0 = 0;
 % base_kernelfun =  @ARD_kernelfun;%kernel used within the preference learning kernel, for subject = computer
 % base_kernelname = 'ARD';
-% approximation_method = 'RRGP';
+% approximation.method = 'RRGP';
 % theta = [5,7];
 % 
 
@@ -57,9 +57,9 @@ ytrain= f(rd_idx);
 ctrain = link(ytrain)>rand(nsamp,1);
 
 
-% [mu_c,  mu_f, sigma2_f] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, kernelfun, modeltype, post, regularization);
+% [mu_c,  mu_f, sigma2_f] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, model, post);
 
-[~,  mu_g, sigma2_g, Sigma2_g, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc, dvar_muc_dx,post] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], kernelfun, modeltype, post, regularization);
+[~,  mu_g, sigma2_g, Sigma2_g, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc, dvar_muc_dx,post] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], model, post);
 mu_g = -mu_g; %(because prediction_bin considers P(x1 > x2);
 
 
@@ -76,7 +76,7 @@ updates = NaN(nsamps, n);
 D = 1;
 nfeatures = 64;
 for j = 1:nsamps
-    [sample_f, samples_g(j,:), decomposition] = sample_preference_GP(x, theta, xtrain, ctrain, base_kernelname, kernelfun, modeltype, approximation_method,decoupled_bases, base_kernelfun, nfeatures, condition, post);
+    [sample_f, samples_g(j,:), decomposition] = sample_preference_GP(x, theta, xtrain, ctrain, base_kernelname,model, approximation.method,decoupled_bases, base_kernelfun, nfeatures, condition, post);
     samples_prior(j,:) = decomposition.sample_prior(x);
     updates(j,:) = decomposition.update_2([x;x0.*ones(D,size(x,2))]);
     samples_f(j,:) = sample_f;

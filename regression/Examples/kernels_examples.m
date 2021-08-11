@@ -6,22 +6,22 @@ letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 % Prior mean of the gaussian process
 meanfun= @constant_mean;
-
+regularization = 'nugget';
 theta.cov = [3,0];
 theta.mean = 0;
-Kard = ARD_kernelfun(theta.cov,x,x);
+Kard = ARD_kernelfun(theta.cov,x,x, true, regularization);
 mu_y_ard = constant_mean(x,theta.mean);
 sigma2_y_ard = diag(Kard);
  sample_ard = mvnrnd(mu_y_ard, Kard);
 
 theta.cov = [0,0,-3];
-Klin = linear_kernelfun(theta.cov,x,x);
+Klin = linear_kernelfun(theta.cov,x,x, true, regularization);
 mu_y_lin = constant_mean(x,theta.mean);
 sigma2_y_lin = diag(Klin);
  sample_lin = mvnrnd(mu_y_lin, Klin);
 
 theta.cov = [0,0,0.4];
-Kper= periodic_kernelfun(theta.cov,x,x);
+Kper= periodic_kernelfun(theta.cov,x,x, true, regularization);
 mu_y_per = constant_mean(x,theta.mean);
 sigma2_y_per = diag(Kper);
 sample_per = mvnrnd(mu_y_per, Kper);

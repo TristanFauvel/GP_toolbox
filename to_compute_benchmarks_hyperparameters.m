@@ -41,7 +41,7 @@ for j = 1:N
            error('ouput_size') 
         end
         %% Normalize data so that the bound of the search space are 0 and 1.
-        xtrain_norm = (xtrain - lb)./(ub-lb);
+        xtrain_norm = (xtrain -model.lb)./(model.ub - model.lb);
         ytrain_norm = ytrain - mean(ytrain);
 
         %Compute the maximum of the value function according to the model

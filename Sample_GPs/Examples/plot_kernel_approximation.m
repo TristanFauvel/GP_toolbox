@@ -19,36 +19,39 @@ x = linspace(0,1,n);
 
 x0 = 0.5;
 
-K = kernelfun(theta,x0,x);
+regularization = 'nugget';
+K = kernelfun(theta,x0,x, true, regularization);
 
 figure();
-imagesc(kernelfun(theta,x,x));
+imagesc(kernelfun(theta,x,x, true, regularization));
 
-m = 4;
-phi = sample_features_GP(theta, D, kernelname, method, m);
+approximation.nfeatures = m;
+approximation.method = method;
+
+phi = sample_features_GP(theta, D, model, approximation);
 K1 = phi(x0)*phi(x)';
 
-m = 8;
-phi = sample_features_GP(theta, D, kernelname, method, m);
+approximation.nfeatures  = 8;
+phi = sample_features_GP(theta, D, kernelname,approximation);
 K2 = phi(x0)*phi(x)';
 
-m = 16;
-phi = sample_features_GP(theta, D, kernelname, method, m);
+approximation.nfeatures  = 16;
+phi = sample_features_GP(theta, D, model, approximation);
 K3 = phi(x0)*phi(x)';
 
-m = 32;
-phi = sample_features_GP(theta, D, kernelname, method, m);
+approximation.nfeatures = 32;
+phi = sample_features_GP(theta, D, model, approximation);
 K4 = phi(x0)*phi(x)';
 
-m = 64;
-phi = sample_features_GP(theta, D, kernelname, method, m);
+approximation.nfeatures = 64;
+phi = sample_features_GP(theta, D, model, approximation);
 K5 = phi(x0)*phi(x)';
 
 mr = 1;
 mc = 4;
 legend_pos = [0.02,1];
 
-fig=figure('units','centimeters','outerposition',1+[0 0 width height(mr)]);
+fig=figure('units','centimeters','outerposition',1+[0 0 fwidth fheight(mr)]);
 fig.Color =  [1 1 1];
 layout = tiledlayout(mr,mc, 'TileSpacing', 'tight', 'padding','compact');
 i = 0;
@@ -124,7 +127,7 @@ set(gca,'xticklabel',{[num2str(ticks(1)),'$\lambda$'], '0', [num2str(ticks(2)),'
 title('$m = 64$', 'Fontsize', Fontsize)
 
 
-figname  = 'Kernel_approximation';
+figname  = 'approximationimation';
 folder = [figure_path,figname];
 savefig(fig, [folder,'/', figname, '.fig'])
 exportgraphics(fig, [folder,'/' , figname, '.pdf']);

@@ -25,23 +25,23 @@ x0 = [0.5;0.5];
 K = kernelfun(theta,x0,x);
 
 m = 4;
-phi = sample_features_GP(theta, D, kernelname, method, m);
+phi = sample_features_GP(theta, D, model, approximation);
 K1 = phi(x0)*phi(x)';
 
 m = 8;
-phi = sample_features_GP(theta, D, kernelname, method, m);
+phi = sample_features_GP(theta, D, model, approximation);
 K2 = phi(x0)*phi(x)';
 
 m = 16;
-phi = sample_features_GP(theta, D, kernelname, method, m);
+phi = sample_features_GP(theta, D, model, approximation);
 K3 = phi(x0)*phi(x)';
 
 m = 32;
-phi = sample_features_GP(theta, D, kernelname, method, m);
+phi = sample_features_GP(theta, D, model, approximation);
 K4 = phi(x0)*phi(x)';
 
 m = 64;
-phi = sample_features_GP(theta, D, kernelname, method, m);
+phi = sample_features_GP(theta, D, model, approximation);
 K5 = phi(x0)*phi(x)';
 
 mr = 1;
@@ -111,9 +111,9 @@ title('$m = 64$', 'Fontsize', Fontsize)
 pbaspect([1 1 1])
 
 
-figname  = 'Kernel_approximation';
+figname  = 'approximationimation';
 folder = [figure_path,figname];
-figname  = 'Kernel_approximation_2D';
+figname  = 'approximationimation_2D';
 
 savefig(fig, [folder,'/', figname, '.fig'])
 exportgraphics(fig, [folder,'/' , figname, '.pdf']);

@@ -3,7 +3,7 @@ kernelfun = @Gaussian_kernelfun;
 n=100;
 x= linspace(0,1,n);
 theta= [5,3];
-K = Gaussian_kernelfun(theta,x,x);
+K = Gaussian_kernelfun(thetax,x, true, 'nugget');
 y = mvnrnd(zeros(1,n),K);
 p= normcdf(2*y-1);
 % 

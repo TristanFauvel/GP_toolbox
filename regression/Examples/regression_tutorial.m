@@ -27,13 +27,15 @@ y_tr = y(:, i_tr);
 
 sample_prior = mvnrnd(mu_y_ard, Kard);
 
-
-[mu_y, sigma2_y,dmu_dx, sigma2_dx, Sigma2_y, dSigma2_dx, post] = prediction(theta, x_tr, y_tr, x, kernelfun, meanfun, [], regularization); 
+model.kernelfun = kernelfun;
+model.meanfun = meanfun;
+model.regularization = regularization;
+[mu_y, sigma2_y,dmu_dx, sigma2_dx, Sigma2_y, dSigma2_dx, post] = prediction(theta, x_tr, y_tr, x, model, []); 
 sample_post = mvnrnd(mu_y, Sigma2_y);
 
 theta_w = theta;
 theta_w.cov = [4,3];
-[mu_y_w, sigma2_y_w,~,~, Sigma2_y_w] = prediction(theta_w, x_tr, y_tr, x, kernelfun, meanfun, [], regularization);
+[mu_y_w, sigma2_y_w,~,~, Sigma2_y_w] = prediction(theta_w, x_tr, y_tr, x, model, []);
 sample_post_w = mvnrnd(mu_y, Sigma2_y);
 
 mr = 1;

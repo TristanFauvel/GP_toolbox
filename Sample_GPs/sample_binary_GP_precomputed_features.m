@@ -1,15 +1,17 @@
-function [sample_g, dsample_g_dx, decomposition] = sample_binary_GP_precomputed_features(phi, dphi_dx, xtrain, ctrain, theta,kernelfun, decoupled_bases, modeltype, post)
+function [sample_g, dsample_g_dx, decomposition] = sample_binary_GP_precomputed_features(phi, dphi_dx, xtrain, ctrain, theta, model, approximation, post)
 %% SSGP : Method based on the Sparse-Spectrum GP, Lazaro-Gredilla 2010
 %% RRGP: Method based on the Reduced-Rank GP, Solin 2019
 
 % xtrain : (2*dimension)*n
 %ytrain : n x 1
-regularization = 'nugget';
+decoupled_bases = approximation.decoupled_bases;
+kernelfun = model.kernelfun;
+regularization = model.regularization;
 
 if isempty(post)
-[~,  mu_y, ~, Sigma2_y,~,~,~,~,~,~,post] =prediction_bin(theta, xtrain, ctrain, xtrain, kernelfun, modeltype, post, regularization);
+[~,  mu_y, ~, Sigma2_y,~,~,~,~,~,~,post] =prediction_bin(theta, xtrain, ctrain, xtrain, model, post);
 else
-    [~,  mu_y, ~, Sigma2_y] =prediction_bin(theta, xtrain, ctrain, xtrain, kernelfun, modeltype, post, regularization);
+    [~,  mu_y, ~, Sigma2_y] =prediction_bin(theta, xtrain, ctrain, xtrain, model, post);
 end
 
 Sigma2_y = nugget_regularization(Sigma2_y);

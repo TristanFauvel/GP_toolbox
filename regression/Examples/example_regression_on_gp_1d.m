@@ -31,7 +31,7 @@ theta_true = [1;2;0];
 
 x = linspace(0,5,n);
 
-y = mvnrnd(meanfun(x,0), kernelfun(theta_true, x,x));
+y = mvnrnd(meanfun(x,0), kernelfun(theta_truex,x, true, 'nugget'));
 
 
 h=figure(1);

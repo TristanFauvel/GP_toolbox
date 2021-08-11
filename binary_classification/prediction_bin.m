@@ -1,5 +1,9 @@
-function [output1,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc, dvar_muc_dx,post] =  prediction_bin(theta, xtrain, ctrain, xtest, kernelfun, modeltype, post, regularization, link)
+function [output1,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc, dvar_muc_dx,post] =  prediction_bin(theta, xtrain, ctrain, xtest, model, post)
 % mu_c corresponds to P(x1 > x2)
+kernelfun = model.kernelfun;
+modeltype = model.modeltype;
+regularization = model.regularization;
+link = model.link;
 
 if ~isempty(xtest) && size(xtrain,1) ~= size(xtest,1)
     error("Dimensions of test and training sets are not consistent")
@@ -97,6 +101,7 @@ if strcmp(modeltype, 'laplace')
         post.invKS = invKS;
         post.invS = invS;
         post.dloglike =  dloglike; 
+        post.D = D;
     else
         ystar = post.ystar;
         invKS = post.invKS;

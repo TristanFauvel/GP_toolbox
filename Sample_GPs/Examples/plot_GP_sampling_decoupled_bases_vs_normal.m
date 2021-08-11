@@ -20,9 +20,9 @@ theta.cov = [-2*log(0.1),0];
 lengthscale = exp(-theta.cov(1)/2);
 
 
-Sigma =kernelfun(theta.cov,x,x);
+Sigma =kernelfun(theta.cov,x,x, true, 'nugget');
 
-g =  mvnrnd(constant_mean(x,0), kernelfun(theta.cov, x,x)); %generate a function
+g =  mvnrnd(constant_mean(x,0), kernelfun(theta.cov, x,x, true, 'nugget')); %generate a function
 
 sigma = 0;
 y = g + sigma*randn(1,n); %add measurement noise
@@ -58,7 +58,7 @@ m=1000;
 fx_0 = NaN(m, n);
 fx_1 = NaN(m, n);
 
-[mu_y, sigma2_y, ~,~, Sigma2_y]=prediction(theta, xtrain, ytrain', xtrain, kernelfun, @constant_mean);
+[mu_y, sigma2_y, ~,~, Sigma2_y]=prediction(theta, xtrain, ytrain', xtrain, model, []);
 
 % D= 1;
 % [phi, dphi_dx] = sample_features_GP(theta.cov, D, kernelname,'RRGP');
@@ -75,11 +75,19 @@ fx_1 = NaN(m, n);
 % end
 nfeatures = 3*256;
 D = 1;
-kernel_approximation= 'RRGP';
+ 
+approximation1.decoupled_bases = 0;
+approximation1.nfeatures = nfeatures;
+approximation1.method = 'RRGP';
+
+approximation2.decoupled_bases = 1;
+approximation2.nfeatures = nfeatures;
+approximation2.method = 'RRGP';
+
 for i =1:m  
-    gs = sample_GP(theta.cov, xtrain, ytrain, kernelname,kernel_approximation, 0, nfeatures, kernelfun);
+    gs = sample_GP(theta.cov, xtrain, ytrain, model, approximation1);
     fx_0(i, :)=gs(x);
-    gs = sample_GP(theta.cov, xtrain, ytrain, kernelname,kernel_approximation, 1, nfeatures, kernelfun);
+    gs = sample_GP(theta.cov, xtrain, ytrain, model, approximation2);
     fx_1(i, :)=gs(x);
 end
 
@@ -89,7 +97,7 @@ end
 % figure();
 % plot(fx_ssgp')
 % 
-[posterior_mean, posterior_variance, ~, ~, Posterior_cov]=prediction(theta, xtrain, ytrain', x, kernelfun, @constant_mean);
+[posterior_mean, posterior_variance, ~, ~, Posterior_cov]=prediction(theta, xtrain, ytrain', x, model, []);
 
 xticks = [0,0.5,1];
 xticks = [x(1), x(end)];
@@ -101,7 +109,7 @@ legend_pos = [0,1.05];
 letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 x0 = 0.5;
 
-fig=figure('units','centimeters','outerposition',1+[0 0 width height(mr)]);
+fig=figure('units','centimeters','outerposition',1+[0 0 fwidth fheight(mr)]);
 fig.Color =  [1 1 1];
 layout = tiledlayout(mr,mc, 'TileSpacing', 'tight', 'padding','compact');
 i = 0;

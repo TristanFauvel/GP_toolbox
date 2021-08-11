@@ -25,12 +25,12 @@ xtrain = x(:,i_tr);
 ytrain = y(:, i_tr);
 
 
-[mu_y, sigma2_y,dmu_dx, sigma2_dx, Sigma2_y, dSigma2_dx, post] = prediction(theta, xtrain, ytrain, x, kernelfun, meanfun, [], regularization); 
+[mu_y, sigma2_y,dmu_dx, sigma2_dx, Sigma2_y, dSigma2_dx, post] = prediction(theta, xtrain, ytrain, x, model, []); 
 sample_post = mvnrnd(mu_y, Sigma2_y);
 
 theta_w = theta;
 theta_w.cov = [4,3];
-[mu_y_w, sigma2_y_w,~,~, Sigma2_y_w] = prediction(theta_w, xtrain, ytrain, x, kernelfun, meanfun, [], regularization);
+[mu_y_w, sigma2_y_w,~,~, Sigma2_y_w] = prediction(theta_w, xtrain, ytrain, x, model, []);
 sample_post_w = mvnrnd(mu_y_w, Sigma2_y_w);
 
 
@@ -46,7 +46,7 @@ theta_ub = 10*ones(1,2);
 options_theta.method = 'lbfgs';
 hyp.cov = multistart_minConf(@(hyp)minimize_negloglike(hyp, xtrain, ytrain, kernelfun, meanfun, ncov_hyp, nmean_hyp, update), [theta_lb,0], [theta_ub,0],10, [], options_theta);
 hyp.cov = hyp.cov(1:2);
-[mu_y_ml, sigma2_y_ml,~,~, Sigma2_y_ml] = prediction(hyp, xtrain, ytrain, x, kernelfun, meanfun, [], regularization);
+[mu_y_ml, sigma2_y_ml,~,~, Sigma2_y_ml] = prediction(hyp, xtrain, ytrain, x, model, []);
 sample_post_ml = mvnrnd(mu_y_ml, Sigma2_y_ml);
 
 

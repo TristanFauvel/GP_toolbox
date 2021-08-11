@@ -16,10 +16,10 @@ kernelname = 'Matern52';
 theta.cov = [log(1/10),0];
 theta_gen.cov = theta.cov;
 theta.mean= 0;
+regularization = 'nugget';
+Sigma =gen_kernelfun(theta_gen.cov,x,x, true, regularization);
 
-Sigma =gen_kernelfun(theta_gen.cov,x,x);
-
-g =  mvnrnd(constant_mean(x,0), gen_kernelfun(theta_gen.cov, x,x)); %generate a function
+g =  mvnrnd(constant_mean(x,0), gen_kernelfun(theta_gen.cov, x,x, true, regularization)); %generate a function
 
 sigma = 0;
 y = g + sigma*randn(1,n); %add measurement noise
@@ -46,30 +46,42 @@ hyp = theta.cov;
 
 m=1000;
 fx = NaN(m, n);
-[posterior_mean, posterior_variance, ~,~, Sigma2_y]=prediction(theta, x_data, y_data', x_data, kernelfun, @constant_mean);
+
+model.regularization = 'nugget';
+model.kernelfun = kernelfun;
+model.meanfun = @constant_mean;
+
+model.kernelname = kernelname;
+post = [];
+
+[posterior_mean, posterior_variance, ~,~, Sigma2_y]=prediction(theta, x_data, y_data', x_data, model, post);
 
 D= 1;
-nfeatures = 256;
-[phi, dphi_dx] = sample_features_GP(theta.cov, D, kernelname,'RRGP',nfeatures);
+approximation.nfeatures = 256;
+
+approximation.method = 'RRGP';
+approximation.nfeatures = nfeatures;
+
+[phi, dphi_dx] = sample_features_GP(theta.cov, D, model, approximation);
 phix = phi(x_data);
 nfeatures = size(phix,2);
 for i =1:m  
     w =randn(nfeatures,1);
     sample_prior = @(x) (phi(x)*w)';
     noise =  sigma*randn(N,1);
-    K = kernelfun(theta.cov,x_data,x_data, 1);
-    update =  @(x) (K\(y_data - sample_prior(x_data)'+noise))'*kernelfun(theta.cov,x_data,x, 0);
+    K = kernelfun(theta.cov,x_data,x_data, true, regularization);
+    update =  @(x) (K\(y_data - sample_prior(x_data)'+noise))'*kernelfun(theta.cov,x_data,x, true, regularization);
     posterior = @(x) sample_prior(x) + update(x);
     fx(i, :)=posterior(x);
 end
 
-
+approximation.decoupled_bases = 1;
 for i =1:m  
-    [gs dgsdx]=  sample_GP(hyp, x_data, y_data, kernelname, 'RRGP',  1, nfeatures,kernelfun) ;
+    [gs dgsdx]=  sample_GP(hyp, x_data, y_data, model, approximation) ;
     fx(i, :)=gs(x);
 end
 
-[posterior_mean, posterior_variance, ~, ~, Posterior_cov]=prediction(theta, x_data, y_data', x, kernelfun, @constant_mean);
+[posterior_mean, posterior_variance, ~, ~, Posterior_cov]=prediction(theta, x_data, y_data', x, model, post);
 
 
 mr = 1;
@@ -77,7 +89,7 @@ mc = 3;
 legend_pos = [-0.1,1.0];
 letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-fig=figure('units','centimeters','outerposition',1+[0 0 width height(mr)]);
+fig=figure('units','centimeters','outerposition',1+[0 0 fwidth fheight(mr)]);
 fig.Color =  [1 1 1];
 layout = tiledlayout(mr,mc, 'TileSpacing', 'tight', 'padding','compact');
 i = 0;

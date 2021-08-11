@@ -1,4 +1,8 @@
-function [output1, sigma2_y,dmu_dx, dsigma2_dx, Sigma2_y, dSigma2_dx, post] =  prediction(theta, xtrain, ytrain, xtest, kernelfun, meanfun, post, regularization)
+function [output1, sigma2_y,dmu_dx, dsigma2_dx, Sigma2_y, dSigma2_dx, post] =  prediction(theta, xtrain, ytrain, xtest, model, post)
+
+regularization = model.regularization;
+kernelfun = model.kernelfun;
+meanfun = model.meanfun;
 
 if  isempty(post) || nargout == 7
     clear('post')

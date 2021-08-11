@@ -48,8 +48,8 @@ y_tr = y(:, i_tr);
 x_test = x;
 y_test = y;
 
-x_norm = (x_tr - lb)./(ub-lb);
-x_test_norm = (x_test - lb)./(ub-lb);
+x_norm = (x_tr model.lb)./(model.ub - model.lb);
+x_test_norm = (x_test model.lb)./(model.ub - model.lb);
 mean_y = mean(y_tr);
 y_norm = y_tr - mean_y;
 

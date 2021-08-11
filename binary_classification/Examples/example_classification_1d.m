@@ -42,7 +42,7 @@ y_test = y;
 theta =theta_true ; 
 
 % Compute the predictive distribution
-[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx,var_muc, dvar_muc_dx]= prediction_bin(theta, x_tr, c_tr, x_test, kernelfun, modeltype, post, regularization, link);
+[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx,var_muc, dvar_muc_dx]= prediction_bin(theta, x_tr, c_tr, x_test, model, post, link);
 
 
 %% Plotting !
@@ -80,7 +80,7 @@ title('True hyperparameters');
 % GP classification with the wrong hyperparameters
 theta = rand(size(theta_true));
 
-[mu_c,  mu_y, sigma2_y]= prediction_bin(theta, x_tr, c_tr, x_test, kernelfun, modeltype, post, regularization, link);
+[mu_c,  mu_y, sigma2_y]= prediction_bin(theta, x_tr, c_tr, x_test, model, post, link);
 
 subplot(mr,mc,3)
 b = plot_gp(x, mu_y, sigma2_y, C(1,:), linewidth); hold on
@@ -111,7 +111,7 @@ options=[];
 theta = minFunc(@(hyp)negloglike_bin(hyp, x_tr, c_tr, kernelfun), theta, options); % Minimize the negative log-likelihood
 
 %% Prediction with the new hyperparameters
-[mu_c,  mu_y, sigma2_y]= prediction_bin(theta, x_tr, c_tr, x_test, kernelfun, modeltype, [], regularization, link);
+[mu_c,  mu_y, sigma2_y]= prediction_bin(theta, x_tr, c_tr, x_test, model, post, link);
 
 subplot(mr,mc,5)
 b = plot_gp(x, mu_y, sigma2_y, C(1,:), linewidth); hold on

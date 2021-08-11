@@ -11,7 +11,7 @@ letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 link = @normcdf; %inverse link function
 
 %% Define the range of parameters
-n = 100; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%100
+n = 30; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%100
 x = linspace(0,1, n);
 d =1;
 ntr = 5;
@@ -19,7 +19,7 @@ ntr = 5;
 [p,q]= meshgrid(x);
 x2d = [p(:), q(:)]';
 
-approximation_methodn = 'RRGP';
+approximation.methodn = 'RRGP';
 
 modeltype = 'exp_prop'; % Approximation method
 base_kernelfun =  @Matern52_kernelfun;%kernel used within the preference learning kernel, for subject = computer
@@ -35,15 +35,15 @@ condition.x0 = x(b);
 condition.y0 = 0;
 x0 = condition.x0;
 
-kernelfun = @(theta, xi, xj, training) conditional_preference_kernelfun(theta, base_kernelfun, xi, xj, training, 'no', condition.x0);
+kernelfun = @(theta, xi, xj, training, regularization) conditional_preference_kernelfun(theta, base_kernelfun, xi, xj, training, 'no', condition.x0);
 % kernelfun = @(theta, xi, xj, training) preference_kernelfun(theta, base_kernelfun, xi, xj, training); %%%%%%%%%%%%%%%%%%%%%%%%%%
 link = @normcdf; %inverse link function for the classification model
 
 % gfunc = @(x) forretal08(x)/10;
 % gfunc = @(x) normpdf(x, 0.5, 0.2);
 % g = gfunc(x)-gfunc(x0);
-
-g = mvnrnd(zeros(1,n),conditioned_kernelfun(theta, base_kernelfun, x, x, 'false', condition.x0));
+regularization = 'nugget';
+g = mvnrnd(zeros(1,n),conditioned_kernelfun(theta, base_kernelfun, x, x, 'false', condition.x0, regularization));
 
 % figure(); plot(g);
 
@@ -56,10 +56,19 @@ xtrain= x2d(:,rd_idx);
 ytrain= f(rd_idx);
 ctrain = link(ytrain)>rand(nsamp,1);
 
+model.regularization = 'nugget';
+model.kernelfun = kernelfun;
+model.link = link;
+model.modeltype = modeltype;
+model.kernelname = base_kernelname;
+model.condition = condition;
+model.base_kernelfun = base_kernelfun;
 
-[mu_c,  mu_f, sigma2_f, Sigma2_f] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, kernelfun, modeltype, post, regularization);
+post = [];
 
-[~,  mu_g, sigma2_g, Sigma2_g ,~, ~, ~, ~, ~, ~, post] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], kernelfun, modeltype, post, regularization);
+[mu_c,  mu_f, sigma2_f, Sigma2_f] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, model, post);
+
+[~,  mu_g, sigma2_g, Sigma2_g ,~, ~, ~, ~, ~, ~, post] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], model, post);
 
 mu_g = -mu_g; %(because prediction_bin considers P(x1 > x2);
 
@@ -78,8 +87,13 @@ updates = NaN(nsamps, n);
 D = 1;
 nfeatures = 128;
 decoupled_bases = 1;
+
+approximation.method= 'RRGP';
+approximation.nfeatures = nfeatures;
+approximation.decoupled_bases = decoupled_bases;
+
 for j = 1:nsamps
-    [sample_f, samples_g(j,:), decomposition] = sample_preference_GP(x, theta, xtrain, ctrain, base_kernelname, kernelfun, modeltype, approximation_methodn,decoupled_bases, base_kernelfun, nfeatures, condition, post);
+    [sample_f, samples_g(j,:), decomposition] = sample_preference_GP(x, theta, xtrain, ctrain, model, approximation, post);
     samples_f(j,:) = sample_f;
 end
 
@@ -247,8 +261,8 @@ imagesc(crosscov-Sigma2_f)
 pbaspect([1,1,1])
 colorbar
 
-approximation_method= 'RRGP';
-[sample_g, dsample_g_dx, decomposition] = sample_value_GP(theta, xtrain, ctrain, base_kernelname, kernelfun, decoupled_bases, modeltype, approximation_method, base_kernelfun, nfeatures, post, condition);
+
+[sample_g, dsample_g_dx, decomposition] = sample_value_GP(theta, xtrain, ctrain, model, approximation, post);
 
 
 dF = NaN(1,n);

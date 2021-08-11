@@ -21,9 +21,9 @@ theta.cov = [-2*log(0.1),0];
 lengthscale = exp(-theta.cov(1)/2);
 
 
-Sigma =kernelfun(theta.cov,x,x);
-
-g =  mvnrnd(constant_mean(x,0), kernelfun(theta.cov, x,x)); %generate a function
+Sigma =kernelfun(theta.cov,x,x, true, 'regularization');
+regularization = 'nugget';
+g =  mvnrnd(constant_mean(x,0), kernelfun(theta.cov, x,x, true, regularization)); %generate a function
 
 sigma = 0;
 y = g + sigma*randn(1,n); %add measurement noise
@@ -56,7 +56,7 @@ m=1000;
 fx_rrgp = NaN(m, n);
 fx_ssgp = NaN(m, n);
 
-% [posterior_mean, posterior_variance, ~,~, Sigma2_y]=prediction(theta, xtrain, ytrain', xtrain, kernelfun, @constant_mean);
+% [posterior_mean, posterior_variance, ~,~, Sigma2_y]=prediction(theta, xtrain, ytrain', xtrain, model);
 
 % D= 1;
 % [phi, dphi_dx] = sample_features_GP(theta.cov, D, kernelname,'RRGP');
@@ -71,12 +71,23 @@ fx_ssgp = NaN(m, n);
 %     posterior = @(x) sample_prior(x) + update(x);
 %     fx(i, :)=posterior(x);
 % end
-nfeatures = 256;
+model.regularization = 'nugget';
+model.kernelfun = kernelfun;
+model.meanfun = @constant_mean;
+ model.kernelname = kernelname;
+ 
+approximation1.method = 'RRGP';
+approximation1.approximation.nfeatures = 256;
+approximation1.decoupled_bases = 1;
+
+approximation2.method = 'SSGP';
+approximation2.approximation.nfeatures = 256;
+approximation2.decoupled_bases = 1;
 D = 1;
 for i =1:m  
-    gs=  sample_GP(theta.cov, xtrain, ytrain, kernelname,'RRGP', decoupled_bases, nfeatures, kernelfun);
+    gs=  sample_GP(theta.cov, xtrain, ytrain, model, approximation1);
     fx_rrgp(i, :)=gs(x);
-    gs = sample_GP(theta.cov, xtrain, ytrain, kernelname,'SSGP', decoupled_bases, nfeatures, kernelfun);
+    gs = sample_GP(theta.cov, xtrain, ytrain, model, approximation2);
     fx_ssgp(i, :)=gs(x);
 
 end
@@ -87,7 +98,7 @@ end
 % figure();
 % plot(fx_ssgp')
 % 
-[posterior_mean, posterior_variance, ~, ~, Posterior_cov]=prediction(theta, xtrain, ytrain', x, kernelfun, @constant_mean);
+[posterior_mean, posterior_variance, ~, ~, Posterior_cov]=prediction(theta, xtrain, ytrain', x, model, []);
 
 xticks = [0,0.5,1];
 xticks = [x(1), x(end)];
@@ -99,7 +110,7 @@ legend_pos = [0.05,1.04];
 letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 x0 = 0.5;
 
-fig=figure('units','centimeters','outerposition',1+[0 0 width height(mr)]);
+fig=figure('units','centimeters','outerposition',1+[0 0 fwidth fheight(mr)]);
 fig.Color =  [1 1 1];
 layout = tiledlayout(mr,mc, 'TileSpacing', 'tight', 'padding','compact');
 i = 0;
@@ -145,10 +156,10 @@ text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalize
 set(gca, 'Ylim', ylim,'Fontsize', Fontsize);
 title('RRGP')
 
-K1 = kernelfun(theta.cov, x0,x);
-phi = sample_features_GP(theta.cov, D, kernelname, 'SSGP', nfeatures); 
+K1 = kernelfun(theta.cov, x0,x, true, regularization);
+phi = sample_features_GP(theta.cov, D, model, approximation1); 
 K2 = phi(x0)*phi(x)';
-phi = sample_features_GP(theta.cov, D, kernelname, 'RRGP',nfeatures);
+phi = sample_features_GP(theta.cov, D, model, approximation2);
 K3 = phi(x0)*phi(x)';
 
 ylim = [-0.1,1];

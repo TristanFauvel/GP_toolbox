@@ -1,15 +1,19 @@
-function [sample_g, dsample_g_dx, decomposition] = sample_value_GP_precomputed_features(phi, dphi_dx, phi_pref, dphi_pref_dx, xtrain, ctrain, theta,kernelfun, decoupled_bases, modeltype, base_kernelfun, post, condition)
+function [sample_g, dsample_g_dx, decomposition] = sample_value_GP_precomputed_features(phi, dphi_dx, phi_pref, dphi_pref_dx, xtrain, ctrain, theta, model, approximation, post)
 %% SSGP : Method based on the Sparse-Spectrum GP, Lazaro-Gredilla 2010
 %% RRGP: Method based on the Reduced-Rank GP, Solin 2019
 D = (size(xtrain,1))/2; %dimension
 % xtrain : (2*dimension)*n
 %y_data : n x 1
+regularization = model.regularization;
+condition = model.condition;
+decoupled_bases = approximation.decoupled_bases;
+base_kernelfun = model.base_kernelfun;
+kernelfun = model.kernelfun;
 
-regularization = 'nugget';
 if isempty(post)
-[~,  mu_y, ~, Sigma2_y,~,~,~,~,~,~,post] =prediction_bin(theta, xtrain, ctrain, xtrain, kernelfun, modeltype, post, regularization);
+    [~,  mu_y, ~, Sigma2_y,~,~,~,~,~,~,post] =prediction_bin(theta, xtrain, ctrain, xtrain, model, post);
 else
-    [~,  mu_y, ~, Sigma2_y] =prediction_bin(theta, xtrain, ctrain, xtrain, kernelfun, modeltype, post, regularization);
+    [~,  mu_y, ~, Sigma2_y] =prediction_bin(theta, xtrain, ctrain, xtrain, model, post);
 end
 
 Sigma2_y = nugget_regularization(Sigma2_y);
@@ -25,35 +29,35 @@ if isfield(condition, 'y0')
     end
     %base_kernelfun is the base kernel, without conditioning.
     w =randn(nfeatures,1);
-
+    
     sample_prior = @(x) (phi(x)*w)';
-
+    
     K = base_kernelfun(theta,condition.x0, condition.x0, 'true', regularization);
-
+    
     v1 =  (K\(condition.y0 - sample_prior(condition.x0)'))';
     update_1 =  @(x) v1*base_kernelfun(theta,condition.x0,x, 0, regularization);
-
+    
     cond_sample_prior = @(x) sample_prior(x) + update_1(x);
-     cond_sample_prior_pref = @(x) cond_sample_prior(x(1:D,:)) - cond_sample_prior(x(D+1:end,:));
-
+    cond_sample_prior_pref = @(x) cond_sample_prior(x(1:D,:)) - cond_sample_prior(x(D+1:end,:));
+    
     K = post.K;
     v2 =  (K\(y_data - cond_sample_prior_pref(xtrain)'))';
     update_2 =  @(x) v2*kernelfun(theta,xtrain,x, 0, regularization);
     sample_g = @(x) cond_sample_prior(x) + update_2([x;condition.x0.*ones(D,size(x,2))]);
-    dsample_g_dx = @(x) dcond_prior_dx(x, D, w, v1, dphi_dx, base_kernelfun, theta, xtrain, condition.x0, regularization) + dupdate_dx(x, x0, D, v2, theta, xtrain, kernelfun, regularization); % Dxntest
-
-
+    dsample_g_dx = @(x) dcond_prior_dx(x, D, w, v1, dphi_dx, base_kernelfun, theta, condition.x0, regularization) + dupdate_dx(x, x0, D, v2, theta, xtrain, kernelfun, regularization); % Dxntest
+    
+    
     decomposition.update_1 = update_1;
     decomposition.update_2 = update_2;
     decomposition.sample_prior = sample_prior;
     decomposition.cond_sample_prior = cond_sample_prior;
-
+    
 else
-%     warning('There is no conditioning on the value function offset')
+    %     warning('There is no conditioning on the value function offset')
     if decoupled_bases
         w =randn(nfeatures,1);
         sample_prior = @(x) (phi_pref(x)*w)';
-
+        
         v =  (post.K\(y_data - sample_prior(xtrain)'))';
         update =  @(x) v*kernelfun(theta,xtrain,x, 0, regularization);
         sample_g = @(x) sample_prior([x;x0.*ones(D,size(x,2))]) + update([x;x0.*ones(D,size(x,2))]);
@@ -84,7 +88,7 @@ function dpdx = dprior_dx(x, x0, D,w, dphi_pref_dx)
 dpdx =dphi_pref_dx([x;x0.*ones(D,size(x,2))])*w; %D x n
 end
 
-function dpdx = dcond_prior_dx(x, D, w, v1, dphi_dx, base_kernelfun, theta, xtrain,x0, regularization)
+function dpdx = dcond_prior_dx(x, D, w, v1, dphi_dx, base_kernelfun, theta, x0, regularization)
 if size(x,2) >1
     error('Derivative only implemented for size(x,2) == 1')
 end
@@ -93,17 +97,7 @@ if ~ (isequal(size(dkdx), [1, 1, 1, D])  || isequal(size(dkdx), [1, 1]))
     error('Error in the kernel derivative dimensions')
 end
 dkdx = squeeze(dkdx)';
-%dphi_dx : nfeatures x D
-% if D >1
-    dpdx = dphi_dx(x)'*w + mtimesx(v1,dkdx)';
-% else
-%     if strcmp(func2str(base_kernelfun), 'ARD_kernelfun')
-%             dpdx = dphi_dx(x)*w + mtimesx(v1,dkdx)';
-%
-%     else
-%     dpdx = dphi_dx(x)'*w + mtimesx(v1,dkdx)';
-%     end
-% end
+dpdx = dphi_dx(x)'*w + mtimesx(v1,dkdx)';
 end
 
 function theta= sample_theta(nFeatures, Z, sigma0, xx, yy) %From Hernandez-Lobato

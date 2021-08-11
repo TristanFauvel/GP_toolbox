@@ -17,7 +17,7 @@ ntr = 5;
 x2d = [p(:), q(:)]';
 
 x0 = x(:,1);
-kernel_approximation = 'RRGP';
+approximationimation = 'RRGP';
 
 modeltype = 'exp_prop'; % Approximation method
 base_kernelfun =  @Matern52_kernelfun;%kernel used within the preference learning kernel, for subject = computer
@@ -51,9 +51,9 @@ ytrain= f(rd_idx);
 ctrain = link(ytrain)>rand(nsamp,1);
 
 
-[mu_c,  mu_f, sigma2_f, Sigma2_f] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, kernelfun, modeltype, post, regularization);
+[mu_c,  mu_f, sigma2_f, Sigma2_f] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, model, post);
 
-[~,  mu_g, sigma2_g, Sigma2_g, ~, ~, ~, ~, ~, ~, post] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], kernelfun, modeltype, post, regularization);
+[~,  mu_g, sigma2_g, Sigma2_g, ~, ~, ~, ~, ~, ~, post] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], model, post);
 mu_g = -mu_g; %(because prediction_bin considers P(x1 > x2);
 
 
@@ -70,10 +70,10 @@ samples_f =  NaN(nsamps, n*n);
 updates = NaN(nsamps, n);
 D = 1;
 nfeatures = 128;
-kernel_approximation = 'RRGP';
+approximationimation = 'RRGP';
 
 for j = 1:nsamps
-    [sample_f, samples_g(j,:),decomposition] = sample_preference_GP(x, theta, xtrain, ctrain, base_kernelname, kernelfun, modeltype, kernel_approximation, decoupled_bases, base_kernelfun, nfeatures, condition, post);
+    [sample_f, samples_g(j,:),decomposition] = sample_preference_GP(x, theta, xtrain, ctrain, base_kernelname,model, approximationimation, decoupled_bases, base_kernelfun, nfeatures, condition, post);
     samples_prior(j,:) = decomposition.sample_prior([x;x0.*ones(D,size(x,2))]);
     updates(j,:) = decomposition.update([x;x0.*ones(D,size(x,2))]);
     samples_f(j,:) = sample_f;
