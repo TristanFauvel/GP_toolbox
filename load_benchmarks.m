@@ -1,4 +1,4 @@
-function [g, theta, lb, ub, lb_norm, ub_norm, theta_lb, theta_ub, kernelfun, kernelname] = load_benchmarks(objective, kernelname, benchmarks_table, rescaling)
+function [g, theta, model] = load_benchmarks(objective, kernelname, benchmarks_table, rescaling)
 obj = str2func(objective);
 obj = obj(rescaling);
 g = @(xx) obj.do_eval(xx);
@@ -13,14 +13,19 @@ end
 theta = benchmarks_table(benchmarks_table.fName == objective, :).(kernelname);
 theta = theta{:};
 theta_init = theta;
-theta_lb = -10*ones(size(theta_init));
-theta_ub = 10*ones(size(theta_init));
+model.theta_lb = -10*ones(size(theta_init));
+model.theta_ub = 10*ones(size(theta_init));
 
-lb_norm = zeros(D,1);
-ub_norm = ones(D,1);
-lb = xbounds(:,1);
-ub = xbounds(:,2);
+model.lb_norm = zeros(D,1);
+model.ub_norm = ones(D,1);
+model.lb = xbounds(:,1);
+model.ub = xbounds(:,2);
 
+model.kernelname = kernelname; 
+model.kernelfun = kernelfun;
+model.meanfun = @constant_mean;
+model.regularization = 'nugget';
+model.D = D;
 return
 % if strcmp(objective, 'forretal08')
 %     xbounds = [0,1];

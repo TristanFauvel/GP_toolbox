@@ -14,7 +14,7 @@ kernelname = 'ARD';
 kernelfun = @ARD_kernelfun;
 
 [g, theta, lb, ub, lb_norm, ub_norm, theta_lb, theta_ub] = define_benchmark_PBO(objective, kernelname);
-d = numel(lb);
+D = model.D;
 
 if d==1
     x = linspace(lb(1), ub(2), n);

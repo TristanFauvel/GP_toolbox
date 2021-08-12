@@ -71,8 +71,7 @@ fx = NaN(m, n);
 [mu_c,  mu_f, sigma2_f, Sigma2_f, ~, ~,~,~,var_muc, ~, post] = prediction_bin(hyp, x_data, c_data, x, model, post);
 
 D= 1;
-decoupled_bases = 1;
-nfeatures = 256*2;
+ nfeatures = 256*2;
 approximation.decoupled_bases = 1;
 approximation.nfeatures = nfeatures;
 

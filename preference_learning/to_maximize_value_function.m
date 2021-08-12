@@ -5,8 +5,7 @@ if any(isnan(x(:)))
 end
 [D,n]= size(x);
 
-regularization = 'nugget';
-[~,  g_mu_y, ~, ~, ~, dmuy_dx] = prediction_bin(theta, xtrain_norm, ctrain, [x;model.condition.x0*ones(1,n)], model, post);
+[~,  g_mu_y, ~, ~, ~, dmuy_dx] = prediction_bin(theta, xtrain_norm, ctrain, [x; model.condition.x0*ones(1,n)], model, post);
 
 
 g_mu_y = -g_mu_y;

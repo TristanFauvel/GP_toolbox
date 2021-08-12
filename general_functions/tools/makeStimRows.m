@@ -65,7 +65,7 @@ else % compute for spiking stimuli --------------------------------------------
     S = zeros(length(flag), n2*n);
     % Do for spinds < n
     nsp1 = length(flag(flag<n));
-    for j = 1:nsp1
+    for j = 1:model.nsp1
         S(j,:) = reshape([zeros(n-flag(j), n2); Stim(1:flag(j),:)], 1, n2*n);
     end
     for j = nsp1 +1:length(flag)

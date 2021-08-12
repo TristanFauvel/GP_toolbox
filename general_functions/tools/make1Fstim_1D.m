@@ -32,7 +32,7 @@
         nsecs = nsamps/samprate;  % Number of seconds in stimulus
 
         % Set up bins for time and frequency
-        xs = (1:nsamps)';  % bin indices
+        xs = (1:model.nsamps)';  % bin indices
         freqs = mod(xs+nsamps/2-1,nsamps)-nsamps/2; % frequency bins
         freqs = freqs/nsecs;
 

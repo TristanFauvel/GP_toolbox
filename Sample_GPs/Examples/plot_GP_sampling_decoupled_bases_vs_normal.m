@@ -29,8 +29,7 @@ y = g + sigma*randn(1,n); %add measurement noise
 
 graphics_style_paper;
 
-decoupled_bases = 1;
-
+ 
 % h=figure(1);
 % h.Color =  [1 1 1];
 % h.Name = 'Value function';

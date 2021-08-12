@@ -29,7 +29,7 @@ classdef GPnd
             obj.D = D;
             obj.xbounds = repmat([0, 1], D, 1);
            
-            if strcmp(kernelname, 'Matern52') || strcmp(kernelname, 'Matern32') 
+            if strcmp(model.kernelname, 'Matern52') || strcmp(model.kernelname, 'Matern32') 
                approximation.method = 'RRGP';
             else
                 approximation.method = 'SSGP';

@@ -34,7 +34,7 @@ refSize = size(set1);
 average = zeros(refSize);
 
 % iterate on point sets
-for i = 1:nSets
+for i = 1:model.nsets
     % get current point set, and check its size
     set = pointSets{i};
     if sum(size(set) ~= refSize) > 0

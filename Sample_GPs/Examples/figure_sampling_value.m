@@ -25,7 +25,7 @@ base_kernelname = 'Matern52';
 approximation.method = 'RRGP'; %%RRGP
 theta = [log(1/10),0];
 
-decoupled_bases = 1;
+approximation.decoupled_bases = 1;
 condition.x0 = 0;
 condition.y0 = 0;
 % base_kernelfun =  @ARD_kernelfun;%kernel used within the preference learning kernel, for subject = computer
@@ -75,7 +75,7 @@ samples_f =  NaN(nsamps, n*n);
 updates = NaN(nsamps, n);
 D = 1;
 nfeatures = 64;
-for j = 1:nsamps
+for j = 1:model.nsamps
     [sample_f, samples_g(j,:), decomposition] = sample_preference_GP(x, theta, xtrain, ctrain, base_kernelname,model, approximation.method,decoupled_bases, base_kernelfun, nfeatures, condition, post);
     samples_prior(j,:) = decomposition.sample_prior(x);
     updates(j,:) = decomposition.update_2([x;x0.*ones(D,size(x,2))]);

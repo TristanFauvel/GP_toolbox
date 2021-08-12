@@ -4,9 +4,8 @@ function [best, minval] = multistart_minConf(fun, lb, ub, ncandidates, init_gues
 DEFAULT('ncandidates',10);
 DEFAULT('options', []);
 best= [];
-nd = numel(lb);
-starting_points = lb(:)+(ub(:)-lb(:)).*rand(nd,ncandidates);
 
+starting_points = rand_interval(lb, ub, 'nsamples', ncandidates);
 if ~isempty(init_guess)
     starting_points(:,1)= init_guess;
 end

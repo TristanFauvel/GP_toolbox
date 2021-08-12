@@ -1,4 +1,4 @@
-function [sample_g, dsample_g_dx, decomposition] = sample_value_GP_precomputed_features(phi, dphi_dx, phi_pref, dphi_pref_dx, xtrain, ctrain, theta, model, approximation, post)
+function [sample_g, dsample_g_dx, decomposition] = sample_value_GP_precomputed_features(approximation, theta, xtrain, ctrain, model, post)
 %% SSGP : Method based on the Sparse-Spectrum GP, Lazaro-Gredilla 2010
 %% RRGP: Method based on the Reduced-Rank GP, Solin 2019
 D = (size(xtrain,1))/2; %dimension
@@ -9,6 +9,10 @@ condition = model.condition;
 decoupled_bases = approximation.decoupled_bases;
 base_kernelfun = model.base_kernelfun;
 kernelfun = model.kernelfun;
+phi_pref = approximation.phi_pref;
+dphi_pref_dx= approximation.dphi_pref_dx;
+phi = approximation.phi;
+dphi_dx = approximation.dphi_dx;
 
 if isempty(post)
     [~,  mu_y, ~, Sigma2_y,~,~,~,~,~,~,post] =prediction_bin(theta, xtrain, ctrain, xtrain, model, post);

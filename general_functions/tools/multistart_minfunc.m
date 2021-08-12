@@ -5,7 +5,7 @@ options=[];
 DEFAULT('ncandidates',10);
 DEFAULT('options', []);
 best= [];
-nd = numel(lb);
+nD = model.D;
 starting_points= NaN(nd,ncandidates);
 for i = 1:nd
     starting_points(i,:)= lb(i)+(ub(i)-lb(i))*rand(1,ncandidates);

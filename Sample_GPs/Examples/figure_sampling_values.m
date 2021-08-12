@@ -72,7 +72,7 @@ D = 1;
 nfeatures = 128;
 approximationimation = 'RRGP';
 
-for j = 1:nsamps
+for j = 1:model.nsamps
     [sample_f, samples_g(j,:),decomposition] = sample_preference_GP(x, theta, xtrain, ctrain, base_kernelname,model, approximationimation, decoupled_bases, base_kernelfun, nfeatures, condition, post);
     samples_prior(j,:) = decomposition.sample_prior([x;x0.*ones(D,size(x,2))]);
     updates(j,:) = decomposition.update([x;x0.*ones(D,size(x,2))]);

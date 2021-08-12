@@ -86,13 +86,12 @@ samples_f =  NaN(nsamps, n*n);
 updates = NaN(nsamps, n);
 D = 1;
 nfeatures = 128;
-decoupled_bases = 1;
-
+ 
 approximation.method= 'RRGP';
 approximation.nfeatures = nfeatures;
-approximation.decoupled_bases = decoupled_bases;
+approximation.decoupled_bases = 1;
 
-for j = 1:nsamps
+for j = 1:model.nsamps
     [sample_f, samples_g(j,:), decomposition] = sample_preference_GP(x, theta, xtrain, ctrain, model, approximation, post);
     samples_f(j,:) = sample_f;
 end

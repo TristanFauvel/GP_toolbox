@@ -4,7 +4,7 @@ function best = multistart_minfuncBC(fun, lb, ub, ncandidates, options)
 DEFAULT('ncandidates',10);
 DEFAULT('options', []);
 best= [];
-nd = numel(lb);
+nD = model.D;
 starting_points= NaN(nd,ncandidates);
 % for i = 1:nd
 %     range = linspace(lb(i), ub(i), ncandidates+2);

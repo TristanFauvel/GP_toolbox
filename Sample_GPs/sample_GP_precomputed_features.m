@@ -12,6 +12,7 @@ nfeatures = size(Phi,2);
 kernelfun = model.kernelfun;
 kernelname = model.kernelname;
 decoupled_bases = approximation.decoupled_bases;
+regularization = model.regularization;
 
 if decoupled_bases
     noise = 0;
@@ -29,7 +30,7 @@ if decoupled_bases
         v =  (K\(ytrain(:) - sample_prior(xtrain)'+noise))';
         update =  @(x) v*kernelfun(theta,xtrain,x, 0, model.regularization);
         sample_g = @(x) sample_prior(x) + update(x);
-        dsample_g_dx = @(x) dprior_dx(x,w, dphi_dx)' + dupdate_dx(x, v, theta, xtrain, kernelfun)';
+        dsample_g_dx = @(x) dprior_dx(x,w, dphi_dx)' + dupdate_dx(x, v, theta, xtrain, kernelfun, regularization)';
      end
 else
     sig = 1e-9;
@@ -50,8 +51,8 @@ sample_g= @(x) phi(x)*theta; % + meanfun(theta, x');
     
 end
 end
-function dudx = dupdate_dx(x, v, theta, xtrain, kernelfun)
-[~, ~, dkdx]= kernelfun(theta,xtrain,x, 0);
+function dudx = dupdate_dx(x, v, theta, xtrain, kernelfun, regularization)
+[~, ~, dkdx]= kernelfun(theta,xtrain,x, 0, regularization);
 dkdx = squeeze(dkdx);
 dudx =mtimesx(v,dkdx);
 end
