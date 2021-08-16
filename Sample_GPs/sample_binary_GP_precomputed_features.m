@@ -54,8 +54,5 @@ dudx =mtimesx(v,dkdx);
 end
 
 function dpdx = dprior_dx(x,w, dphi_dx)
-dpdx = w'*dphi_dx(x); %1 x D  does not work with SSGP and ARD, but works
-% with Matern
-% dpdx = w'*dphi_dx(x)'; %1 x D  works with SSGP and ARD, but not with Matern and RRGP
-
+dpdx = w'*dphi_dx(x);  
 end

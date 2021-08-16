@@ -28,7 +28,7 @@ imagesc(kernelfun(theta,x,x, true, regularization));
 approximation.nfeatures = m;
 approximation.method = method;
 
-phi = sample_features_GP(theta, D, model, approximation);
+phi = sample_features_GP(theta, model, approximation);
 K1 = phi(x0)*phi(x)';
 
 approximation.nfeatures  = 8;
@@ -36,15 +36,15 @@ phi = sample_features_GP(theta, D, kernelname,approximation);
 K2 = phi(x0)*phi(x)';
 
 approximation.nfeatures  = 16;
-phi = sample_features_GP(theta, D, model, approximation);
+phi = sample_features_GP(theta, model, approximation);
 K3 = phi(x0)*phi(x)';
 
 approximation.nfeatures = 32;
-phi = sample_features_GP(theta, D, model, approximation);
+phi = sample_features_GP(theta, model, approximation);
 K4 = phi(x0)*phi(x)';
 
 approximation.nfeatures = 64;
-phi = sample_features_GP(theta, D, model, approximation);
+phi = sample_features_GP(theta, model, approximation);
 K5 = phi(x0)*phi(x)';
 
 mr = 1;

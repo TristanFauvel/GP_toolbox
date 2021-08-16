@@ -17,7 +17,7 @@ Kard = kernelfun(theta.cov,x,x, 'true', regularization);
 mu_y_ard = meanfun(x,theta.mean);
 y = mvnrnd(mu_y_ard, Kard);
 
-
+ 
 ntr = 2; 
 i_tr= randsample(n,ntr);
 % i_tr(3)=100 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

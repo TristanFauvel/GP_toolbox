@@ -25,23 +25,23 @@ x0 = [0.5;0.5];
 K = kernelfun(theta,x0,x);
 
 m = 4;
-phi = sample_features_GP(theta, D, model, approximation);
+phi = sample_features_GP(theta, model, approximation);
 K1 = phi(x0)*phi(x)';
 
 m = 8;
-phi = sample_features_GP(theta, D, model, approximation);
+phi = sample_features_GP(theta, model, approximation);
 K2 = phi(x0)*phi(x)';
 
 m = 16;
-phi = sample_features_GP(theta, D, model, approximation);
+phi = sample_features_GP(theta, model, approximation);
 K3 = phi(x0)*phi(x)';
 
 m = 32;
-phi = sample_features_GP(theta, D, model, approximation);
+phi = sample_features_GP(theta, model, approximation);
 K4 = phi(x0)*phi(x)';
 
 m = 64;
-phi = sample_features_GP(theta, D, model, approximation);
+phi = sample_features_GP(theta, model, approximation);
 K5 = phi(x0)*phi(x)';
 
 mr = 1;

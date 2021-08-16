@@ -24,7 +24,7 @@ model.kernelfun = kernelfun;
 model.link = link;
 model.modeltype = modeltype;
 model.kernelname = kernelname;
- 
+ model.D = 1;
 % gen_kernelfun = @ARD_kernelfun;
 % kernelfun = @ARD_kernelfun;
 % kernelname = 'ARD';
