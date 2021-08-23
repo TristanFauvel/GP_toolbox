@@ -142,6 +142,7 @@ if ~isempty(xtest)
         % standard deviation of p(y|x, c_tr, xtrain) (Eq 19.5.26 in Barber book)
         %sigma2_y = diag_ks-sum((k'/(K + invS)).*k', 2);
         sigma2_y = diag_ks-sum((k'*invKS).*k', 2);
+        sigma2_y(sigma2_y<0) = 0;
         if nargout>=4
             %Sigma2_y = ks-k'*inv(K + invS)*k;
             Sigma2_y = ks-k'*invKS*k;

@@ -29,17 +29,21 @@ classdef GPnd
             obj.D = D;
             obj.xbounds = repmat([0, 1], D, 1);
            
-            if strcmp(model.kernelname, 'Matern52') || strcmp(model.kernelname, 'Matern32') 
+            if strcmp(kernelname, 'Matern52') || strcmp(kernelname, 'Matern32') 
                approximation.method = 'RRGP';
             else
                 approximation.method = 'SSGP';
             end
-            nfeatures = 4096;
-            decoupled_bases = 1;
+            approximation.nfeatures = 4096;
+            approximation.decoupled_bases = 1;
             kernelfun = str2func([kernelname, '_kernelfun']);
             obj.kernelfun = kernelfun;
             obj.kernelname=  kernelname;
-            obj.sample_f = sample_GP(obj.theta, zeros(D,1), [], obj, approximation);
+            model.kernelname = kernelname;
+            model.regularization = 'nugget';
+            model.D = D;
+            model.kernelfun = kernelfun;
+            obj.sample_f = sample_GP(obj.theta,  zeros(D,1), [], model, approximation);
         end
         function y = do_eval(obj, xx)
             if size(xx,1)~=obj.D
