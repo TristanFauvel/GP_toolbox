@@ -8,6 +8,8 @@ D = obj.D;
 if isempty(kernelname)
     kernelname = char(benchmarks_table(benchmarks_table.fName == objective, :).Kernel_name);
     kernelfun = str2func(char(benchmarks_table(benchmarks_table.fName == objective, :).Kernel));
+else
+    kernelfun = str2func([kernelname, '_kernelfun']);
 end
 
 theta = benchmarks_table(benchmarks_table.fName == objective, :).(kernelname);
