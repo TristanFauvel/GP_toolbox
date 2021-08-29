@@ -88,4 +88,7 @@ else
         output1 = post;
     end
 end
+
+sigma2_y(sigma2_y<0)=0;
+
 return

@@ -1,9 +1,21 @@
-function [best, minval] = multistart_minConf(fun, lb, ub, ncandidates, init_guess, options)
+function [best, minval] = multistart_minConf(fun, lb, ub, ncandidates, init_guess, options, varargin)
+opts = namevaluepairtostruct(struct( ...
+    'dims', [] ...
+    ), varargin);
+
+UNPACK_STRUCT(opts, false)
 
 %% Multistart seach with minFunc
 DEFAULT('ncandidates',10);
 DEFAULT('options', []);
 best= [];
+
+if ~isempty(dims)
+    x0 = lb; 
+    fun = @(x) subfun(x, fun,dims, x0);
+    lb = lb(dims);
+    ub = ub(dims);
+end
 
 starting_points = rand_interval(lb, ub, 'nsamples', ncandidates);
 if ~isempty(init_guess)
@@ -14,6 +26,7 @@ minval=inf;
 
 options.verbose = 0;
 x = [];
+
 for k = 1:ncandidates    
     try
         x = minConf_TMP(@(x)fun(x), starting_points(:,k), lb(:), ub(:), options);
@@ -34,5 +47,10 @@ end
 if isempty(x)
     error('Optimization failed')
 end
-return
+end
 
+function [f, df] = subfun(x, fun,dims, x0)
+    x0(dims) = x;
+    [f, df] = fun(x0);    
+    df = df(:,dims);
+end

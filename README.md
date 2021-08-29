@@ -17,7 +17,7 @@
    * Simply add GP_toolbox to your Matlab path
 
 ## User guide
-   * You can test the installation by running test.m
+   * Each /Examples subfolder includes detailed description about how to use the toolbox. 
    * You can use GP_toolbox with BO_toolbox for Bayesian optimization (https://github.com/TristanFauvel/BO_toolbox)
 
 

@@ -89,7 +89,7 @@ ylabel('$P(c=1)$')
 
 nexttile();
 i=i+1;
-p1 = plot_gp(x,mu_y, sqrt(sigma2_y), C(1,:),linewidth);
+p1 = plot_gp(x,mu_y, sigma2_y, C(1,:),linewidth);
 p2 = plot(x,y,'LineWidth',linewidth,'Color', C(2,:)); hold off;
 % errorshaded(x,mu_y, sqrt(sigma2_y), 'Color',  C(1,:),'LineWidth', linewidth, 'Fontsize', Fontsize); hold off
 % legend('True function', 'Inferred function','Fontsize',Fontsize)

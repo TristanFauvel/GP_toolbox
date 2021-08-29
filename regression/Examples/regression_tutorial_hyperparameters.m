@@ -94,7 +94,7 @@ text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalize
 
 nexttile();
 i=i+1;
-plot_gp(x,mu_y, sqrt(sigma2_y), C(1,:),linewidth);
+plot_gp(x,mu_y, sigma2_y, C(1,:),linewidth);
 plot(x, y, 'Color',  C(2,:),'LineWidth', linewidth); hold on;
 % errorshaded(x,mu_y, sqrt(sigma2_y), 'Color',  C(1,:),'LineWidth', linewidth, 'Fontsize', Fontsize); hold on
 plot(xtrain, ytrain, 'ro', 'MarkerSize', 10, 'color', C(2,:)); hold on;
