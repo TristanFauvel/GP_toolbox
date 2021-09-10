@@ -17,13 +17,16 @@ Kard = kernelfun(theta.cov,x,x, 'true', regularization);
 mu_y_ard = meanfun(x,theta.mean);
 y = mvnrnd(mu_y_ard, Kard);
 
-ntr = 2; 
+ntr = 5; 
 i_tr= randsample(n,ntr);
 % i_tr(3)=100 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ntr = 3; %%%%%%%%%%%
 xtrain = x(:,i_tr);
 ytrain = y(:, i_tr);
 
+model.kernelfun = kernelfun;
+model.meanfun = meanfun;
+model.regularization = regularization;
 
 [mu_y, sigma2_y,dmu_dx, sigma2_dx, Sigma2_y, dSigma2_dx, post] = prediction(theta, xtrain, ytrain, x, model, []); 
 sample_post = mvnrnd(mu_y, Sigma2_y);
@@ -63,11 +66,11 @@ i = 0;
 
 nexttile();
 i=i+1;
-plot_gp(x,mu_y_w, sqrt(sigma2_y_w), C(1,:),linewidth);
-plot(x, y, 'Color',  C(2,:),'LineWidth', linewidth); hold on;
+h1 = plot_gp(x,mu_y_w, sqrt(sigma2_y_w), C(1,:),linewidth);
+h2 = plot(x, y, 'Color',  C(2,:),'LineWidth', linewidth); hold on;
 % errorshaded(x,mu_y_w, sqrt(sigma2_y_w), 'Color',  C(1,:),'LineWidth', linewidth, 'Fontsize', Fontsize); hold on
 %errorshaded(x,mu_y_w, sqrt(sigma2_y_w), 'Color',  C(1,:),'LineWidth', linewidth, 'Fontsize', Fontsize); hold on
-plot(xtrain, ytrain, 'ro', 'MarkerSize', 10, 'color', C(2,:)); hold on;
+h3 = plot(xtrain, ytrain, 'ro', 'MarkerSize', 10, 'color', C(2,:)); hold on;
 scatter(xtrain, ytrain, 2*markersize, C(2,:), 'filled'); hold on;
 %title('Posterior distribution with wrong hyperparameters','Fontsize',Fontsize, 'interpreter', 'latex')
 box off
@@ -76,11 +79,30 @@ ylabel('$f(x)$')
 yl = get(gca,'Ylim');
 set(gca, 'Xlim', [0,1], 'Xtick', [0,0.5,1], 'Ytick', floor([yl(1), 0, yl(2)]), 'Fontsize', Fontsize);
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+legend([h1, h2, h3], 'GP posterior, random $\theta$', 'True function', 'Data', 'Location', 'northoutside')
+legend box off
 
 nexttile();
 i=i+1;
-plot_gp(x,mu_y_ml, sqrt(sigma2_y_ml), C(1,:),linewidth);
+h1 = plot_gp(x,mu_y_ml, sqrt(sigma2_y_ml), C(1,:),linewidth);
 plot(x, y, 'Color',  C(2,:),'LineWidth', linewidth); hold on;
+% errorshaded(x,mu_y, sqrt(sigma2_y), 'Color',  C(1,:),'LineWidth', linewidth, 'Fontsize', Fontsize); hold on
+h2 = plot(xtrain, ytrain, 'ro', 'MarkerSize', 10, 'color', C(2,:)); hold on;
+scatter(xtrain, ytrain, 2*markersize, C(2,:), 'filled'); hold on;
+ylabel('$f(x)$')
+box off
+%title('Posterior distribution','Fontsize',Fontsize, 'interpreter', 'latex')
+xlabel('$x$')
+set(gca, 'Xlim', [0,1], 'Xtick', [0,0.5,1], 'Ylim', yl, 'Ytick', floor([yl(1), 0, yl(2)]), 'Fontsize', Fontsize');
+text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+legend(h1, 'GP posterior, learned $\theta$', 'Location', 'northoutside')
+legend box off
+
+
+nexttile();
+i=i+1;
+h1 = plot_gp(x,mu_y, sigma2_y, C(1,:),linewidth);
+h2 = plot(x, y, 'Color',  C(2,:),'LineWidth', linewidth); hold on;
 % errorshaded(x,mu_y, sqrt(sigma2_y), 'Color',  C(1,:),'LineWidth', linewidth, 'Fontsize', Fontsize); hold on
 plot(xtrain, ytrain, 'ro', 'MarkerSize', 10, 'color', C(2,:)); hold on;
 scatter(xtrain, ytrain, 2*markersize, C(2,:), 'filled'); hold on;
@@ -90,21 +112,8 @@ box off
 xlabel('$x$')
 set(gca, 'Xlim', [0,1], 'Xtick', [0,0.5,1], 'Ylim', yl, 'Ytick', floor([yl(1), 0, yl(2)]), 'Fontsize', Fontsize');
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
-
-
-nexttile();
-i=i+1;
-plot_gp(x,mu_y, sigma2_y, C(1,:),linewidth);
-plot(x, y, 'Color',  C(2,:),'LineWidth', linewidth); hold on;
-% errorshaded(x,mu_y, sqrt(sigma2_y), 'Color',  C(1,:),'LineWidth', linewidth, 'Fontsize', Fontsize); hold on
-plot(xtrain, ytrain, 'ro', 'MarkerSize', 10, 'color', C(2,:)); hold on;
-scatter(xtrain, ytrain, 2*markersize, C(2,:), 'filled'); hold on;
-ylabel('$f(x)$')
-box off
-%title('Posterior distribution','Fontsize',Fontsize, 'interpreter', 'latex')
-xlabel('$x$')
-set(gca, 'Xlim', [0,1], 'Xtick', [0,0.5,1], 'Ylim', yl, 'Ytick', floor([yl(1), 0, yl(2)]), 'Fontsize', Fontsize');
-text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+legend(h1, 'GP posterior, true $\theta$', 'Location', 'northoutside')
+legend box off
 
 
 colormap(cmap)

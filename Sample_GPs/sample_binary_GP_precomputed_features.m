@@ -31,7 +31,7 @@ if decoupled_bases
     v =  (K\(ytrain - sample_prior(xtrain)'))'; %1 x ntr
     update =  @(x) v*kernelfun(theta,xtrain,x, 0, regularization); % 1 x ntest
     sample_g = @(x) sample_prior(x) + update(x); % 1 x ntest
-    dsample_g_dx = @(x) dprior_dx(x, w, dphi_dx)' + dupdate_dx(x, v, theta, xtrain, kernelfun,regularization)'; % D x ntest x ntest
+    dsample_g_dx = @(x) dprior_dx(x, w, dphi_dx) + dupdate_dx(x, v, theta, xtrain, kernelfun,regularization); % D x ntest x ntest
     decomposition.sample_prior = sample_prior;
     decomposition.update = update;
 else
@@ -44,15 +44,33 @@ end
 return
 
 end
+
 function dudx = dupdate_dx(x, v, theta, xtrain, kernelfun, regularization)
-if size(x,2) >1
-    error('Derivative only implemented for size(x,2) == 1')
+% if size(x,2) >1
+%     error('Derivative only implemented for size(x,2) == 1')
+% end
+% [k, ~, dkdx]= kernelfun(theta,xtrain,x, 0, regularization);
+% dkdx = squeeze(dkdx);
+% dudx =mtimesx(v,dkdx);
+
+dudx = NaN(size(x,1), size(x,2), size(x,2));
+for i = 1:size(x,2)
+    [k, ~, dkdx]= kernelfun(theta,xtrain,x(:,i), 0, regularization);
+    dkdx = squeeze(dkdx);
+    dudx(:,i,i) =mtimesx(v,dkdx);
 end
-[k, ~, dkdx]= kernelfun(theta,xtrain,x, 0, regularization);
-dkdx = squeeze(dkdx);
-dudx =mtimesx(v,dkdx);
+if i==1
+    dudx = dudx';
+end
 end
 
 function dpdx = dprior_dx(x,w, dphi_dx)
-dpdx = w'*dphi_dx(x);  
+dpdx = NaN(size(x,1),size(x,2),size(x,2));
+for i = 1:size(x,2)
+    dpdx(:,i,i) = w'*dphi_dx(x(:,i));
+end
+
+if i==1
+    dpdx = dpdx';
+end
 end

@@ -49,24 +49,27 @@ i = 0;
 
 nexttile();
 i=i+1;
-plot_gp(x,mu_y_ard, sqrt(diag(Kard)), C(1,:),linewidth);
-plot(x, y, 'Color',  C(2,:),'LineWidth', linewidth); hold on;
-plot(x, sample_prior, 'Color',  'k','LineWidth', linewidth/2); hold off;
+h1 = plot_gp(x,mu_y_ard, sqrt(diag(Kard)), C(1,:),linewidth);
+h2 = plot(x, y, 'Color',  C(2,:),'LineWidth', linewidth); hold on;
+h3 = plot(x, sample_prior, 'Color',  'k','LineWidth', linewidth/2); hold off;
 
 box off
 xlabel('$x$')
 ylabel('$f(x)$')
-yl = get(gca,'Ylim');
+% yl = get(gca,'Ylim');
+yl = [-4,4];
+
 set(gca, 'Xlim', [0,1], 'Xtick', [0,0.5,1], 'Ytick', floor([yl(1), 0, yl(2)]), 'Fontsize', Fontsize);
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
-
+legend([h1 h2 h3], 'GP prior', 'True function', 'Sample from the GP')
+legend box off
 
 nexttile();
 i=i+1;
-plot_gp(x,mu_y, sigma2_y, C(1,:),linewidth);
-plot(x, y, 'Color',  C(2,:),'LineWidth', linewidth); hold on;
+h1 = plot_gp(x,mu_y, sigma2_y, C(1,:),linewidth);
+h2 = plot(x, y, 'Color',  C(2,:),'LineWidth', linewidth); hold on;
 % errorshaded(x,mu_y, sqrt(sigma2_y), 'Color',  C(1,:),'LineWidth', linewidth, 'Fontsize', Fontsize); hold on
-plot(x_tr, y_tr, 'ro', 'MarkerSize', 10, 'color', C(2,:)); hold on;
+h3 = plot(x_tr, y_tr, 'ro', 'MarkerSize', 10, 'color', C(2,:)); hold on;
 scatter(x_tr, y_tr, 2*markersize, C(2,:), 'filled'); hold on;
 plot(x, sample_post, 'Color',  'k','LineWidth', linewidth/2); hold off;
 ylabel('$f(x)$')
@@ -75,6 +78,9 @@ box off
 xlabel('$x$')
 set(gca, 'Xlim', [0,1], 'Xtick', [0,0.5,1], 'Ylim', yl, 'Ytick', floor([yl(1), 0, yl(2)]), 'Fontsize', Fontsize');
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+% legend([h1 h2 h3], 'GP posterior', 'True function', 'Data')
+legend([h1 h3], 'GP posterior', 'Data')
+legend box off
 
 nexttile();
 i=i+1;
@@ -93,8 +99,7 @@ set(cb,'Ylim', cb_lim, 'Ytick', [cb_tick(1),cb_tick(end)]);
 
 colormap(cmap)
 box off
-
-%% Now, I plot the prior distribution corresponding to each kernel, along with samples from this distribution
+ %% Now, I plot the prior distribution corresponding to each kernel, along with samples from this distribution
 
 
 figname  = 'GP_regression';

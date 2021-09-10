@@ -85,7 +85,7 @@ classdef ackley
             term2 = -exp(sum2/obj.D);
 
             y = term1 + term2 + obj.a + exp(1);
-            y(xx > obj.xbounds(:,2) | xx <  obj.xbounds(:,1)) = NaN;
+%             y(xx > obj.xbounds(:,2) | xx <  obj.xbounds(:,1)) = NaN;
             
             if obj.rescaling
                 if obj.takelog

@@ -50,7 +50,7 @@ fx = NaN(m, n);
 model.regularization = 'nugget';
 model.kernelfun = kernelfun;
 model.meanfun = @constant_mean;
-
+model.D = 1;
 model.kernelname = kernelname;
 post = [];
 
@@ -60,9 +60,8 @@ D= 1;
 approximation.nfeatures = 256;
 
 approximation.method = 'RRGP';
-approximation.nfeatures = nfeatures;
-
-[phi, dphi_dx] = sample_features_GP(theta.cov, D, model, approximation);
+ 
+[phi, dphi_dx] = sample_features_GP(theta.cov, model, approximation);
 phix = phi(x_data);
 nfeatures = size(phix,2);
 for i =1:m  
@@ -86,26 +85,28 @@ end
 
 mr = 1;
 mc = 3;
-legend_pos = [-0.1,1.0];
+legend_pos = [0.02,1.0];
 letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 fig=figure('units','centimeters','outerposition',1+[0 0 fwidth fheight(mr)]);
 fig.Color =  [1 1 1];
-layout = tiledlayout(mr,mc, 'TileSpacing', 'tight', 'padding','compact');
+layout = tiledlayout(mr,mc, 'TileSpacing', 'tight', 'padding','tight');
 i = 0;
-yl = [-2.5,2.5];
+yl = [-3,3]; %[-2.5,2.5]
 nexttile();
 i=i+1;
-plot_gp(x,posterior_mean, posterior_variance,C(1,:),linewidth);
-plot(x,g, 'Color',  C(2,:),'LineWidth', linewidth); hold on;
+h1 = plot_gp(x,posterior_mean, posterior_variance,C(1,:),linewidth);
+h2 = plot(x,g, 'Color',  C(2,:),'LineWidth', linewidth); hold on;
 %errorshaded(x,posterior_mean, sqrt(posterior_variance), 'Color',  C(1,:),'LineWidth', linewidth, 'Fontsize', Fontsize); hold on
-plot(x_data, y_data, 'ro', 'MarkerSize', 10, 'color', C(2,:)); hold on;
+h3 = plot(x_data, y_data, 'ro', 'MarkerSize', 10, 'color', C(2,:)); hold on;
 scatter(x_data, y_data, markersize, C(2,:), 'filled'); hold off;
 set(gca, 'Xlim', [0,1], 'Xtick', [0,0.5,1]);
 xlabel('$x$')
 box off
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 set(gca, 'Ylim', yl,'Fontsize', Fontsize);
+legend([h1, h2, h3], 'GP posterior', 'True function', 'Data'); 
+legend box off 
 
 nexttile();
 i=i+1;
@@ -121,14 +122,17 @@ xlabel('$x$')
 
 nexttile();
 i=i+1;
-plot_gp(x, mean(fx,1)', var(fx,1)',C(1,:),linewidth);
-plot(x , fx(1:15,:)','color', 'k', 'LineWidth', linewidth/4); hold on;
+h1 = plot_gp(x, mean(fx,1)', var(fx,1)',C(1,:),linewidth);
+h2 = plot(x , fx(1:15,:)','color', 'k', 'LineWidth', linewidth/4); hold on;
+h2 = h2(1);
 alpha(0.5)
 box off
 %title('Samples from the posterior distribution')
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 set(gca, 'Xlim', [0,1], 'Xtick', [0,0.5,1],'Fontsize', Fontsize, 'Ylim', yl);
 xlabel('$x$')
+legend([h1, h2], 'Samples distribution', 'Samples from the GP'); 
+legend box off 
 
 % nexttile();
 % i=i+1;

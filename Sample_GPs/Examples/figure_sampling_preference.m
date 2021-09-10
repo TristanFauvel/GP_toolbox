@@ -11,7 +11,7 @@ letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 link = @normcdf; %inverse link function
 
 %% Define the range of parameters
-n = 30; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%100
+n = 100; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%100
 x = linspace(0,1, n);
 d =1;
 ntr = 5;
@@ -63,7 +63,9 @@ model.modeltype = modeltype;
 model.kernelname = base_kernelname;
 model.condition = condition;
 model.base_kernelfun = base_kernelfun;
-
+model.D  = 1;
+task = 'preference';
+model.task = task;
 post = [];
 
 [mu_c,  mu_f, sigma2_f, Sigma2_f] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, model, post);
@@ -91,20 +93,27 @@ approximation.method= 'RRGP';
 approximation.nfeatures = nfeatures;
 approximation.decoupled_bases = 1;
 
-for j = 1:model.nsamps
+if  strcmp(task, 'preference')
+    [approximation.phi_pref, approximation.dphi_pref_dx, approximation.phi, approximation.dphi_dx]= sample_features_preference_GP(theta, d, model, approximation);
+else
+    [approximation.phi, approximation.dphi_dx]= sample_features_GP(theta, model, approximation);
+end
+
+
+for j = 1:nsamps
     [sample_f, samples_g(j,:), decomposition] = sample_preference_GP(x, theta, xtrain, ctrain, model, approximation, post);
     samples_f(j,:) = sample_f;
 end
 
 fig=figure('units','centimeters','outerposition',1+[0 0 16 1.5/2*16]);
 fig.Color =  [1 1 1];
-legend_pos = [-0.18,1.0];
+legend_pos = [-0.2,1.0];
 
 mr =2;
 mc = 3;
 i = 0;
 % tiledlayout(mr,mc, 'TileSpacing' , 'tight', 'Padding', 'tight')
-tiledlayout(mr,mc, 'TileSpacing' , 'compact', 'Padding', 'compact')
+tiledlayout(mr,mc, 'TileSpacing' , 'tight', 'Padding', 'compact')
 
 nexttile();
 i=i+1;
@@ -119,6 +128,7 @@ legend boxoff
 xlabel('$x$')
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 set(gca, 'Xlim', [0,1], 'Xtick', [0,0.5,1],'Fontsize', Fontsize);
+pbaspect([1 1 1])
 
 
 cl_mean = [min([mu_f;mean(samples_f)']), max([mu_f;mean(samples_f)'])];
@@ -131,7 +141,7 @@ scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o'
 title('$\mu_f(x,x'')$')
 set(gca,'YDir','normal', 'Fontsize', Fontsize)
 ylabel('$x''$')
-
+colorbar
 set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1])
 pbaspect([1 1 1])
 colormap(cmap)
@@ -147,6 +157,8 @@ set(gca,'YDir','normal')
 set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1], 'Fontsize', Fontsize)
 pbaspect([1 1 1])
 colormap(cmap)
+colorbar
+
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 
 
@@ -163,7 +175,7 @@ legend boxoff
 xlabel('$x$')
 set(gca, 'Fontsize', Fontsize)
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
-
+pbaspect([1 1 1])
 % imagesc(x, x, reshape(sample_f, n,n)); hold on;
 % scatter(xtrain(1, ctrain(1:ntr)==1),xtrain(2, ctrain(1:ntr)==1), markersize, 'o', 'k','filled'); hold on;
 % scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o','k'); hold off;
@@ -187,6 +199,7 @@ set(gca,'YDir','normal')
 set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1], 'Fontsize', Fontsize)
 pbaspect([1 1 1])
 colormap(cmap)
+colorbar
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 xlabel('$x$')
 
@@ -202,6 +215,7 @@ set(gca,'YDir','normal')
 set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1], 'Fontsize', Fontsize)
 pbaspect([1 1 1])
 colormap(cmap)
+colorbar
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 xlabel('$x$')
 colororder(C)
@@ -214,6 +228,7 @@ savefig(fig, [folder,'/', figname, '.fig'])
 exportgraphics(fig, [folder,'/' , figname, '.pdf']);
 exportgraphics(fig, [folder,'/' , figname, '.png'], 'Resolution', 300);
 
+%%
 fig =figure()
 options.handle = fig;
 options.alpha = 0.3;

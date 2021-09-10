@@ -13,10 +13,10 @@ lb = model.lb_norm(1:model.ns);
 ub = model.ub_norm(1:model.ns);
 
 fun = @(s) mean_binGP(theta, xtrain_norm, ctrain, [s;x*ones(1,size(s,2))], model, post);
-g = -integral(fun,lb,ub, 'ArrayValued', true);
+g = -integral(fun,lb,ub, 'ArrayValued', true,'RelTol',1e-4);
 
 fun = @(s) dmean_binGP(theta, xtrain_norm, ctrain, [s;x*ones(1,size(s,2))], model, post);
-dgdx = -integral(fun,lb,ub, 'ArrayValued', true);
+dgdx = -integral(fun,lb,ub, 'ArrayValued', true,'RelTol', 1e-4);
 
  end
 

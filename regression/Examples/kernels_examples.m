@@ -1,5 +1,5 @@
 clear all
-rng(3)
+rng(2)
 x = linspace(0,1,100);
 graphics_style_paper;
 letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -94,8 +94,8 @@ colormap(cmap)
 nexttile();
 i=i+1;
 % errorshaded(x,mu_y_ard, sqrt(sigma2_y_ard), 'Color',  colo(end,:),'LineWidth', linewidth, 'Fontsize', Fontsize); hold on
-plot_gp(x,mu_y_ard, sigma2_y_ard, colo(end,:), linewidth); hold on
-plot(x, sample_ard, 'Color',  'k','LineWidth', linewidth/2); hold off;
+h1 = plot_gp(x,mu_y_ard, sigma2_y_ard, colo(end,:), linewidth); hold on
+h2 = plot(x, sample_ard, 'Color',  'k','LineWidth', linewidth/2); hold off;
 box off
 xlabel('$x$')
 ylabel('$f(x)$')
@@ -105,8 +105,8 @@ set(gca, 'Fontsize', Fontsize)
 nexttile();
 i=i+1;
 % errorshaded(x,mu_y_lin, sqrt(sigma2_y_lin), 'Color',  colo(end,:),'LineWidth', linewidth, 'Fontsize', Fontsize); hold on
-plot_gp(x,mu_y_lin, sigma2_y_lin, colo(end,:), linewidth); hold on
-plot(x, sample_lin, 'Color',  'k','LineWidth', linewidth/2); hold off;
+h1 = plot_gp(x,mu_y_lin, sigma2_y_lin, colo(end,:), linewidth); hold on
+h2 =  plot(x, sample_lin, 'Color',  'k','LineWidth', linewidth/2); hold off;
 box off
 xlabel('$x$')
 set(gca, 'Fontsize', Fontsize)
@@ -116,8 +116,8 @@ set(gca, 'Fontsize', Fontsize)
 nexttile();
 i=i+1;
 % errorshaded(x,mu_y_per, sqrt(sigma2_y_per), 'Color',  colo(end,:),'LineWidth', linewidth, 'Fontsize', Fontsize); hold on
-plot_gp(x,mu_y_per, sigma2_y_per,  colo(end,:), linewidth); hold on
-plot(x, sample_per, 'Color',  'k','LineWidth', linewidth/2); hold off;
+h1 = plot_gp(x,mu_y_per, sigma2_y_per,  colo(end,:), linewidth); hold on
+h2 = plot(x, sample_per, 'Color',  'k','LineWidth', linewidth/2); hold off;
 box off
 xlabel('$x$')
 set(gca, 'Fontsize', Fontsize)
@@ -127,7 +127,7 @@ set(gca, 'Fontsize', Fontsize)
 
 
 figname  = 'Kernels_comparison';
-folder = ['C:\Users\tfauvel\Documents\PhD\Figures\Thesis_figures\Chapter_1\',figname];
+folder = ['/home/tfauvel/Documents/PhD/Figures/Thesis_figures/Chapter_1/',figname];
 savefig(fig, [folder,'\', figname, '.fig'])
 exportgraphics(fig, [folder,'\' , figname, '.pdf']);
 exportgraphics(fig, [folder,'\' , figname, '.png'], 'Resolution', 300);
