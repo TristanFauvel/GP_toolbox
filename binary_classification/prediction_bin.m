@@ -26,12 +26,20 @@ else
     comp_post = false;
 end
 
-
 ctrain = ctrain(:);
 if any(isnan([xtest(:);xtrain(:)]))
     error('x is NaN')
 end
 [D,n] = size(xtrain);
+
+if isempty(ctrain)
+    mu_y = zeros(size(xtest));
+    Sigma2_y = kernelfun(theta, xtest, xtest, false, 'false');
+    sigma2_y= diag(Sigma2_y);
+    mu_c = 0.5*ones(size(xtest));
+    output1 = mu_c;
+    return
+end
 
 if any(ctrain ~= 0 & ctrain ~= 1)
     error('c should be either 0 or 1')
@@ -82,9 +90,9 @@ if strcmp(modeltype, 'laplace')
         % compute 'noise' matrix (Eq 19.5.17 in Barber book)
         
         if strcmp(func2str(link),'logistic')
-            D = diag(logistic(ystar).*(1-logistic(ystar)));            
+            D = diag(logistic(ystar).*(1-logistic(ystar)));
             invS = diag(1./(logistic(ystar).*(1-logistic(ystar))+1e-12));
-             dloglike = (ctrain - logistic(ystar));
+            dloglike = (ctrain - logistic(ystar));
         elseif strcmp(func2str(link),'normcdf')
             y = 2*ctrain-1;
             a = normpdf(ystar);
@@ -100,7 +108,7 @@ if strcmp(modeltype, 'laplace')
         post.ystar = ystar;
         post.invKS = invKS;
         post.invS = invS;
-        post.dloglike =  dloglike; 
+        post.dloglike =  dloglike;
         post.D = D;
     else
         ystar = post.ystar;
@@ -117,7 +125,7 @@ elseif strcmp(modeltype, 'exp_prop')
         invKS = inv(K+invS);
         
         dloglike = invKS*(invS*nu_tilde); % mu_y = (k'*invKS)*invS*nu_tilde;
-         
+        
         post.nu_tilde = nu_tilde;
         post.invS = invS;
         post.invKS = invKS;
@@ -128,36 +136,36 @@ elseif strcmp(modeltype, 'exp_prop')
         nu_tilde = post.nu_tilde;
         invS = post.invS;
         dloglike = post.dloglike;
-    end    
+    end
 else
     error('modeltype must be ''laplace'' or ''exp_prop''')
 end
-    
+
 
 if ~isempty(xtest)
-        
-        % mean of p(y|x, c_tr, xtrain) (Eq 19.5.24 in Barber book)
-        mu_y = k'*dloglike;
-                
-        % standard deviation of p(y|x, c_tr, xtrain) (Eq 19.5.26 in Barber book)
-        %sigma2_y = diag_ks-sum((k'/(K + invS)).*k', 2);
-        sigma2_y = diag_ks-sum((k'*invKS).*k', 2);
-        sigma2_y(sigma2_y<0) = 0;
-        if nargout>=4
-            %Sigma2_y = ks-k'*inv(K + invS)*k;
-            Sigma2_y = ks-k'*invKS*k;
-            if isequal(xtrain,xtest)
-                Sigma2_y = (Sigma2_y + Sigma2_y')/2;
-            end
+    
+    % mean of p(y|x, c_tr, xtrain) (Eq 19.5.24 in Barber book)
+    mu_y = k'*dloglike;
+    
+    % standard deviation of p(y|x, c_tr, xtrain) (Eq 19.5.26 in Barber book)
+    %sigma2_y = diag_ks-sum((k'/(K + invS)).*k', 2);
+    sigma2_y = diag_ks-sum((k'*invKS).*k', 2);
+    sigma2_y(sigma2_y<0) = 0;
+    if nargout>=4
+        %Sigma2_y = ks-k'*inv(K + invS)*k;
+        Sigma2_y = ks-k'*invKS*k;
+        if isequal(xtrain,xtest)
+            Sigma2_y = (Sigma2_y + Sigma2_y')/2;
         end
-        % mean of p(c|x, c_tr, xtrain) (Eq 19.5.27 in Barber book)
-        if strcmp(func2str(link),'logistic')
-            nu = sqrt(pi)/4;
-            mu_c = 0.5+0.5*erf(nu.*mu_y./sqrt(1+2*nu*sigma2_y));
-        elseif strcmp(func2str(link),'normcdf')
-            mu_c =  normcdf(mu_y./sqrt(1+sigma2_y));
-        end
-       
+    end
+    % mean of p(c|x, c_tr, xtrain) (Eq 19.5.27 in Barber book)
+    if strcmp(func2str(link),'logistic')
+        nu = sqrt(pi)/4;
+        mu_c = 0.5+0.5*erf(nu.*mu_y./sqrt(1+2*nu*sigma2_y));
+    elseif strcmp(func2str(link),'normcdf')
+        mu_c =  normcdf(mu_y./sqrt(1+sigma2_y));
+    end
+    
     if nargout>4 && nargout ~= 9 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if strcmp(func2str(link),'logistic')
             sigma_y = sqrt(sigma2_y);
@@ -186,7 +194,7 @@ if ~isempty(xtest)
         end
         % derivative of mu_y with respect to x
         dmuy_dx = squeeze(mtimesx(dk_dx, 'T', post.dloglike));
-
+        
         dsigma2y_dx = 2*squeeze(ddiagks_dx) -2*squeeze(sum(mtimesx(dk_dx, 'T', invKS).*k', 2));
         dSigma2y_dx = squeeze(dks_dx) - 2*mtimesx(mtimesx(dk_dx, 'T', invKS),k);
         

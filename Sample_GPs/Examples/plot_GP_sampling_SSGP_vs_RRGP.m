@@ -8,7 +8,7 @@ figure_path = '/home/tfauvel/Documents/PhD/Figures/Thesis_figures/Chapter_1/';
 rng(13);%12 
 n=200; %resolution
 x = linspace(0,1,n);
-
+model.D =  1;
 kernelfun = @Matern52_kernelfun;
 kernelname = 'Matern52';
 theta.cov = [log(0.8/10),-0.5];
@@ -77,11 +77,11 @@ model.meanfun = @constant_mean;
  model.kernelname = kernelname;
  
 approximation1.method = 'RRGP';
-approximation1.approximation.nfeatures = 256;
+approximation1.nfeatures = 256;
 approximation1.decoupled_bases = 1;
 
 approximation2.method = 'SSGP';
-approximation2.approximation.nfeatures = 256;
+approximation2.nfeatures = 256;
 approximation2.decoupled_bases = 1;
 D = 1;
 for i =1:m  
@@ -157,9 +157,9 @@ set(gca, 'Ylim', ylim,'Fontsize', Fontsize);
 title('RRGP')
 
 K1 = kernelfun(theta.cov, x0,x, true, regularization);
-phi = sample_features_GP(theta.cov, D, model, approximation1); 
+phi = sample_features_GP(theta.cov, model, approximation1); 
 K2 = phi(x0)*phi(x)';
-phi = sample_features_GP(theta.cov, D, model, approximation2);
+phi = sample_features_GP(theta.cov,model, approximation2);
 K3 = phi(x0)*phi(x)';
 
 ylim = [-0.1,1];

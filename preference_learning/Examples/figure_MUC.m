@@ -143,7 +143,7 @@ set(gca,'YTick', linspace(min(ytick), max(ytick), 3), 'Fontsize', Fontsize)
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 box off
 % pbaspect([1 1 1])
-legend([p3, p2, p1], '$P(x>x_1)$', '$P(x>x_1|\mathcal{D})$', '$\mu_c(x, x_1)$')
+legend([p3, p2, p1], '$P(x>x_1)$', '$p(\Phi[f(x,x_1)]|\mathcal{D})$', '$\mu_c(x, x_1)$')
 legend box off
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
  [xt,b] = sort([0,x1, 1]);

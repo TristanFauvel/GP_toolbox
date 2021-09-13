@@ -1,11 +1,11 @@
-%% Sample GP 
+%% Sample GP
 
 clear all
 close all
 add_gp_module;
 figure_path = '/home/tfauvel/Documents/PhD/Figures/Thesis_figures/Chapter_1/';
 
-rng(13);%12 
+rng(13);%12
 n=100; %resolution
 x = linspace(0,1,n);
 
@@ -18,19 +18,19 @@ link = @normcdf;
 modeltype = 'exp_prop';
 post = [];
 regularization = 'nugget';
- 
+
 model.regularization = regularization;
 model.kernelfun = kernelfun;
 model.link = link;
 model.modeltype = modeltype;
 model.kernelname = kernelname;
- model.D = 1;
+model.D = 1;
 % gen_kernelfun = @ARD_kernelfun;
 % kernelfun = @ARD_kernelfun;
 % kernelname = 'ARD';
 % approximation.method = 'SSGP';
-% 
-% 
+%
+%
 theta.cov = [log(1/10),0];
 theta_gen.cov = theta.cov;
 theta.mean= 0;
@@ -54,7 +54,7 @@ graphics_style_paper;
 % ylabel('f(x)','Fontsize',Fontsize)
 % box off
 
-    
+
 N=5;
 % idx_data = randsample(n,N);
 % idx_data= sort(idx_data);
@@ -71,16 +71,16 @@ fx = NaN(m, n);
 [mu_c,  mu_f, sigma2_f, Sigma2_f, ~, ~,~,~,var_muc, ~, post] = prediction_bin(hyp, x_data, c_data, x, model, post);
 
 D= 1;
- nfeatures = 256*2;
+nfeatures = 256*2;
 approximation.decoupled_bases = 1;
 approximation.nfeatures = nfeatures;
 
-for i =1:m  
+for i =1:m
     [gs, dgsdx, decomposition]= sample_binary_GP(theta.cov, x_data, c_data, model, approximation, post);
     fx(i, :)=gs(x);
 end
 
-
+W = Wasserstein2(mu_f, Sigma2_f, fx);
 
 fig=figure('units','centimeters','outerposition',1+[0 0 16 1.3/2*16]);
 fig.Color =  [1 1 1];

@@ -4,7 +4,7 @@ function [sample_g, dsample_g_dx, decomposition] = sample_binary_GP(theta, xtrai
 % x_data : (2*dimension)*n
 %y_data : n x 1
 
-[phi, dphi_dx] = sample_features_GP(theta, model, approximation);
-[sample_g, dsample_g_dx, decomposition] = sample_binary_GP_precomputed_features(phi, dphi_dx, xtrain, ctrain, theta,model, approximation, post);
+[approximation.phi, approximation.dphi_dx] = sample_features_GP(theta, model, approximation);
+[sample_g, dsample_g_dx, decomposition] = sample_binary_GP_precomputed_features(xtrain, ctrain, theta,model, approximation, post);
 
 return

@@ -7,8 +7,7 @@ D = size(xtrain,1)/2; %dimension
 %y_data : n x 1
 
 [phi_pref, dphi_pref_dx, phi, dphi_dx] = sample_features_preference_GP(theta, D, model, approximation);
-[sample_g, dsample_g_dx, decomposition] = sample_value_GP_precomputed_features(approximation, theta, xtrain_norm, ctrain, model, post);(phi, dphi_dx, phi_pref, dphi_pref_dx, xtrain, ...
-    ctrain, theta,  model, approximation, post);
+[sample_g, dsample_g_dx, decomposition] = sample_value_GP_precomputed_features(approximation, theta, xtrain, ctrain, model, post); 
 
 return
 
