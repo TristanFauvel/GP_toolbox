@@ -14,9 +14,8 @@ end
 
 theta = benchmarks_table(benchmarks_table.fName == objective, :).(kernelname);
 theta = theta{:};
-theta_init = theta;
-model.theta_lb = -10*ones(size(theta_init));
-model.theta_ub = 10*ones(size(theta_init));
+model.theta_lb = -10*ones(size(theta));
+model.theta_ub = 10*ones(size(theta));
 
 model.lb_norm = zeros(D,1);
 model.ub_norm = ones(D,1);

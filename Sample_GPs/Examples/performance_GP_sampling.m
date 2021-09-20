@@ -62,7 +62,7 @@ W_decoupled_Hilbert = NaN(nrepets, nxtr);
 W_weight_Hilbert = NaN(nrepets, nxtr);
 W_decoupled_Fourier = NaN(nrepets, nxtr);
 
-for k =1:nrepets
+for k =2:nrepets
     g =  mvnrnd(constant_mean(x,0), gen_kernelfun(theta_gen.cov, x,x, true, 'false')); %generate a function
     for j = 1:nxtr
         disp(['Repetition :',num2str(k), ', ', num2str(j)])
@@ -120,34 +120,42 @@ for k =1:nrepets
 end
 
 mr = 1;
-mc = 3;
+mc = 1;
 legend_pos = [-0.18,1];
 
 fig=figure('units','centimeters','outerposition',1+[0 0 fwidth fheight(1)]);
 fig.Color =  [1 1 1];
-layout = tiledlayout(mr,mc, 'TileSpacing', 'tight', 'padding','tight');
-i = 0;
-
-nexttile();
-i=i+1;
-h1 = plot(num_tr, log10(W_decoupled_Hilbert), 'Color',  C(1,:),'LineWidth', linewidth); hold on;
-h2 = plot(num_tr, log10(W_decoupled_Fourier), 'Color',  C(2,:),'LineWidth', linewidth); hold on;
-h3= plot(num_tr, log10(W_weight_Hilbert), 'Color',  C(3,:),'LineWidth', linewidth); hold on;
-
+options.handle = fig;
+options.alpha = 0.2;
+options.error= 'sem';
+options.line_width = linewidth;
+options.semilogy = false;
+options.cmap = C;
+colors = colororder;
+options.colors = C;
+plots =  plot_areaerrorbar_grouped({log10(W_decoupled_Hilbert), log10(W_decoupled_Fourier), log10(W_weight_Hilbert)}, options);
 box off
-ylabel('log$_{10}$2-Wasserstein')
+ylabel('log$_{10}$(2-Wasserstein)')
 xlabel('Size of the training set')
-% yl = get(gca,'Ylim');
 
-set(gca, 'Xtick', num_tr,  'Fontsize', Fontsize);
-text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
-legend([h1, h2, h3], 'Decoupled bases, RRGP', 'Decoupled bases, SSGP', 'Weight-space approximation, RRGP')
+legends = {'Decoupled-bases approx., RRGP', 'Decoupled-bases approx., SSGP', 'Weight-space approx., RRGP'};
+legend(plots, legends, 'Fontsize', Fontsize);
+
 box off
 legend box off
-% figname  = 'GP_sampling_binary';
-% folder = [figure_path,figname];
-% savefig(fig, [folder,'/', figname, '.fig'])
-% exportgraphics(fig, [folder,'/' , figname, '.pdf']);
-% exportgraphics(fig, [folder,'/' , figname, '.png'], 'Resolution', 300);
-%
+xticklabs = {};
+for i =1:nxtr
+    xticklabs{i} = ['$2^', num2str(log2(num_tr(i))),'$'];
+end
+xticklabels(xticklabs)
+
+set(gca, 'Fontsize', Fontsize)
+
+pbaspect([2,1,1])
+figname  = 'GP_sampling_binary_perf';
+folder = [figure_path,figname];
+savefig(fig, [folder,'/', figname, '.fig'])
+exportgraphics(fig, [folder,'/' , figname, '.pdf']);
+exportgraphics(fig, [folder,'/' , figname, '.png'], 'Resolution', 300);
+saveas(fig, [folder,'/' , figname, '.png']);
 

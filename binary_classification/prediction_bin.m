@@ -154,9 +154,12 @@ if ~isempty(xtest)
     if nargout>=4
         %Sigma2_y = ks-k'*inv(K + invS)*k;
         Sigma2_y = ks-k'*invKS*k;
-        if isequal(xtrain,xtest)
-            Sigma2_y = (Sigma2_y + Sigma2_y')/2;
+        %if isequal(xtrain,xtest)
+        Sigma2_y = (Sigma2_y + Sigma2_y')/2;
+        if strcmp(model.regularization, 'nugget')
+            Sigma2_y = nugget_regularization(Sigma2_y);
         end
+        %end
     end
     % mean of p(c|x, c_tr, xtrain) (Eq 19.5.27 in Barber book)
     if strcmp(func2str(link),'logistic')

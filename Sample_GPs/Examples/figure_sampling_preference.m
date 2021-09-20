@@ -79,8 +79,7 @@ mu_g = -mu_g; %(because prediction_bin considers P(x1 > x2);
 %% Find the true global optimum of g
 [gmax, id_xmax] = max(g);
 xmax = x(id_xmax);
-legend_pos = [-0.18,1.0];
-
+ 
 nsamps = 1000;
 samples_g = NaN(nsamps, n);
 samples_prior = NaN(nsamps, n);
@@ -105,17 +104,22 @@ for j = 1:nsamps
     samples_f(j,:) = sample_f;
 end
 
-fig=figure('units','centimeters','outerposition',1+[0 0 16 1.5/2*16]);
-fig.Color =  [1 1 1];
-legend_pos = [-0.2,1.0];
+cl_mean = [min([mu_f;mean(samples_f)']), max([mu_f;mean(samples_f)'])];
+cl_sigma  = [min([sigma2_f;var(samples_f)']), max([sigma2_f;var(samples_f)'])];
+
 
 mr =2;
 mc = 3;
+
+fig=figure('units','centimeters','outerposition',1+[0 0 16 fheight(mr)]);
+fig.Color =  [1 1 1];
+legend_pos = [-0.2,1.15];
+
 i = 0;
 % tiledlayout(mr,mc, 'TileSpacing' , 'tight', 'Padding', 'tight')
 tiledlayout(mr,mc, 'TileSpacing' , 'tight', 'Padding', 'compact')
 
-nexttile();
+nexttile(1);
 i=i+1;
 plot(x, decomposition.sample_prior(x),'LineWidth', linewidth); hold on ;
 plot(x, decomposition.update_1(x),'LineWidth', linewidth); hold on ;
@@ -131,10 +135,23 @@ set(gca, 'Xlim', [0,1], 'Xtick', [0,0.5,1],'Fontsize', Fontsize);
 pbaspect([1 1 1])
 
 
-cl_mean = [min([mu_f;mean(samples_f)']), max([mu_f;mean(samples_f)'])];
-cl_sigma  = [min([sigma2_f;var(samples_f)']), max([sigma2_f;var(samples_f)'])];
-nexttile
-i=i+1;
+nexttile(4);
+i=4;
+imagesc(x, x, reshape(sample_f, n,n), cl_mean); hold on;
+scatter(xtrain(1, ctrain(1:ntr)==1),xtrain(2, ctrain(1:ntr)==1), markersize, 'o', 'k','filled'); hold on;
+scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o','k'); hold off;
+title('$\mu_f(x,x'')$')
+set(gca,'YDir','normal', 'Fontsize', Fontsize)
+ylabel('$x''$')
+colorbar
+set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1])
+pbaspect([1 1 1])
+colormap(cmap)
+text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+
+
+nexttile(2)
+i=2;
 imagesc(x, x, reshape(mu_f, n,n), cl_mean); hold on;
 scatter(xtrain(1, ctrain(1:ntr)==1),xtrain(2, ctrain(1:ntr)==1), markersize, 'o', 'k','filled'); hold on;
 scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o','k'); hold off;
@@ -147,8 +164,8 @@ pbaspect([1 1 1])
 colormap(cmap)
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 
-nexttile
-i=i+1;
+nexttile(3)
+i=3;
 imagesc(x, x, reshape(sigma2_f, n,n), cl_sigma); hold on;
 scatter(xtrain(1, ctrain(1:ntr)==1),xtrain(2, ctrain(1:ntr)==1), markersize, 'o', 'k','filled'); hold on;
 scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o','k'); hold off;
@@ -161,21 +178,21 @@ colorbar
 
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 
-
-nexttile
-i=i+1;
-plot(x, decomposition.cond_sample_prior(x),'LineWidth', linewidth); hold on ;
-plot(x, decomposition.update_2([x;x0.*ones(D,size(x,2))]),'LineWidth', linewidth); hold on ;
-plot(x, samples_g(j,:),'LineWidth', linewidth); hold on ;
-vline(condition.x0); hold on;
-plot([0,1], [condition.y0,condition.y0], '--k'); hold off;
-legend('Prior', 'Update', 'Posterior')
-box off;
-legend boxoff
-xlabel('$x$')
-set(gca, 'Fontsize', Fontsize)
-text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
-pbaspect([1 1 1])
+% 
+% nexttile
+% i=i+1;
+% plot(x, decomposition.cond_sample_prior(x),'LineWidth', linewidth); hold on ;
+% plot(x, decomposition.update_2([x;x0.*ones(D,size(x,2))]),'LineWidth', linewidth); hold on ;
+% plot(x, samples_g(j,:),'LineWidth', linewidth); hold on ;
+% vline(condition.x0); hold on;
+% plot([0,1], [condition.y0,condition.y0], '--k'); hold off;
+% legend('Prior', 'Update', 'Posterior')
+% box off;
+% legend boxoff
+% xlabel('$x$')
+% set(gca, 'Fontsize', Fontsize)
+% text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+% pbaspect([1 1 1])
 % imagesc(x, x, reshape(sample_f, n,n)); hold on;
 % scatter(xtrain(1, ctrain(1:ntr)==1),xtrain(2, ctrain(1:ntr)==1), markersize, 'o', 'k','filled'); hold on;
 % scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o','k'); hold off;
@@ -188,8 +205,8 @@ pbaspect([1 1 1])
 % pbaspect([1 1 1])
 % colormap(cmap)
 
-nexttile
-i=i+1;
+nexttile(5)
+i=5;
 imagesc(x, x, reshape(mean(samples_f,1), n,n),cl_mean); hold on;
 scatter(xtrain(1, ctrain(1:ntr)==1),xtrain(2, ctrain(1:ntr)==1), markersize, 'o', 'k','filled'); hold on;
 scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o','k'); hold off;
@@ -203,8 +220,8 @@ colorbar
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 xlabel('$x$')
 
-nexttile
-i=i+1;
+nexttile(6)
+i=6;
 imagesc(x, x, reshape(var(samples_f,1), n,n),cl_sigma); hold on;
 scatter(xtrain(1, ctrain(1:ntr)==1),xtrain(2, ctrain(1:ntr)==1), markersize, 'o', 'k','filled'); hold on;
 scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o','k'); hold off;

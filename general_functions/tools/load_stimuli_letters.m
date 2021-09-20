@@ -12,7 +12,12 @@ So = NaN(experiment.ny*experiment.nx,numel(letters));
 N = numel(letters);
 for i = 1:N
     S = imresize(squeeze(Si(i,:,:)), [experiment.ny, experiment.nx], 'method', 'bilinear');
+%     S = load_Snellen(experiment.display_width, experiment.display_height, Stimuli, stim_size, letters(i));
+
     So(:,i)=S(:);
+    
+    
+    
 end
 % files = dir(stimuli_folder);
 % S=[];
