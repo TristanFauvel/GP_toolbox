@@ -93,6 +93,8 @@ pbaspect([1 1 1])
 set(gca, 'Xlim', [0,1], 'Xtick', [0,0.5,1],'Ylim', [0,1], 'Ytick', [0,0.5,1], 'Fontsize', Fontsize');
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 cb = colorbar;
+cb.FontName = 'CMU Serif';
+cb.FontSize = Fontsize;
 cb_lim = get(cb, 'Ylim');
 cb_tick = get(cb, 'Ytick');
 set(cb,'Ylim', cb_lim, 'Ytick', [cb_tick(1),cb_tick(end)]);

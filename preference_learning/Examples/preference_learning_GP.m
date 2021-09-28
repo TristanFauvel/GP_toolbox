@@ -90,6 +90,8 @@ set(gca,'YDir','normal')
 set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1],'Fontsize', Fontsize)
 pbaspect([1 1 1])
 c = colorbar;
+c.FontName = 'CMU Serif';
+c.FontSize = Fontsize;
 c.Limits = [0,1];
 set(c, 'XTick', [0,1]);
 colormap(cmap)
@@ -109,6 +111,8 @@ set(gca,'YDir','normal')
 set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1], 'Fontsize', Fontsize)
 pbaspect([1 1 1])
 c = colorbar;
+c.FontName = 'CMU Serif';
+c.FontSize = Fontsize;
 c.Limits = [0,1];
 set(c, 'XTick', [0,1]);
 colormap(cmap)

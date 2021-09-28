@@ -56,7 +56,29 @@ if nargout>2
  
     dC_dr = k0*(sqrt(5)/rho +10*r/(3*rho^2)).*exp(-sqrt(5)*r/rho) - sqrt(5)/rho*C;
    
-    
+%     dC_dx = zeros(n0,n,nd);
+%     if ~isequal(x0,x)
+%         if nd>1
+%             for i =1:n0
+%                 for j= 1:n
+%                     if r(i,j)~=0
+%                         for d= 1:nd
+%                             dC_dx(i,j,d) = dC_dr(i,j)*(x(d,j)-x0(d,i))./(r(i,j)); % lambda(d).*(x0(d,i)-x(d,j))*C(i,j);
+%                         end
+%                     end
+%                 end
+%             end
+%         else
+%             for i =1:n0
+%                 for j= 1:n
+%                     if r(i,j)~=0
+%                         dC_dx(i,j) = dC_dr(i,j)*(x(j)-x0(i))./(r(i,j)); % lambda(d).*(x0(d,i)-x(d,j))*C(i,j);
+%                     end
+%                 end
+%             end
+%         end
+%         dC_dx(isnan(dC_dx)) = 0;
+%     end
     
     dC_dx = zeros(n0,n,n,nd);
     if ~isequal(x0,x)

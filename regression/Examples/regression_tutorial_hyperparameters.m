@@ -1,6 +1,6 @@
 clear all
 close all;
-rng(3)
+rng(4) %3
 n = 100;
 x = linspace(0,1,n);
 graphics_style_paper;

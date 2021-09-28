@@ -8,14 +8,10 @@ link = model.link;
 if ~isempty(xtest) && size(xtrain,1) ~= size(xtest,1)
     error("Dimensions of test and training sets are not consistent")
 end
-
-%%%%%%%%%%%%
 dmuc_dx = [];
 dmuy_dx=[];
 dsigma2y_dx=[];
 dSigma2y_dx= [];
-
-%%%%%%%%%%%
 MaxIt = 1e3;
 tol = 1e-7;
 
@@ -54,7 +50,7 @@ end
 if ~isempty(xtest)
     ntst = size(xtest, 2);
     
-    if nargout>4  && nargout ~= 9 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    if nargout>4  && nargout ~= 9
         [k, ~, dk_dx] = kernelfun(theta, xtrain, xtest, false, 'false');
         post.dk_dx = dk_dx;
     else
@@ -64,8 +60,8 @@ if ~isempty(xtest)
 end
 
 if ~isempty(xtest)
-    if nargout>4  && nargout ~= 9 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        [ks, ~, dks_dx] = kernelfun(theta, xtest, xtest, false, 'false');  %%%% Careful : normally here it's 'false', but I put 'true'in order to get a correct computation of the derivative, only ok if noise = 0
+    if nargout>4  && nargout ~= 9
+        [ks, ~, dks_dx] = kernelfun(theta, xtest, xtest, false, 'false');  
         diag_ks= diag(ks);
         n=size(xtest,2);
         L= reshape(dks_dx, n*n, [], D);
@@ -154,12 +150,10 @@ if ~isempty(xtest)
     if nargout>=4
         %Sigma2_y = ks-k'*inv(K + invS)*k;
         Sigma2_y = ks-k'*invKS*k;
-        %if isequal(xtrain,xtest)
         Sigma2_y = (Sigma2_y + Sigma2_y')/2;
         if strcmp(model.regularization, 'nugget')
             Sigma2_y = nugget_regularization(Sigma2_y);
         end
-        %end
     end
     % mean of p(c|x, c_tr, xtrain) (Eq 19.5.27 in Barber book)
     if strcmp(func2str(link),'logistic')
@@ -169,7 +163,7 @@ if ~isempty(xtest)
         mu_c =  normcdf(mu_y./sqrt(1+sigma2_y));
     end
     
-    if nargout>4 && nargout ~= 9 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    if nargout>4 && nargout ~= 9 
         if strcmp(func2str(link),'logistic')
             sigma_y = sqrt(sigma2_y);
             % derivative of mu_c with respect to mu_y and sigma_y

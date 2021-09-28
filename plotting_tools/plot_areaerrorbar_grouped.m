@@ -89,5 +89,5 @@ else
 
     end
 end
-
+set(gca, 'xlim', options.xlim)
 end

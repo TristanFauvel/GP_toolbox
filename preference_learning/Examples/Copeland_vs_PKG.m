@@ -10,7 +10,7 @@ link = @normcdf; %inverse link function
 regularization = 'nugget';
 post = [];
 %% Define the range of parameters
-n = 80;
+n = 10;
 x = linspace(0,1, n);
 d =1;
  
@@ -55,18 +55,60 @@ model.kernelfun = kernelfun;
 model.link = link;
 model.modeltype = modeltype;
 
-      
+      post = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [], model, []);
 [mu_c_cond,  mu_f_cond, sigma2_f_cond] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, model, post);
 [mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(d,n^d)], model, post);
  
+%%
+init_guess = [];
+options.method = 'lbfgs';
+options.verbose = 1;
+ncandidates = 5;
+model.lb_norm = 0;
+model.ub_norm = 1;
+lb_norm = [model.lb_norm; model.lb_norm];
+ub_norm = [model.ub_norm; model.ub_norm];
+model.condition.x0 = 0;
+model.condition.y0 = 0;
+model.type = 'preference';
+[xbest, ybest] = multistart_minConf(@(x)to_maximize_value_function(theta, xtrain, ctrain, x, model, post), model.lb_norm, model.ub_norm, ncandidates, init_guess, options);
+ybest = -ybest;
 
+c0 = [ctrain; 0];
+c1 = [ctrain;1];
+KG= zeros(1, size(x2d,2));
+
+mu_c = prediction_bin(theta, xtrain, ctrain, x2d, model, post);
+C= soft_copeland_score(reshape(mu_c, n, n));
+C= max(C);
+
+for i = 1:size(x2d,2)
+% KG(i) = knowledge_grad(theta, xtrain, ctrain, x2d(:,i),model, post, c0, c1, xbest, ybest,model.lb_norm, model.ub_norm);
+KG(i) = knowledge_grad_grid(theta, xtrain, ctrain, x2d, x2d(:,i),model, post, c0, c1, ybest);
+
+CEI(i) = copeland_ei(theta, xtrain, ctrain, x2d(:,i), x2d, model, post, C,n);
+end
+
+
+[~,idx_KG] = max(KG);
+[~,idx_CEI] = max(CEI);
+
+x_KG = x2d(:, idx_KG);
+x_CEI = x2d(:, idx_CEI);
+
+[iKG,jKG] = ind2sub([n, n], idx_KG);
+[iCEI,jCEI] = ind2sub([n, n], idx_CEI);
+
+
+%%
 %% Find the true global optimum of g
 % [gmax, id_xmax] = max(g);
 % xmax = x(id_xmax);
 legend_pos = [-0.2,1];
+graphics_style_paper;
 
 mr = 2;
-mc = 2;
+mc = 3;
 i = 0;
 fig=figure('units','centimeters','outerposition',1+[0 0 fwidth 1.1*fheight(mr)]);
 fig.Color =  [1 1 1];
@@ -75,7 +117,7 @@ fig.Color =  [1 1 1];
 tiledlayout(mr,mc, 'TileSpacing' , 'tight', 'Padding', 'tight')
 
 cl = [0,1];
-nexttile
+nexttile(1)
 i=i+1;
 imagesc(x, x, reshape(link(f),n,n), cl); hold on;
 xlabel('$x$','Fontsize', Fontsize)
@@ -84,9 +126,7 @@ title('$P(x>x'')$','Fontsize', Fontsize)
 set(gca,'YDir','normal')
 set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1],'Fontsize', Fontsize)
 pbaspect([1 1 1])
-c= colorbar;
-c.FontName = 'CMU Serif';
-c.FontSize = Fontsize;
+c = colorbar;
 c.Limits = [0,1];
 set(c, 'XTick', [0,1]);
 colormap(cmap)
@@ -97,6 +137,122 @@ legend([p1, p2], '$c=1$', '$c=0$','Fontsize',Fontsize, 'Location', 'northeast')
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 legend box off
    
+
+nexttile(2)
+i=i+1;
+imagesc(x, x, reshape(minmax_normalize(KG),n,n), cl); hold on;
+xlabel('$x$','Fontsize', Fontsize)
+ylabel('$x''$','Fontsize', Fontsize)
+title('$P(x>x'')$','Fontsize', Fontsize)
+set(gca,'YDir','normal')
+set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1],'Fontsize', Fontsize)
+pbaspect([1 1 1])
+c = colorbar();
+% c.Limits = [0,1];
+% set(c, 'XTick', [0,1]);
+colormap(cmap)
+p1 = scatter(xtrain(1, ctrain(1:ntr)==1),xtrain(2, ctrain(1:ntr)==1), markersize, 'o', 'k','filled'); hold on;
+p2 = scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o','k'); hold off;
+ text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+legend([p1, p2], '$c=1$', '$c=0$','Fontsize',Fontsize, 'Location', 'northeast')
+text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+legend box off
+
+
+nexttile(3)
+i=i+1;
+imagesc(x, x, reshape(minmax_normalize(CEI),n,n), cl); hold on;
+xlabel('$x$','Fontsize', Fontsize)
+ylabel('$x''$','Fontsize', Fontsize)
+title('$P(x>x'')$','Fontsize', Fontsize)
+set(gca,'YDir','normal')
+set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1],'Fontsize', Fontsize)
+pbaspect([1 1 1])
+c = colorbar();
+% c.Limits = [0,1];
+% set(c, 'XTick', [0,1]);
+colormap(cmap)
+p1 = scatter(xtrain(1, ctrain(1:ntr)==1),xtrain(2, ctrain(1:ntr)==1), markersize, 'o', 'k','filled'); hold on;
+p2 = scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o','k'); hold off;
+ text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+legend([p1, p2], '$c=1$', '$c=0$','Fontsize',Fontsize, 'Location', 'northeast')
+text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+legend box off
+
+
+nexttile(5)
+i=i+1;
+[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x(iKG)*ones(d,n^d)], model, post);
+
+h1 = plot_gp(x, mu_g_cond, sigma2_g_cond, C(1,:), linewidth); hold on;
+h2 = plot(x, g-g(iKG), 'color', C(2,:), 'linewidth', linewidth);  hold on;
+ 
+
+xlabel('$x$', 'Fontsize', Fontsize)
+ylabel('$g(x)$', 'Fontsize', Fontsize)
+set(gca,'XTick',[0 0.5 1],'Fontsize', Fontsize)
+ytick = get(gca,'YTick');
+set(gca,'YTick', linspace(min(ytick), max(ytick), 3), 'Fontsize', Fontsize)
+%title('Inferred value function $g(x)$','Fontsize', Fontsize)
+text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+box off
+% pbaspect([1 1 1])
+vline(x(iKG),'Linewidth',linewidth, 'ymax', mu_g_cond(iKG),  'LineStyle', '--', ...
+    'Linewidth', 1); hold on;
+vline(x(jKG),'Linewidth',linewidth, 'ymax', mu_g_cond(jKG),  'LineStyle', '--', ...
+    'Linewidth', 1); hold on;
+
+[xt,b] = sort([0,x(iKG), x(jKG), 1]);
+xticks(unique(xt))
+lgs = {'0', '$x_1$', '$x_2$' '1'};
+
+xticklabels(lgs(b))
+legend([h1 h2], 'Posterior GP : $p(g|\mathcal{D})$','True value function $g(x)$')
+legend box off
+
+nexttile(6)
+i=i+1;
+[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x(iCEI)*ones(d,n^d)], model, post);
+
+h1 = plot_gp(x, mu_g_cond, sigma2_g_cond, C(1,:), linewidth); hold on;
+h2 = plot(x, g-g(iCEI), 'color', C(2,:), 'linewidth', linewidth);  hold on;
+ 
+
+xlabel('$x$', 'Fontsize', Fontsize)
+ylabel('$g(x)$', 'Fontsize', Fontsize)
+set(gca,'XTick',[0 0.5 1],'Fontsize', Fontsize)
+ytick = get(gca,'YTick');
+set(gca,'YTick', linspace(min(ytick), max(ytick), 3), 'Fontsize', Fontsize)
+%title('Inferred value function $g(x)$','Fontsize', Fontsize)
+text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+box off
+% pbaspect([1 1 1])
+vline(x(iCEI),'Linewidth',linewidth, 'ymax', mu_g_cond(iCEI),  'LineStyle', '--', ...
+    'Linewidth', 1); hold on;
+vline(x(jCEI),'Linewidth',linewidth, 'ymax', mu_g_cond(jCEI),  'LineStyle', '--', ...
+    'Linewidth', 1); hold on;
+
+[xt,b] = sort([0,x(iCEI), x(jCEI), 1]);
+xticks(unique(xt))
+
+lgs = {'0', '$x_1$', '$x_2$' '1'};
+xticklabels(lgs(b))
+legend([h1 h2], 'Posterior GP : $p(g|\mathcal{D})$','True value function $g(x)$')
+legend box off
+
+%%
+
+
+ 
+mr = 1;
+mc = 3;
+i = 0;
+fig=figure('units','centimeters','outerposition',1+[0 0 fwidth 1.1*fheight(mr)]);
+fig.Color =  [1 1 1];
+
+
+tiledlayout(mr,mc, 'TileSpacing' , 'tight', 'Padding', 'tight')
+
  nexttile
 i=i+1;
 
@@ -186,7 +342,7 @@ legend([p1, p2], 'V$[\Phi(f(x,x_1))|\mathcal{D}]$', 'V$(c| x, x_1, \mathcal{D})$
 legend box off
 
 
-figname  = 'MUC';
+figname  = 'Copeland_vs_PKG';
 folder = [figure_path,figname];
 savefig(fig, [folder,'/', figname, '.fig'])
 exportgraphics(fig, [folder,'/' , figname, '.pdf']);

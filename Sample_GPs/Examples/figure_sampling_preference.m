@@ -143,7 +143,9 @@ scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o'
 title('$\mu_f(x,x'')$')
 set(gca,'YDir','normal', 'Fontsize', Fontsize)
 ylabel('$x''$')
-colorbar
+cb = colorbar;
+cb.FontName = 'CMU Serif';
+cb.FontSize = Fontsize;
 set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1])
 pbaspect([1 1 1])
 colormap(cmap)
@@ -158,7 +160,9 @@ scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o'
 title('$\mu_f(x,x'')$')
 set(gca,'YDir','normal', 'Fontsize', Fontsize)
 ylabel('$x''$')
-colorbar
+cb = colorbar;
+cb.FontName = 'CMU Serif';
+cb.FontSize = Fontsize;
 set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1])
 pbaspect([1 1 1])
 colormap(cmap)
@@ -174,7 +178,9 @@ set(gca,'YDir','normal')
 set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1], 'Fontsize', Fontsize)
 pbaspect([1 1 1])
 colormap(cmap)
-colorbar
+cb = colorbar;
+cb.FontName = 'CMU Serif';
+cb.FontSize = Fontsize;
 
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 
@@ -216,7 +222,9 @@ set(gca,'YDir','normal')
 set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1], 'Fontsize', Fontsize)
 pbaspect([1 1 1])
 colormap(cmap)
-colorbar
+cb = colorbar;
+cb.FontName = 'CMU Serif';
+cb.FontSize = Fontsize;
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 xlabel('$x$')
 
@@ -232,7 +240,9 @@ set(gca,'YDir','normal')
 set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1], 'Fontsize', Fontsize)
 pbaspect([1 1 1])
 colormap(cmap)
-colorbar
+cb = colorbar;
+cb.FontName = 'CMU Serif';
+cb.FontSize = Fontsize;
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 xlabel('$x$')
 colororder(C)
@@ -278,7 +288,9 @@ subplot(1,2,1)
 imagesc(crosscov)
 title('Sample covariance')
 pbaspect([1,1,1])
-colorbar
+cb = colorbar;
+cb.FontName = 'CMU Serif';
+cb.FontSize = Fontsize;
 subplot(1,2,2)
 imagesc(Sigma2_f)
 pbaspect([1,1,1])

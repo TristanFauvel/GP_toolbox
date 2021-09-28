@@ -38,7 +38,7 @@ classdef sumsqu
         D
         name = 'Sum Squares';
         opt = 'max';
-                mean
+        mean
         var
         takelog
         rescaling

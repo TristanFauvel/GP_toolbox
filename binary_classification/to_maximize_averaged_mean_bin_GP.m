@@ -3,22 +3,38 @@ function [g,  dgdx] = to_maximize_averaged_mean_bin_GP(theta, xtrain_norm, ctrai
 if any(isnan(x(:)))
     error('x is NaN')
 end
- 
- 
+
+
 if isempty(post)
     warning('Precomputing the approximate posterior is more efficient')
 end
 
 lb = model.lb_norm(1:model.ns);
 ub = model.ub_norm(1:model.ns);
+tol = 1e-2;
 
 fun = @(s) mean_binGP(theta, xtrain_norm, ctrain, [s;x*ones(1,size(s,2))], model, post);
-g = -integral(fun,lb,ub, 'ArrayValued', true,'RelTol',1e-3);
-
+g = -integral(fun,lb,ub, 'ArrayValued', true,'RelTol',tol);
+%
 fun = @(s) dmean_binGP(theta, xtrain_norm, ctrain, [s;x*ones(1,size(s,2))], model, post);
-dgdx = -integral(fun,lb,ub, 'ArrayValued', true,'RelTol', 1e-3);
+dgdx = -integral(fun,lb,ub, 'ArrayValued', true,'RelTol', tol);
 
- end
+%%
+% nsamples = 1000;
+% s_samples = rand_interval(lb, ub, 'nsamples', nsamples);
+% % 
+% g_mu_y = zeros(1,nsamples);
+% dmuy_dx = zeros(model.D, nsamples);
+% for i = 1:nsamples
+%     [~,  g_mu_y(i), ~, ~, ~, dmuy_dx(:,i)] = prediction_bin(theta, xtrain_norm, ctrain, [s_samples(:,i);x], model, post);
+% end
+% g = -mean(g_mu_y)
+% dgdx = -mean(dmuy_dx,2);
+% dgdx = dgdx(model.ns+1:end);
+% 
+ 
+
+end
 
 function g_mu_y = mean_binGP(theta, xtrain_norm, ctrain, x, model, post)
 
@@ -32,3 +48,4 @@ function  dmuy_dx= dmean_binGP(theta, xtrain_norm, ctrain, x, model, post)
 dmuy_dx = squeeze(dmuy_dx);
 dmuy_dx = dmuy_dx((model.ns+1):end);
 end
+

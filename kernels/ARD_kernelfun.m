@@ -58,7 +58,18 @@ if nargout>1
 end
 
 if nargout>2
-    
+%     dC_dx = zeros(n0,n,nd);
+%     
+%     if ~isequal(x0,x)
+%         for i =1:n0
+%             for j= 1:n
+%                 for d= 1:nd
+%                     dC_dx(i,j,d) = lambda(d).*(x0(d,i)-x(d,j))*C(i,j);
+%                 end
+%             end
+%         end
+%     end
+
     dC_dx = zeros(n0,n,n,nd);
     
     if ~isequal(x0,x)       
@@ -70,16 +81,6 @@ if nargout>2
         end
     end
     end
-%     end
-    
-%     xtemp0 = permute(x0, [2 3 1]);
-%     xtemp  =  permute(x, [2 3 1]);
-%     dx = (xtemp0-permute(xtemp, [2 1, 3]));
-%     dC_dx = NaN(n0,n,nd);
-%     for i =1:nd
-%         dC_dx(:,:,i) = lambda(i).*dx(:,:,i).*C;
-%     end
-%      dC = 0;
 end
 
 return

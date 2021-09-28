@@ -29,11 +29,11 @@ elseif nargout ==3
     
     % dK_dx : ni x nj x nj x D
     % dkj_dx : 1 x nj x nj x D
-    if D>1
-        if ~isequal(size(dK_dxj), [ni,nj,nj,D]) || ~isequal(size(dkj_dxj), [1,nj,nj,D])
-            error('Error in the kernel derivatives dimensions')
-        end
-    end
+%     if D>1
+%         if ~isequal(size(dK_dxj), [ni,nj,nj,D]) || ~isequal(size(dkj_dxj), [1,nj,nj,D])
+%             error('Error in the kernel derivatives dimensions')
+%         end
+%     end
     ki = ki';
     dki = permute(dki,[2 1 3]);
     kj = kj';
@@ -52,11 +52,11 @@ elseif nargout ==3
     
     dC = dK - (mtimesx(dki/k0,kj,'T') - mtimesx(mtimesx(ki, dk0),kj,'T')./(k0^2)  + mtimesx(ki,dkj,'T')/k0);%derivative with respect to theta
     dC_dxj = dK_dxj - mtimesx(ki/k0,dkj_dxj);
-    if D>1
-        if ~isequal(size(dC_dxj), [ni,nj,nj,D])
-            error('Error in the kernel derivative dimensions')
-        end
-    end
+%     if D>1
+%         if ~isequal(size(dC_dxj), [ni,nj,nj,D])
+%             error('Error in the kernel derivative dimensions')
+%         end
+%     end
     %     dC_dxj = dK_dx' - (ki/k0)*dkj_dx'; %ni x D
     
 end
