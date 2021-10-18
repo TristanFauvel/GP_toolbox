@@ -17,25 +17,27 @@ Kard = kernelfun(theta.cov,x,x, 'true', regularization);
 mu_y_ard = meanfun(x,theta.mean);
 y = mvnrnd(mu_y_ard, Kard);
 
- 
-ntr = 2; 
+D = 1;
+ntr = 2;
 i_tr= randsample(n,ntr);
-% i_tr(3)=100 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% ntr = 3; %%%%%%%%%%%
-x_tr = x(:,i_tr);
+ x_tr = x(:,i_tr);
 y_tr = y(:, i_tr);
 
 sample_prior = mvnrnd(mu_y_ard, Kard);
 
-model.kernelfun = kernelfun;
-model.meanfun = meanfun;
-model.regularization = regularization;
-[mu_y, sigma2_y,dmu_dx, sigma2_dx, Sigma2_y, dSigma2_dx, post] = prediction(theta, x_tr, y_tr, x, model, []); 
+type = 'regression';
+hyps.ncov_hyp =2; % number of hyperparameters for the covariance function
+hyps.nmean_hyp =1; % number of hyperparameters for the mean function
+hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+model = gp_regression_model(D, meanfun, kernelfun, regularization, hyps);
+
+[mu_y, sigma2_y,dmu_dx, sigma2_dx, Sigma2_y, dSigma2_dx, post] = model.prediction(theta, x_tr, y_tr, x, []);
 sample_post = mvnrnd(mu_y, Sigma2_y);
 
 theta_w = theta;
 theta_w.cov = [4,3];
-[mu_y_w, sigma2_y_w,~,~, Sigma2_y_w] = prediction(theta_w, x_tr, y_tr, x, model, []);
+[mu_y_w, sigma2_y_w,~,~, Sigma2_y_w] = model.prediction(theta_w, x_tr, y_tr, x, []);
 sample_post_w = mvnrnd(mu_y, Sigma2_y);
 
 mr = 1;
@@ -56,8 +58,7 @@ h3 = plot(x, sample_prior, 'Color',  'k','LineWidth', linewidth/2); hold off;
 box off
 xlabel('$x$')
 ylabel('$f(x)$')
-% yl = get(gca,'Ylim');
-yl = [-4,4];
+ yl = [-4,4];
 
 set(gca, 'Xlim', [0,1], 'Xtick', [0,0.5,1], 'Ytick', floor([yl(1), 0, yl(2)]), 'Fontsize', Fontsize);
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
@@ -101,7 +102,7 @@ set(cb,'Ylim', cb_lim, 'Ytick', [cb_tick(1),cb_tick(end)]);
 
 colormap(cmap)
 box off
- %% Now, I plot the prior distribution corresponding to each kernel, along with samples from this distribution
+%% Now, I plot the prior distribution corresponding to each kernel, along with samples from this distribution
 
 
 figname  = 'GP_regression';

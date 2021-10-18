@@ -17,6 +17,7 @@ if ~isempty(dims)
     ub = ub(dims);
 end
 
+
 starting_points = rand_interval(lb, ub, 'nsamples', ncandidates);
 if ~isempty(init_guess)
     starting_points(:,1)= init_guess;

@@ -68,9 +68,9 @@ task = 'preference';
 model.task = task;
 post = [];
 
-[mu_c,  mu_f, sigma2_f, Sigma2_f] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, model, post);
+[mu_c,  mu_f, sigma2_f, Sigma2_f] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, post);
 
-[~,  mu_g, sigma2_g, Sigma2_g ,~, ~, ~, ~, ~, ~, post] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], model, post);
+[~,  mu_g, sigma2_g, Sigma2_g ,~, ~, ~, ~, ~, ~, post] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], post);
 
 mu_g = -mu_g; %(because prediction_bin considers P(x1 > x2);
 

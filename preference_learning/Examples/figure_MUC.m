@@ -37,8 +37,9 @@ link = @normcdf; %inverse link function for the classification model
 % gfunc = @(x) normpdf(x, 0.5, 0.2);
 % g = gfunc(x)-gfunc(x0);
 
-theta= [-1;1];
-g = mvnrnd(zeros(1,n),base_kernelfun(theta, x, x, 'false', 'no'));
+theta.mean = 0;
+theta.cov= [-1;1];
+g = mvnrnd(zeros(1,n),base_kernelfun(theta.cov, x, x, 'false', 'no'));
 %g = g-g(1);
 
 f = g-g';
@@ -50,14 +51,21 @@ xtrain= x2d(:,rd_idx);
 ytrain= f(rd_idx);
 ctrain = link(ytrain)>rand(ntr,1);
 
-model.regularization = 'nugget';
-model.kernelfun = kernelfun;
-model.link = link;
-model.modeltype = modeltype;
+D = 1;
+meanfun = 0;
+type = 'classification'; 
+ hyps.ncov_hyp =2; % number of hyperparameters for the covariance function
+hyps.nmean_hyp =1; % number of hyperparameters for the mean function
+   hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+lb = 0;
+ub = 1;
+
+model = gp_classification_model(D, meanfun, kernelfun, regularization, hyps, lb,ub, type, link, modeltype);
 
       
-[mu_c_cond,  mu_f_cond, sigma2_f_cond] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, model, post);
-[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(d,n^d)], model, post);
+[mu_c_cond,  mu_f_cond, sigma2_f_cond] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, post);
+[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(d,n^d)], post);
  
 
 %% Find the true global optimum of g
@@ -125,7 +133,7 @@ xticklabels(lgs(b))
 legend([h1 h2], 'Posterior GP : $p(g|\mathcal{D})$','True value function $g(x)$')
 legend box off
 
-[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; max_x*ones(d,n^d)], model, post);
+[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; max_x*ones(d,n^d)], post);
 
 nexttile
 legend_pos = [-0.1,1];

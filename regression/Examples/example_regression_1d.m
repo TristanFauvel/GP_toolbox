@@ -15,14 +15,17 @@ elseif strcmp(objective, 'grlee12')
     d=1; %dimension of the input space
 end
 objective = str2func(objective);
-%% Data definition
+objective = objective();
+objective = @(x) objective.do_eval(x);
+
+ %% Data definition
 % Discretize space
 n=1000;
 x = linspace(xbounds(1), xbounds(2),n);
 
 % Function we want to sample from :
 y = objective(x);
-
+ 
 % Number of points in the training set
 ntr =250;
 
@@ -45,26 +48,30 @@ meanfun= @constant_mean;
 
 %Choice of the kernel : ARD kernel
 kernelfun = @ARD_kernelfun;
-ncov_hyp=2; % number of hyperparameters for the covariance function
-
-% kernelfun = @Rational_Quadratic_kernelfun;
-% ncov_hyp=3; % number of hyperparameters for the covariance function
-
-nmean_hyp=1; % number of hyperparameters for the mean function
-
+  
+ 
 % Initialize hyperparameters
 % theta.cov = [1,2,1];
-theta.cov = [1,2];
-theta.mean = zeros(nmean_hyp,1);
+ D = 1;
+regularization = 'nugget';
+type = 'regression';
+ hyps.ncov_hyp =2; % number of hyperparameters for the covariance function
+hyps.nmean_hyp =1; % number of hyperparameters for the mean function
+   hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+lb = xbounds(1); ub = xbounds(2); %bounds of the space
+model = gp_regression_model(D, meanfun, kernelfun, regularization, hyps, lb, ub);
 
 % Compute the posterior distribution
+theta.cov = [1,2];
+theta.mean = zeros(hyps.nmean_hyp,1);
 
 x_test_norm =(x_test- xbounds(1))./(xbounds(2)-xbounds(1));
 x_norm = (x_tr- xbounds(1))./(xbounds(2)-xbounds(1));
 mean_y = mean(y_tr);
 y_norm = y_tr - mean_y;
 
-[mu_y, sigma2_y]= prediction(theta, x_norm, y_norm, x_test_norm, kernelfun, meanfun);
+[mu_y, sigma2_y]= model.prediction(theta, x_norm, y_norm, x_test_norm, []);
 mu_y = mu_y + mean_y;
 
 graphics_style_paper;
@@ -77,33 +84,18 @@ scatter(x_tr, y_tr,markersize, 'k', 'filled') ; hold on;
 errorshaded(x, mu_y, sqrt(sigma2_y), 'Color', 'red','DisplayName','Prediction'); hold off
 box off
 
-% Uncomment this if you want to use multistart optimization to estimate the hyperparameters using type-2 maximum likelihood.
-
-%% Global optimization of hyperparameters
-% gs = GlobalSearch;
-% gs.Display='iter';
-% lb= -100*ones(1,numel(hyp));
-% ub= 100*ones(1,numel(hyp));
-% opts = optimoptions(@fmincon,'Algorithm','sqp');
-% myobjfun = @(hyp) minimize_negloglike(hyp, x_tr, y_tr, kernelfun, meanfun, ncov_hyp, nmean_hyp);
-% problem = createOptimProblem('fmincon','objective', myobjfun,'x0',hyp, 'lb',lb,'ub',ub, 'options', opts);
-% ms = MultiStart;
-% hyp = run(ms,problem,200);
-% theta.cov = hyp(1:ncov_hyp);
-% theta.mean = hyp(ncov_hyp+1:ncov_hyp+nmean_hyp);
-
 
 %% Local optimization of hyperparameters
 update = 'all';
 options=[];
 hyp=[theta.cov, theta.mean];
 
-hyp = minFunc(@(hyp)minimize_negloglike(hyp, x_norm, y_norm, kernelfun, meanfun, ncov_hyp, nmean_hyp, update), hyp, options);
-theta.cov = hyp(1:ncov_hyp);
-theta.mean = hyp(ncov_hyp+1:ncov_hyp+nmean_hyp);
+hyp = model.model_selection(x_norm, y_norm, update);        
+
+% hyp = minFunc(@(hyp)minimize_negloglike(hyp, x_norm, y_norm, kernelfun, meanfun, ncov_hyp, nmean_hyp, update), hyp, options);
 
 %% Prediction with the new hyperparameters
-[mu_y, sigma2_y]= prediction(theta, x_norm, y_norm, x_test_norm, kernelfun, meanfun);
+[mu_y, sigma2_y]= model.prediction(theta, x_norm, y_norm, x_test_norm, []);
 mu_y = mu_y + mean_y;
 
 fig = figure();

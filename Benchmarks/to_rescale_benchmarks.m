@@ -26,7 +26,14 @@ for j = 1:N
     objective = char(objectives(j));
     
     disp(['Function : ' , num2str(j)])
-    [g, theta.cov, lb, ub, lb_norm, ub_norm, theta_lb, theta_ub] = load_benchmarks(objective, [], benchmarks_table,1);
+    [g, theta.cov, model] = load_benchmarks(objective, [], benchmarks_table,0);
+    
+    lb = model.lb;
+    ub = model.ub;
+    lb_norm = model.lb_norm;
+    ub_norm = model.ub_norm;
+    hyp_lb = model.hyp_lb;
+    hyp_ub = model.hyp_ub;
     
     xsamples = rand_interval(lb,ub,'nsamples', nsamps);
     ysamples= -g(xsamples);

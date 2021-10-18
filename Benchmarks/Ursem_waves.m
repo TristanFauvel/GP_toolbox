@@ -3,15 +3,15 @@ classdef Ursem_waves
         D = 2
         xbounds = [-0.9, 1.2; -1.2, 1.2];
         name = 'Ursem Waves';
-                        opt = 'max';
+        opt = 'max';
         mean
         var
         takelog
         rescaling
-
+        
     end
     methods
-         function obj = Ursem_waves(rescaling)
+        function obj = Ursem_waves(rescaling)
             if nargin<1
                 obj.rescaling = 0;
             else
@@ -34,6 +34,9 @@ classdef Ursem_waves
             
             if obj.rescaling
                 if obj.takelog
+                    if any(y<=0)
+                        error('Log of negative value')
+                    end
                     y = log(y);
                 end
                 y = (y- obj.mean)./sqrt(obj.var);

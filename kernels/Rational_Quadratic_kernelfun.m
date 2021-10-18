@@ -21,6 +21,11 @@ DEFAULT('regularization', 'nugget'); % do not regularize the base kernels
 %     ), varargin);
 % UNPACK_STRUCT(opts, false)
 
+if isempty(theta)
+    C = 3;
+    return
+end
+
 if nargin==2
     x = x0;
 end

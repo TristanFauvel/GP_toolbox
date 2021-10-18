@@ -24,35 +24,43 @@ i_tr= randsample(n,ntr);
 xtrain = x(:,i_tr);
 ytrain = y(:, i_tr);
 
-model.kernelfun = kernelfun;
-model.meanfun = meanfun;
-model.regularization = regularization;
+ 
+hyps.ncov_hyp =2; % number of hyperparameters for the covariance function
+hyps.nmean_hyp =1; % number of hyperparameters for the mean function
+hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
 
-[mu_y, sigma2_y,dmu_dx, sigma2_dx, Sigma2_y, dSigma2_dx, post] = prediction(theta, xtrain, ytrain, x, model, []); 
+D = 1;
+type = 'regression';
+model = gp_regression_model(D, meanfun, kernelfun, regularization, hyps);
+
+[mu_y, sigma2_y,dmu_dx, sigma2_dx, Sigma2_y, dSigma2_dx, post] = model.prediction(theta, xtrain, ytrain, x, []); 
 sample_post = mvnrnd(mu_y, Sigma2_y);
 
 theta_w = theta;
 theta_w.cov = [4,3];
-[mu_y_w, sigma2_y_w,~,~, Sigma2_y_w] = prediction(theta_w, xtrain, ytrain, x, model, []);
+[mu_y_w, sigma2_y_w,~,~, Sigma2_y_w] = model.prediction(theta_w, xtrain, ytrain, x, []);
 sample_post_w = mvnrnd(mu_y_w, Sigma2_y_w);
 
 
 hyp.mean = 0;
 hyp.cov = theta.cov;
 update = 'cov';
-ncov_hyp = 2;
-nmean_hyp = 1;
-update = 'cov';
-init_guess = hyp;
-theta_lb = -10*ones(1,2);
-theta_ub = 10*ones(1,2);
-options_theta.method = 'lbfgs';
-hyp.cov = multistart_minConf(@(hyp)minimize_negloglike(hyp, xtrain, ytrain, kernelfun, meanfun, ncov_hyp, nmean_hyp, update), [theta_lb,0], [theta_ub,0],10, [], options_theta);
-hyp.cov = hyp.cov(1:2);
-[mu_y_ml, sigma2_y_ml,~,~, Sigma2_y_ml] = prediction(hyp, xtrain, ytrain, x, model, []);
-sample_post_ml = mvnrnd(mu_y_ml, Sigma2_y_ml);
+% ncov_hyp = 2;
+% nmean_hyp = 1;
+% update = 'cov';
+% init_guess = hyp;
+% hyp_lb = -10*ones(1,2);
+% hyp_ub = 10*ones(1,2);
+% options_theta.method = 'lbfgs';
+% hyp.cov = multistart_minConf(@(hyp)minimize_negloglike(hyp, xtrain, ytrain, kernelfun, meanfun, ncov_hyp, nmean_hyp, update), [hyp_lb,0], [hyp_ub,0],10, [], options_theta);
+hyp = model.model_selection(xtrain, ytrain, update);
 
+ 
 
+[mu_y_ml, sigma2_y_ml,~,~, Sigma2_y_ml] = model.prediction(hyp, xtrain, ytrain, x, []);
+ sample_post_ml = mvnrnd(mu_y_ml, Sigma2_y_ml);
+ 
 
 mr = 1;
 mc = 3;

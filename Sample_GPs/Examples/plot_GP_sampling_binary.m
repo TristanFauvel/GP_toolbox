@@ -68,7 +68,16 @@ hyp = theta.cov;
 m=10000;
 fx = NaN(m, n);
 
-[mu_c,  mu_f, sigma2_f, Sigma2_f, ~, ~,~,~,var_muc, ~, post] = prediction_bin(hyp, x_data, c_data, x, model, post);
+hyps.ncov_hyp =2; % number of hyperparameters for the covariance function
+hyps.nmean_hyp =0; % number of hyperparameters for the mean function
+hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+D = 1;
+meanfun = 0;
+type = 'classification';
+model = gp_classification_model(D, meanfun, kernelfun, regularization, hyps, type, link, modeltype);
+
+[mu_c,  mu_f, sigma2_f, Sigma2_f, ~, ~,~,~,var_muc, ~, post] = model.prediction(hyp, x_data, c_data, x, post);
 
 D= 1;
 nfeatures = 256*2;

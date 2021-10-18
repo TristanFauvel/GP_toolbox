@@ -14,14 +14,20 @@ function [C, dC, dC_dx] = ARD_kernelfun_wnoise(theta, x0, x, training, regulariz
 % OUTPUT
 % C  = [N, N]:           covariance of p(y|x)
 % dC = [N, N, ntheta]:   derivative of C w.r.t theta
-DEFAULT('regularization', 'nugget'); % do not regularize the base kernels
-
+ 
 if nargin==2
     x = x0;
 end
 
 % unpack hyperparameters
 [nd, n0] = size(x0);
+
+if isempty(theta)
+    C = nd+1;
+    return
+end
+
+
 n = size(x, 2);
 lambda       =  exp(theta(1:nd));
 k0           =  exp(theta(nd+1));

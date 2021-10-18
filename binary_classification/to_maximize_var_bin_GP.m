@@ -11,7 +11,7 @@ if isempty(post)
     warning('Precomputing the approximate posterior is more efficient')
 end
 [output1,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc, dvar_muc_dx,post] = ...
-    prediction_bin(theta, xtrain_norm, ctrain, x, model, post);
+    model.prediction(theta, xtrain_norm, ctrain, x, post);
 
 
 var_muc = -var_muc;

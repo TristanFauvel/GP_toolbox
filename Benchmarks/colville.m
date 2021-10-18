@@ -74,6 +74,9 @@ classdef colville
             y = term1 + term2 + term3 + term4 + term5 + term6;
            if obj.rescaling
                 if obj.takelog
+                    if any(y<0)
+                        error('Log of negative value')
+                    end
                     y = log(y);
                 end
                 y = (y- obj.mean)./sqrt(obj.var);

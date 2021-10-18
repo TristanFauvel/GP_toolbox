@@ -11,9 +11,9 @@ phi=approximation.phi;
 dphi_dx = approximation.dphi_dx;
 
 if isempty(post)
-post =prediction_bin(theta, xtrain, ctrain, [], model, post);
+post =model.prediction(theta, xtrain, ctrain, [], post);
 end
-[~,  mu_y, ~, Sigma2_y] =prediction_bin(theta, xtrain, ctrain, xtrain, model, post);
+[~,  mu_y, ~, Sigma2_y] =model.prediction(theta, xtrain, ctrain, xtrain, post);
 
 
 Sigma2_y = nugget_regularization(Sigma2_y);

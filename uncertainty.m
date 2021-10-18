@@ -43,13 +43,18 @@ theta =theta_true ; % rand(size(theta_true));
 regularization = 'nugget';
 post = [];
 
-model.kernelfun = kernelfun;
-model.modeltype = modeltype;
-model.regularization = regularization;
-model.link = @normcdf;
+hyps.ncov_hyp =2; % number of hyperparameters for the covariance function
+hyps.nmean_hyp =0; % number of hyperparameters for the mean function
+hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+D = 1;
+meanfun = 0;
 
-[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc, dvar_muc_dx]= prediction_bin(theta, xtrain, ctrain, x_test, model, post);
-fun = @(x_test) prediction_bin(theta, xtrain, ctrain, x_test, model, post);
+model = gp_classification_model(D, meanfun, kernelfun, regularization, hyps, 'classification', link, modeltype);
+
+
+[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc, dvar_muc_dx]= model.prediction(theta, xtrain, ctrain, x_test, post);
+fun = @(x_test) model.prediction(theta, xtrain, ctrain, x_test, post);
 dF = test_matrix_deriv(fun, x_test, 1e-8);
 
 %Xlim= [min(x),max(x)];
@@ -88,7 +93,7 @@ p1 = plot_gp(x,mu_y, sigma2_y, C(1,:),linewidth);
 p2 = plot(x,y,'LineWidth',linewidth,'Color', C(2,:)); hold off;
 % errorshaded(x,mu_y, sqrt(sigma2_y), 'Color',  C(1,:),'LineWidth', linewidth, 'Fontsize', Fontsize); hold off
 % legend('True function', 'Inferred function','Fontsize',Fontsize)
-legend([p1, p2], {'$\mu_g(x)$','$g(x)$'},'Fontsize',Fontsize, 'Location', 'northeast')
+legend([p1, p2], {'$\mu_f(x)$','$f(x)$'},'Fontsize',Fontsize, 'Location', 'northeast')
 xlabel('$x$','Fontsize',Fontsize)
 legend boxoff
 grid off
@@ -148,7 +153,7 @@ nexttile()
 i=i+1;
 plot_gp(x,mu_y, sigma2_y, C(1,:), linewidth);
 xlabel('$x$', 'Fontsize', Fontsize)
-ylabel('$g(x)$', 'Fontsize', Fontsize)
+ylabel('$f(x)$', 'Fontsize', Fontsize)
 set(gca,'XTick',[0 0.5 1],'Fontsize', Fontsize)
 ytick = get(gca,'YTick');
 set(gca,'YTick', linspace(min(ytick), max(ytick), 3), 'Fontsize', Fontsize)
@@ -176,7 +181,7 @@ nexttile()
 i=i+1;
  plot(x, I1, 'color', C(1,:))
 xlabel('$x$', 'Fontsize', Fontsize)
-ylabel('I$(c,g(x)|\mathcal{D})$')
+ylabel('I$(c,f(x)|\mathcal{D})$')
 set(gca,'XTick',[0 0.5 1],'Fontsize', Fontsize)
 ytick = get(gca,'YTick');
 set(gca,'YTick', linspace(min(ytick), max(ytick), 3), 'Fontsize', Fontsize)
@@ -191,12 +196,12 @@ i=i+1;
 I= BALD(theta, xtrain, ctrain, x, model,post);
 plot(x, I, 'color', C(1,:))
 xlabel('$x$', 'Fontsize', Fontsize)
-ylabel('I$(c,g(x)|\mathcal{D})$')
+ylabel('I$(c,f(x)|\mathcal{D})$')
 set(gca,'XTick',[0 0.5 1],'Fontsize', Fontsize)
 ytick = get(gca,'YTick');
 set(gca,'YTick', linspace(min(ytick), max(ytick), 3), 'Fontsize', Fontsize)
 box off
-title('Epistemic uncertainty I$(c,g(x)|\mathcal{D})$')
+title('Epistemic uncertainty I$(c,f(x)|\mathcal{D})$')
 set(get(cb,'Title'),'String','(nats)', 'Interpreter', 'latex')
 
 nexttile()
@@ -253,35 +258,97 @@ var_muc = (mu_c - 2*tfn_output) - mu_c.^2;
 aleatoric_unvar=2*tfn_output;
 %%
 
-maxI = max([I1, I2, I]);
-
-legend_pos = [-0.4,1.18];
+ 
+legend_pos = [-0.5,1.18];
 i=0;
 mr = 2;
-mc = 4;
+mc = 3;
 fig=figure('units','centimeters','outerposition',1+[0 0 fwidth 0.7*fheight(mr)]);
 fig.Color =  [1 1 1];
 tiledlayout(mr,mc, 'TileSpacing', 'tight', 'padding','compact');
+% nexttile();
+% i=i+1;
+% imagesc(mu_y_range, sigma2_y_range, reshape(mu_c,N,N)); hold on;
+% xlabel('$\mu_f(x)$','Fontsize',Fontsize)
+% ylabel('$\sigma^2_f(x)$','Fontsize',Fontsize)
+% set(gca,'YDir','normal')
+% pbaspect([1 1 1])
+% cb = colorbar;
+% cb.FontName = 'CMU Serif';
+% cb.FontSize = Fontsize;
+% colormap(cmap)
+% title('$\mu_c(x)$')
+% set(gca, 'fontsize', Fontsize)
+% text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+
+maxI = max([var_muc, aleatoric_unvar, aleatoric_unvar+var_muc]);
+
 nexttile();
 i=i+1;
-imagesc(mu_y_range, sigma2_y_range, reshape(mu_c,N,N)); hold on;
-xlabel('$\mu_g(x)$','Fontsize',Fontsize)
-ylabel('$\sigma^2_g(x)$','Fontsize',Fontsize)
-set(gca,'YDir','normal')
+imagesc(mu_y_range, sigma2_y_range, reshape(aleatoric_unvar+var_muc,N,N)); hold on;
+% xlabel('$\mu_f(x)$','Fontsize',Fontsize)
+ylabel('$\sigma^2_f(x)$','Fontsize',Fontsize)
+
+set(gca,'YDir','normal','CLim',[0, maxI])
 pbaspect([1 1 1])
-cb = colorbar;
+% cb = colorbar;
+% set(cb, 'Limits', [0, maxI])
+% cb.FontName = 'CMU Serif';
+% cb.FontSize = Fontsize;
+% colormap(cmap)
+title('V$(c|x, \mathcal{D})$')
+set(gca, 'fontsize', Fontsize)
+text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+
+
+nexttile();
+i=i+1;
+imagesc(mu_y_range, sigma2_y_range, reshape(var_muc,N,N)); hold on;
+% xlabel('$\mu_f(x)$','Fontsize',Fontsize)
+% ylabel('$\sigma^2_f(x)$','Fontsize',Fontsize)
+set(gca,'YDir','normal','CLim',[0, maxI])
+pbaspect([1 1 1])
+% cb = colorbar;
+title('V$[\Phi(f(x))|\mathcal{D}]$')
+set(gca, 'fontsize', Fontsize)
+text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+
+
+nexttile();
+i=i+1;
+imagesc(mu_y_range, sigma2_y_range, reshape(aleatoric_unvar,N,N)); hold on;
+% xlabel('$\mu_f(x)$','Fontsize',Fontsize)
+set(gca,'YDir','normal','CLim',[0, maxI])
+pbaspect([1 1 1])
+ title('E$_f$[V$(c|x, f)|\mathcal{D}]$')
+set(gca, 'fontsize', Fontsize)
+text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+
+ cb = colorbar;
+set(cb, 'Limits', [0, maxI])
 cb.FontName = 'CMU Serif';
 cb.FontSize = Fontsize;
 colormap(cmap)
-title('$\mu_c(x)$')
+
+maxI = max([I1, I2, I]);
+
+nexttile();
+imagesc(mu_y_range, sigma2_y_range, reshape(I1,N,N)); hold on;
+i=i+1;
+xlabel('$\mu_f(x)$','Fontsize',Fontsize)
+ylabel('$\sigma^2_f(x)$','Fontsize',Fontsize)
+set(gca,'YDir','normal','CLim',[0, maxI])
+set(gca,'YDir','normal')
+pbaspect([1 1 1])
+title('H$(c|x, \mathcal{D})$')
 set(gca, 'fontsize', Fontsize)
-text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+ text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 
 nexttile();
 imagesc(mu_y_range, sigma2_y_range, reshape(I,N,N)); hold on;
 i=i+1;
-xlabel('$\mu_g(x)$','Fontsize',Fontsize)
-% ylabel('$\sigma^2_g(x)$','Fontsize',Fontsize)
+xlabel('$\mu_f(x)$','Fontsize',Fontsize)
+% ylabel('$\sigma^2_f(x)$','Fontsize',Fontsize)
 set(gca,'YDir','normal','CLim',[0, maxI])
 pbaspect([1 1 1])
 % cb = colorbar;
@@ -293,76 +360,23 @@ text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalize
 nexttile();
 imagesc(mu_y_range, sigma2_y_range, reshape(I2,N,N)); hold on;
 i=i+1;
-xlabel('$\mu_g(x)$','Fontsize',Fontsize)
-% ylabel('$\sigma^2_g(x)$','Fontsize',Fontsize)
+xlabel('$\mu_f(x)$','Fontsize',Fontsize)
+ylabel('$\sigma^2_f(x)$','Fontsize',Fontsize)
 set(gca,'YDir','normal','CLim',[0, maxI])
 set(gca,'YDir','normal')
 pbaspect([1 1 1])
 % cb = colorbar;
-title('E$[h(c|x, f, \mathcal{D})]$')
+title('E$_f[H(c|x, f)|\mathcal{D}]$')
 set(gca, 'fontsize', Fontsize)
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 % set(get(cb,'Title'),'String','(nats)', 'Interpreter', 'latex')
 
-nexttile();
-imagesc(mu_y_range, sigma2_y_range, reshape(I1,N,N)); hold on;
-i=i+1;
-xlabel('$\mu_g(x)$','Fontsize',Fontsize)
-% ylabel('$\sigma^2_g(x)$','Fontsize',Fontsize)
-set(gca,'YDir','normal','CLim',[0, maxI])
-set(gca,'YDir','normal')
-pbaspect([1 1 1])
-cb = colorbar;
+ cb = colorbar;
 cb.FontName = 'CMU Serif';
 cb.FontSize = Fontsize;
 set(cb, 'Limits', [0, maxI])
-title('H$(c|x, \mathcal{D})$')
-set(gca, 'fontsize', Fontsize)
 set(get(cb,'Title'),'String','(nats)', 'Interpreter', 'latex')
-text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
-
-maxI = max([var_muc, aleatoric_unvar, aleatoric_unvar+var_muc]);
-
-nexttile(6);
-i=i+1;
-imagesc(mu_y_range, sigma2_y_range, reshape(var_muc,N,N)); hold on;
-xlabel('$\mu_g(x)$','Fontsize',Fontsize)
-ylabel('$\sigma^2_g(x)$','Fontsize',Fontsize)
-set(gca,'YDir','normal','CLim',[0, maxI])
-pbaspect([1 1 1])
-% cb = colorbar;
-title('V$[\Phi(f(x))|\mathcal{D}]$')
-set(gca, 'fontsize', Fontsize)
-text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
-
-
-nexttile(7);
-i=i+1;
-imagesc(mu_y_range, sigma2_y_range, reshape(aleatoric_unvar,N,N)); hold on;
-xlabel('$\mu_g(x)$','Fontsize',Fontsize)
-set(gca,'YDir','normal','CLim',[0, maxI])
-pbaspect([1 1 1])
-% cb = colorbar;
-%title('E$[\Phi(f(x))(1-\Phi(f(x)))|\mathcal{D}]$')
-title('E[V$(c|x, f)|\mathcal{D}]$')
-set(gca, 'fontsize', Fontsize)
-text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
-
-nexttile(8);
-i=i+1;
-imagesc(mu_y_range, sigma2_y_range, reshape(aleatoric_unvar+var_muc,N,N)); hold on;
-xlabel('$\mu_g(x)$','Fontsize',Fontsize)
-set(gca,'YDir','normal','CLim',[0, maxI])
-pbaspect([1 1 1])
-cb = colorbar;
-set(cb, 'Limits', [0, maxI])
-cb.FontName = 'CMU Serif';
-cb.FontSize = Fontsize;
-colormap(cmap)
-title('V$(c|x, \mathcal{D})$')
-set(gca, 'fontsize', Fontsize)
-text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
-
+ 
 
 figure_path ='/home/tfauvel/Documents/PhD/Figures/Thesis_figures';
 figname  = 'Uncertainties';
@@ -380,8 +394,8 @@ fig.Color =  [1 1 1];
 tiledlayout(1,mc, 'TileSpacing', 'tight', 'padding','compact');
 nexttile();
 imagesc(mu_y_range, sigma2_y_range, reshape(mu_c,N,N)); hold on;
-xlabel('$\mu_g(x)$','Fontsize',Fontsize)
-ylabel('$\sigma^2_g(x)$','Fontsize',Fontsize)
+xlabel('$\mu_f(x)$','Fontsize',Fontsize)
+ylabel('$\sigma^2_f(x)$','Fontsize',Fontsize)
 set(gca,'YDir','normal')
 pbaspect([1 1 1])
 cb = colorbar;
@@ -394,8 +408,8 @@ set(get(cb,'Title'),'String','(nats)', 'Interpreter', 'latex')
 
 nexttile();
 imagesc(mu_y_range, sigma2_y_range, reshape(I2,N,N)); hold on;
-xlabel('$\mu_g(x)$','Fontsize',Fontsize)
-ylabel('$\sigma^2_g(x)$','Fontsize',Fontsize)
+xlabel('$\mu_f(x)$','Fontsize',Fontsize)
+ylabel('$\sigma^2_f(x)$','Fontsize',Fontsize)
 set(gca,'YDir','normal')
 pbaspect([1 1 1])
 cb = colorbar;
@@ -408,8 +422,8 @@ set(get(cb,'Title'),'String','(nats)', 'Interpreter', 'latex')
 
 nexttile();
 imagesc(mu_y_range, sigma2_y_range, reshape(aleatoric_unvar,N,N)); hold on;
-xlabel('$\mu_g(x)$','Fontsize',Fontsize)
-ylabel('$\sigma^2_g(x)$','Fontsize',Fontsize)
+xlabel('$\mu_f(x)$','Fontsize',Fontsize)
+ylabel('$\sigma^2_f(x)$','Fontsize',Fontsize)
 set(gca,'YDir','normal')
 pbaspect([1 1 1])
 cb = colorbar;
@@ -478,7 +492,7 @@ exportgraphics(fig, [folder,'/' , figname, '.png'], 'Resolution', 300);
 
 
 %%
-[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc, dvar_muc_dx]= prediction_bin(theta, xtrain, ctrain, x, model, post);
+[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc, dvar_muc_dx]= model.prediction(theta, xtrain, ctrain, x, post);
 
 I= BALD(theta, xtrain, ctrain, x, model,post);
 % I1 = zeros(N^2,N^2);

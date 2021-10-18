@@ -1,4 +1,4 @@
-function [sample_g, dsample_g_dx, sample_prior, update] = sample_value_GP_precomputed_features(approximation, theta, xtrain_norm, ctrain, model, post);(phi_pref, dphi_pref_dx, x_data, c_data, x0, hyp,kernelfun, varargin)
+function [sample_g, dsample_g_dx, sample_prior, update] = sample_value_GP_precomputed_features(approximation, theta, xtrain_norm, ctrain, post);(phi_pref, dphi_pref_dx, x_data, c_data, x0, hyp,kernelfun, varargin)
 opts = namevaluepairtostruct(struct( ...
     'decoupled_bases', 0, ...
     'modeltype', 'exp_prop', ...
@@ -15,7 +15,7 @@ D = size(x_data,1)/2; %dimension
 Phi = phi_pref(x_data); % n x m
     nfeatures = size(Phi,2);
 
-[mu_c,  mu_y, sigma2_y, Sigma2_y, ~, ~, ~, ~, ~, ~, post] =prediction_bin(hyp, x_data, c_data, x_data, model, post);
+[mu_c,  mu_y, sigma2_y, Sigma2_y, ~, ~, ~, ~, ~, ~, post] =model.prediction(hyp, x_data, c_data, x_data, post);
 Sigma2_y = (Sigma2_y + Sigma2_y')/2;
 
 y_data =  mvnrnd(mu_y(:), Sigma2_y)';

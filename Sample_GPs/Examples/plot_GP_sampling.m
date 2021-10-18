@@ -54,7 +54,7 @@ model.D = 1;
 model.kernelname = kernelname;
 post = [];
 
-[posterior_mean, posterior_variance, ~,~, Sigma2_y]=prediction(theta, x_data, y_data', x_data, model, post);
+[posterior_mean, posterior_variance, ~,~, Sigma2_y]=prediction(theta, x_data, y_data', x_data, post);
 
 D= 1;
 approximation.nfeatures = 256;
@@ -80,7 +80,7 @@ for i =1:m
     fx(i, :)=gs(x);
 end
 
-[posterior_mean, posterior_variance, ~, ~, Posterior_cov]=prediction(theta, x_data, y_data', x, model, post);
+[posterior_mean, posterior_variance, ~, ~, Posterior_cov]=prediction(theta, x_data, y_data', x, post);
 
 
 mr = 1;

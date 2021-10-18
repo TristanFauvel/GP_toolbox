@@ -11,7 +11,10 @@ link = @normcdf; %inverse link function
 regularization = 'nugget';
 %% Define the range of parameters
 n = 50;
-x = linspace(0,1, n);
+D = 1;
+ub = 1;
+lb = 0;
+x = linspace(lb, ub, n);
 d =1;
 
 [p,q]= meshgrid(x);
@@ -23,33 +26,34 @@ x0 = 0.1;
 
 base_kernelname = 'Matern52';
 original_kernelfun =  @Matern52_kernelfun;%kernel used within the preference learning kernel, for subject = computer
-theta= [-1;1];
+theta.cov= [-1;1];
 
 base_kernelname = 'ARD_kernelfun';
 original_kernelfun =  @ARD_kernelfun;%kernel used within the preference learning kernel, for subject = computer
-theta= [3,0];
+theta.cov= [3;0];
+theta.mean = 0;
 
 approximationimation = 'RRGP';
 
 base_kernelfun = @(theta, xi, xj, training, reg) conditioned_kernelfun(theta, original_kernelfun, xi, xj, training, x0, reg);
 kernelfun_cond= @(theta, xi, xj, training, reg) conditional_preference_kernelfun(theta, original_kernelfun, xi, xj, training, reg,x0);
 kernelfun= @(theta, xi, xj, training, reg) preference_kernelfun(theta, original_kernelfun, xi, xj, training, reg);
+meanfun = 0;
+ type = 'preference';
+hyps.ncov_hyp =2; % number of hyperparameters for the covariance function
+hyps.nmean_hyp =0; % number of hyperparameters for the mean function
+hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
 
- 
+ model = gp_classification_model(D, meanfun, kernelfun, regularization, hyps, lb, ub, type, link, modeltype);
 
-model.link = link;
-model.modeltype = modeltype;
-model.kernelfun = kernelfun;
-model.regularization = regularization;
-
-model_cond = model;
-model_cond.kernelfun = kernelfun_cond;
+model_cond = gp_classification_model(D, meanfun, kernelfun_cond, regularization, hyps, lb, ub, type, link, modeltype);
 
 % gfunc = @(x) forretal08(x)/10;
 % gfunc = @(x) normpdf(x, 0.5, 0.2);
 % g = gfunc(x)-gfunc(x0);
 
-g = mvnrnd(zeros(1,n),base_kernelfun(theta, x, x, 'false', 'no'));
+g = mvnrnd(zeros(1,n),base_kernelfun(theta.cov, x, x, 'false', 'no'));
 % g = g-g(1);
 
 f = g-g';
@@ -63,12 +67,12 @@ ytrain= f(rd_idx);
 ctrain = link(ytrain)>rand(ntr,1);
 
 
-[mu_c,  mu_f, sigma2_f,~, ~, ~, ~, ~, var_muc_f] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, model, []);
-[mu_c_x0,  mu_g, sigma2_g, Sigma2_g, ~, ~, ~, ~, var_muc] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], model, []);
+[mu_c,  mu_f, sigma2_f,~, ~, ~, ~, ~, var_muc_f] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d,  []);
+[mu_c_x0,  mu_g, sigma2_g, Sigma2_g, ~, ~, ~, ~, var_muc] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)],  []);
     
-[mu_c_cond,  mu_f_cond, sigma2_f_cond,~, ~, ~, ~, ~, var_muc_fcond] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, model_cond, []);
-[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, ~, ~, ~, ~, var_muc_cond] = prediction_bin(theta, ...
-    xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(d,n^d)], model_cond, []);
+[mu_c_cond,  mu_f_cond, sigma2_f_cond,~, ~, ~, ~, ~, var_muc_fcond] = model_cond.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, []);
+[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, ~, ~, ~, ~, var_muc_cond] = model_cond.prediction(theta, ...
+    xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(d,n^d)],  []);
 
 
 %% Find the true global optimum of g
@@ -132,12 +136,12 @@ ytrain= f(rd_idx);
 ctrain = link(ytrain)>rand(ntr,1);
 
 
-[mu_c,  mu_f, sigma2_f,~, ~, ~, ~, ~, var_muc_f] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, model, []);
-[mu_c_x0,  mu_g, sigma2_g, Sigma2_g, ~, ~, ~, ~, var_muc] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], model, []);
+[mu_c,  mu_f, sigma2_f,~, ~, ~, ~, ~, var_muc_f] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d,  []);
+[mu_c_x0,  mu_g, sigma2_g, Sigma2_g, ~, ~, ~, ~, var_muc] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)],  []);
     
-[mu_c_cond,  mu_f_cond, sigma2_f_cond,~, ~, ~, ~, ~, var_muc_fcond] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, model_cond, []);
-[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, ~, ~, ~, ~, var_muc_cond] = prediction_bin(theta, ...
-    xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(d,n^d)], model_cond, []);
+[mu_c_cond,  mu_f_cond, sigma2_f_cond,~, ~, ~, ~, ~, var_muc_fcond] = model_cond.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, []);
+[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, ~, ~, ~, ~, var_muc_cond] = model_cond.prediction(theta, ...
+    xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(d,n^d)],  []);
 
 i = 5;
 nexttile(i)
@@ -196,7 +200,7 @@ ntrains = 2:20:1000;
 dist = zeros(nreps, numel(ntrains));
 for j =1:nreps
     rng(j)
-    g = mvnrnd(zeros(1,n),base_kernelfun(theta, x, x, 'false', 'no'));
+    g = mvnrnd(zeros(1,n),base_kernelfun(theta.cov, x, x, 'false', 'no'));
     f = g-g';
     f= f(:);
     for i = 1:numel(ntrains)
@@ -206,8 +210,8 @@ for j =1:nreps
         ytrain= f(rd_idx);
         ctrain = link(ytrain)>rand(ntr,1);
         
-        [mu_c_x0,  mu_g, sigma2_g, Sigma2_g, ~, ~, ~, ~, var_muc] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], model, []);
-        [mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, ~, ~, ~, ~, var_muc_cond] = prediction_bin(theta, ...
+        [mu_c_x0,  mu_g, sigma2_g, Sigma2_g, ~, ~, ~, ~, var_muc] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], model, []);
+        [mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, ~, ~, ~, ~, var_muc_cond] = model.prediction(theta, ...
             xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(d,n^d)], model_cond, []);
         dist(j,i) = Wasserstein2(mu_g, Sigma2_g, mu_g_cond, Sigma2_g_cond);
     end

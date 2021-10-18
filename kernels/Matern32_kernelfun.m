@@ -15,6 +15,11 @@ function [C, dC, dC_dx] = Matern32_kernelfun(theta, x0, x, ~, regularization)
 % C  = [N, N]:           covariance of p(y|x)
 % dC = [N, N, ntheta]:   derivative of C w.r.t theta
 
+if isempty(theta)
+    C = 2;
+    return
+end
+
 if nargin==2
     x = x0;
 end

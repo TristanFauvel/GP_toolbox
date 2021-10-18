@@ -59,14 +59,11 @@ classdef grlee12
             
             y = term1 + term2;
             
-            
-            % if nargout>1
-            % dydx = 4*(x - 1)^3 - sin(10*pi*x)/(2*x^2) + (5*pi*cos(10*pi*x))/x;
-            % dydx = -dydx;
-            %
-            % end
             if obj.rescaling
                 if obj.takelog
+                     if any(y<=0)
+                        error('Log of negative value')
+                    end
                     y = log(y);
                 end
                 y = (y- obj.mean)./sqrt(obj.var);

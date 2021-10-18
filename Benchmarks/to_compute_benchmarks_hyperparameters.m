@@ -57,7 +57,7 @@ for j = 1:N %%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %Compute the maximum of the value function according to the model
         
         init_guess = [];
-        ncov_hyp = numel(model.theta_lb);
+        ncov_hyp = numel(model.hyp_lb);
         
         hyp.cov = 10*ones(ncov_hyp,1);%rand(ncov_hyp,1);
         hyp.mean = 0 ;
@@ -66,7 +66,7 @@ for j = 1:N %%%%%%%%%%%%%%%%%%%%%%%%%%%%
         update = 'cov';
         meanfun= @constant_mean;
         nmean_hyp = 1;
-        theta = multistart_minConf(@(hyp)minimize_negloglike(hyp, xtrain_norm, ytrain_norm, kernelfun, meanfun, ncov_hyp, nmean_hyp, update), [model.theta_lb; 0], [model.theta_ub; 0],20, init_guess, options_theta);
+        theta = multistart_minConf(@(hyp)minimize_negloglike(hyp, xtrain_norm, ytrain_norm, kernelfun, meanfun, ncov_hyp, nmean_hyp, update), [model.hyp_lb; 0], [model.hyp_ub; 0],20, init_guess, options_theta);
         theta = theta(1:end-1);
         
         %         if strcmp(kernelname,'ARD')

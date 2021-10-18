@@ -34,7 +34,6 @@ elseif nargout == 3
     dC_dx = NaN(ntr,ntst,ntst, numel(union(d1,d2)));
     dC_dx(:,:,:,d1) = dC1_dx;
     dC_dx(:,:,:,d2) = dC2_dx; %note: here we assume that the kernels act on different dimensions
-    %dC_dx(:,:,:,intersect(d1,d2)) = dC1_dx
 end
 C = C1 + C2;
 

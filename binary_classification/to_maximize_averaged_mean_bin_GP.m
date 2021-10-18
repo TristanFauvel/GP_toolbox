@@ -13,10 +13,10 @@ lb = model.lb_norm(1:model.ns);
 ub = model.ub_norm(1:model.ns);
 tol = 1e-2;
 
-fun = @(s) mean_binGP(theta, xtrain_norm, ctrain, [s;x*ones(1,size(s,2))], model, post);
+fun = @(s) mean_binGP(theta, xtrain_norm, ctrain, [s;x*ones(1,size(s,2))], post);
 g = -integral(fun,lb,ub, 'ArrayValued', true,'RelTol',tol);
 %
-fun = @(s) dmean_binGP(theta, xtrain_norm, ctrain, [s;x*ones(1,size(s,2))], model, post);
+fun = @(s) dmean_binGP(theta, xtrain_norm, ctrain, [s;x*ones(1,size(s,2))], post);
 dgdx = -integral(fun,lb,ub, 'ArrayValued', true,'RelTol', tol);
 
 %%
@@ -26,7 +26,7 @@ dgdx = -integral(fun,lb,ub, 'ArrayValued', true,'RelTol', tol);
 % g_mu_y = zeros(1,nsamples);
 % dmuy_dx = zeros(model.D, nsamples);
 % for i = 1:nsamples
-%     [~,  g_mu_y(i), ~, ~, ~, dmuy_dx(:,i)] = prediction_bin(theta, xtrain_norm, ctrain, [s_samples(:,i);x], model, post);
+%     [~,  g_mu_y(i), ~, ~, ~, dmuy_dx(:,i)] = model.prediction(theta, xtrain_norm, ctrain, [s_samples(:,i);x], post);
 % end
 % g = -mean(g_mu_y)
 % dgdx = -mean(dmuy_dx,2);
@@ -38,12 +38,12 @@ end
 
 function g_mu_y = mean_binGP(theta, xtrain_norm, ctrain, x, model, post)
 
-[~,  g_mu_y] = prediction_bin(theta, xtrain_norm, ctrain, x, model, post);
+[~,  g_mu_y] = model.prediction(theta, xtrain_norm, ctrain, x, post);
 
 end
 function  dmuy_dx= dmean_binGP(theta, xtrain_norm, ctrain, x, model, post)
 
-[~,  ~, ~, ~, ~, dmuy_dx] = prediction_bin(theta, xtrain_norm, ctrain, x, model, post);
+[~,  ~, ~, ~, ~, dmuy_dx] = model.prediction(theta, xtrain_norm, ctrain, x, post);
 
 dmuy_dx = squeeze(dmuy_dx);
 dmuy_dx = dmuy_dx((model.ns+1):end);

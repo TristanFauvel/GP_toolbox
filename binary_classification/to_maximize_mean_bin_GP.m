@@ -8,7 +8,7 @@ end
 if isempty(post)
     warning('Precomputing the approximate posterior is more efficient')
 end
-[~,  g_mu_y, ~, ~, ~, dmuy_dx] = prediction_bin(theta, xtrain_norm, ctrain, x, model, post);
+[~,  g_mu_y, ~, ~, ~, dmuy_dx] = model.prediction(theta, xtrain_norm, ctrain, x, post);
 
 
 g_mu_y = -g_mu_y;

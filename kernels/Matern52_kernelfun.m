@@ -16,6 +16,10 @@ function [C, dC, dC_dx] = Matern52_kernelfun(theta, x0, x,  training, regulariza
 % dC = [N, N, ntheta]:   derivative of C w.r.t theta
 % alpha : normalizing constant of the spectral density
 
+if isempty(theta)
+    C = 2;
+    return
+end
 
 if nargin==2
     x = x0;

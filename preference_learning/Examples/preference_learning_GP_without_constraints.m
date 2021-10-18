@@ -13,7 +13,10 @@ link = @normcdf; %inverse link function
 
 %% Define the range of parameters
 n = 50;
-x = linspace(0,1, n);
+lb = 0;
+ub = 1;
+
+x = linspace(lb, ub, n);
 d =1;
 ntr = 5;
 
@@ -33,8 +36,8 @@ link = @normcdf; %inverse link function for the classification model
 % gfunc = @(x) normpdf(x, 0.5, 0.2);
 % g = gfunc(x)-gfunc(x0);
 
-theta= [-1;1];
-g = mvnrnd(zeros(1,n),base_kernelfun(theta, x, x, 'false', regularization));
+theta.cov= [-1;1];
+g = mvnrnd(zeros(1,n),base_kernelfun(theta.cov, x, x, 'false', regularization));
 g = g-g(1);
 
 f = g'-g;
@@ -47,9 +50,27 @@ ytrain= f(rd_idx);
 ctrain = link(ytrain)>rand(nsamp,1);
 
 
-[mu_c,  mu_f, sigma2_f] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, model, post);
 
-[~,  mu_g, sigma2_g, Sigma2_g] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], model, post);
+%%
+regularization = 'nugget';
+model.kernelfun = kernelfun;
+model.link = link;
+model.modeltype = modeltype;
+meanfun = 0;
+type = 'preference';
+hyps.ncov_hyp =2; % number of hyperparameters for the covariance function
+hyps.nmean_hyp =0; % number of hyperparameters for the mean function
+hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+D = 1;
+ 
+model = gp_classification_model(D, meanfun, kernelfun, regularization, hyps, lb, ub, type, link, modeltype);
+
+
+%%
+[mu_c,  mu_f, sigma2_f] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, post);
+
+[~,  mu_g, sigma2_g, Sigma2_g] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], post);
 mu_g = -mu_g; %(because prediction_bin considers P(x1 > x2);
     
 

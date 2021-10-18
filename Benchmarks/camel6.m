@@ -70,6 +70,9 @@ classdef camel6
             
            if obj.rescaling
                 if obj.takelog
+                    if any(y<0)
+                        error('Log of negative value')
+                    end
                     y = log(y);
                 end
                 y = (y- obj.mean)./sqrt(obj.var);

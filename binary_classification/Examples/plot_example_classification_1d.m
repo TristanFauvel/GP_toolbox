@@ -46,14 +46,19 @@ y_test = y;
 % GP classification with the correct hyperparameters
 theta =theta_true ; % rand(size(theta_true));
 post = [];
+D = 1;
+meanfun = 0;
+regularization = 'nugget';
+type = 'classification';
+hyps.ncov_hyp =2; % number of hyperparameters for the covariance function
+hyps.nmean_hyp =0; % number of hyperparameters for the mean function
+hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+D = 1;
+model = gp_classification_model(D, meanfun, kernelfun, regularization, hyps, type, link, modeltype);
 
-model.regularization = 'nugget';
-model.kernelfun = kernelfun;
-model.link = link;
-model.modeltype = modeltype;
-
-[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc, dvar_muc_dx]= prediction_bin(theta, xtrain, ctrain, x_test, model, post);
-fun = @(x_test) prediction_bin(theta, xtrain, ctrain, x_test, model, post);
+[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc, dvar_muc_dx]= model.prediction(theta, xtrain, ctrain, x_test,post);
+fun = @(x_test) model.prediction(theta, xtrain, ctrain, x_test, post);
 dF = test_matrix_deriv(fun, x_test, 1e-8);
 
 %Xlim= [min(x),max(x)];
@@ -213,7 +218,7 @@ title('Aleatoric uncertainty')
 
 nexttile()
 i=i+1;
-I= BALD(theta, xtrain, ctrain, x, model, post);
+I= BALD(theta, xtrain, ctrain, x, post);
 I = -I;
 plot(x, I, 'color', C(1,:))
 xlabel('$x$', 'Fontsize', Fontsize)
@@ -249,7 +254,7 @@ box off
 [a,b]= max(I)
 new_x = x(b);
 new_c = p(b)>rand;
-[mu_c2,  mu_y2, sigma2_y2, Sigma2_y2, ~, ~,~,~, var_muc]= prediction_bin(theta, [xtrain,new_x], [ctrain, new_c], x_test, model, post);
+[mu_c2,  mu_y2, sigma2_y2, Sigma2_y2, ~, ~,~,~, var_muc]= model.prediction(theta, [xtrain,new_x], [ctrain, new_c], x_test, post);
 
 mr = 1;
 mc = 2;
@@ -287,7 +292,7 @@ title('Epistemic uncertainty')
 % % GP classification with the wrong hyperparameters
 % theta = rand(size(theta_true));
 % 
-% [mu_c,  mu_y, sigma2_y]= prediction_bin(theta, xtrain, ctrain, x_test, model, post);
+% [mu_c,  mu_y, sigma2_y]= model.prediction(theta, xtrain, ctrain, x_test, post);
 % 
 % Ylim = [-5,5];
 % h=figure(3);
@@ -321,7 +326,7 @@ title('Epistemic uncertainty')
 % theta = minFunc(@(hyp)negloglike_bin(hyp, xtrain, ctrain, kernelfun), theta, options);
 % 
 % %% Prediction with the new hyperparameters
-% [mu_c,  mu_y, sigma2_y]= prediction_bin(theta, xtrain, ctrain, x_test, model, post);
+% [mu_c,  mu_y, sigma2_y]= model.prediction(theta, xtrain, ctrain, x_test, post);
 % 
 % h=figure(5);
 % h.Color =  [1 1 1];

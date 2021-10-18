@@ -74,9 +74,9 @@ for k =2:nrepets
         y_data = g(idxtrain)';
         ctrain = link(y_data)>rand(N,1);
         
-        post = prediction_bin(hyp, xtrain, ctrain, [], model, post);
+        post = model.prediction(hyp, xtrain, ctrain, [], post);
         
-        [mu_c,  mu_f, sigma2_f, Sigma2_f] = prediction_bin(hyp, xtrain, ctrain, xtest, model, post);
+        [mu_c,  mu_f, sigma2_f, Sigma2_f] = model.prediction(hyp, xtrain, ctrain, xtest, post);
         
         %%
         rng(k)

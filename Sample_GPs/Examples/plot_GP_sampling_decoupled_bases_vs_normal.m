@@ -57,7 +57,18 @@ m=1000;
 fx_0 = NaN(m, n);
 fx_1 = NaN(m, n);
 
-[mu_y, sigma2_y, ~,~, Sigma2_y]=prediction(theta, xtrain, ytrain', xtrain, model, []);
+meanfun = 0;
+type = 'regression';
+hyps.ncov_hyp =2; % number of hyperparameters for the covariance function
+hyps.nmean_hyp =0; % number of hyperparameters for the mean function
+hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+D = 1;
+
+model = gp_regression_model(D, meanfun, kernelfun, regularization, hyps);
+
+
+[mu_y, sigma2_y, ~,~, Sigma2_y]= model.prediction(theta, xtrain, ytrain', xtrain, []);
 
 % D= 1;
 % [phi, dphi_dx] = sample_features_GP(theta.cov, D, kernelname,'RRGP');
@@ -96,7 +107,7 @@ end
 % figure();
 % plot(fx_ssgp')
 % 
-[posterior_mean, posterior_variance, ~, ~, Posterior_cov]=prediction(theta, xtrain, ytrain', x, model, []);
+[posterior_mean, posterior_variance, ~, ~, Posterior_cov]= model.prediction(theta, xtrain, ytrain', x, model, []);
 
 xticks = [0,0.5,1];
 xticks = [x(1), x(end)];

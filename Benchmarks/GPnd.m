@@ -9,6 +9,7 @@ classdef GPnd
         kernelfun
         kernelname
         sample_f
+        dsample_f_dx
     end
     methods
         function obj = GPnd(D, theta, kernelname, seed)
@@ -43,21 +44,25 @@ classdef GPnd
             model.regularization = 'nugget';
             model.D = D;
             model.kernelfun = kernelfun;
-            obj.sample_f = sample_GP(obj.theta,  zeros(D,1), [], model, approximation);
+            [obj.sample_f, obj.dsample_f_dx] = sample_GP(obj.theta,  zeros(D,1), [], model, approximation);
         end
-        function y = do_eval(obj, xx)
+        function [y, dydx] = do_eval(obj, xx)
             if size(xx,1)~=obj.D
                 error('Problem with input size')
             end
-            if size(xx,1)~=obj.D
-                error('Problem with input size')
-            end
+           
             y = obj.sample_f(xx);
+            
+%             if nargout>1
+                dydx = obj.dsample_f_dx(xx);
+%             end
             
             if strcmp(obj.opt, 'max')
                 y = -y;
-            end
-            
+%                 if nargout>1
+                    dydx = -dydx;
+%                 end
+            end            
             y(xx > obj.xbounds(:,2) | xx <  obj.xbounds(:,1)) = NaN;
         end
     end

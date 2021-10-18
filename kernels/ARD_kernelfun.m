@@ -23,6 +23,11 @@ end
 [nd, n0] = size(x0);
 n = size(x, 2);
 
+
+if isempty(theta)
+    C = nd+1;
+    return
+end
 if numel(theta) ~= nd+1
     error('The number of hyperparameters for the ARD kernel is nd + 1')
 end

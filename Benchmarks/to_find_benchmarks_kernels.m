@@ -26,7 +26,7 @@ for j = 1:N
         disp(['Function : ' , num2str(j), ', Kernel : ', num2str(i)]) 
         kernelname = kernelnames{i};
         kernelfun = str2func(kernelfuns{i});
-        [g, theta.cov, lb, ub, lb_norm, ub_norm, theta_lb, theta_ub] = load_benchmarks(objective, kernelname, benchmarks_table);
+        [g, theta.cov, lb, ub, lb_norm, ub_norm, hyp_lb, hyp_ub] = load_benchmarks(objective, kernelname, benchmarks_table);
         
         rng(seed)
         %% Initialize the experiment

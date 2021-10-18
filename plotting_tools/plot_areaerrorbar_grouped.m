@@ -78,13 +78,23 @@ if options.semilogy
     end
     plots = h;
 else
-    for i = 1:nplots
-    patch = fill(x_vector, [data_mean{i}+error{i},fliplr(data_mean{i}-error{i})], colors(i,:));
+    for i = 1:nplots     
+    if nplots>size(colors,1)
+        h =  plot(options.x_axis, data_mean{i}, ...
+        'LineWidth', options.line_width, 'LineStyle', options.lines{i}); hold on;
+        plots = [plots, h];
+        patch = fill(x_vector, [data_mean{i}+error{i},fliplr(data_mean{i}-error{i})], h.Color);
+        set(patch, 'edgecolor', 'none');
+        set(patch, 'FaceAlpha', options.alpha);
+        hold on;
+         
+    else
+        patch = fill(x_vector, [data_mean{i}+error{i},fliplr(data_mean{i}-error{i})], colors(i,:));
     set(patch, 'edgecolor', 'none');
     set(patch, 'FaceAlpha', options.alpha);
     hold on;
     h =  plot(options.x_axis, data_mean{i}, 'color',colors(i,:), ...
-        'LineWidth', options.line_width);
+        'LineWidth', options.line_width, 'LineStyle', options.lines{i});
         plots = [plots, h];
 
     end

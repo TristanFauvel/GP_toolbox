@@ -13,7 +13,7 @@ post = [];
 n = 10;
 x = linspace(0,1, n);
 d =1;
- 
+
 [p,q]= meshgrid(x);
 x2d = [p(:), q(:)]';
 
@@ -37,15 +37,15 @@ link = @normcdf; %inverse link function for the classification model
 % gfunc = @(x) normpdf(x, 0.5, 0.2);
 % g = gfunc(x)-gfunc(x0);
 
-theta= [-1;1];
-g = mvnrnd(zeros(1,n),base_kernelfun(theta, x, x, 'false', 'no'));
+theta.cov= [-1;1];
+g = mvnrnd(zeros(1,n),base_kernelfun(theta.cov, x, x, 'false', 'no'));
 %g = g-g(1);
 
 f = g-g';
 f= f(:);
 ntr = 10;
- rd_idx = randsample(size(x2d,2), ntr, 'true');
- rd_idx(end) = size(x2d,2);
+rd_idx = randsample(size(x2d,2), ntr, 'true');
+rd_idx(end) = size(x2d,2);
 xtrain= x2d(:,rd_idx);
 ytrain= f(rd_idx);
 ctrain = link(ytrain)>rand(ntr,1);
@@ -55,10 +55,10 @@ model.kernelfun = kernelfun;
 model.link = link;
 model.modeltype = modeltype;
 
-      post = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [], model, []);
-[mu_c_cond,  mu_f_cond, sigma2_f_cond] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, model, post);
-[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(d,n^d)], model, post);
- 
+post = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), [], []);
+[mu_c_cond,  mu_f_cond, sigma2_f_cond] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, post);
+[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(d,n^d)], post);
+
 %%
 init_guess = [];
 options.method = 'lbfgs';
@@ -78,15 +78,15 @@ c0 = [ctrain; 0];
 c1 = [ctrain;1];
 KG= zeros(1, size(x2d,2));
 
-mu_c = prediction_bin(theta, xtrain, ctrain, x2d, model, post);
+mu_c = model.prediction(theta, xtrain, ctrain, x2d, post);
 C= soft_copeland_score(reshape(mu_c, n, n));
 C= max(C);
 
 for i = 1:size(x2d,2)
-% KG(i) = knowledge_grad(theta, xtrain, ctrain, x2d(:,i),model, post, c0, c1, xbest, ybest,model.lb_norm, model.ub_norm);
-KG(i) = knowledge_grad_grid(theta, xtrain, ctrain, x2d, x2d(:,i),model, post, c0, c1, ybest);
-
-CEI(i) = copeland_ei(theta, xtrain, ctrain, x2d(:,i), x2d, model, post, C,n);
+    % KG(i) = knowledge_grad(theta, xtrain, ctrain, x2d(:,i),model, post, c0, c1, xbest, ybest,model.lb_norm, model.ub_norm);
+    KG(i) = knowledge_grad_grid(theta, xtrain, ctrain, x2d, x2d(:,i),model, post, c0, c1, ybest);
+    
+    CEI(i) = copeland_ei(theta, xtrain, ctrain, x2d(:,i), x2d, model, post, C,n);
 end
 
 
@@ -132,11 +132,11 @@ set(c, 'XTick', [0,1]);
 colormap(cmap)
 p1 = scatter(xtrain(1, ctrain(1:ntr)==1),xtrain(2, ctrain(1:ntr)==1), markersize, 'o', 'k','filled'); hold on;
 p2 = scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o','k'); hold off;
- text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 legend([p1, p2], '$c=1$', '$c=0$','Fontsize',Fontsize, 'Location', 'northeast')
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 legend box off
-   
+
 
 nexttile(2)
 i=i+1;
@@ -153,7 +153,7 @@ c = colorbar();
 colormap(cmap)
 p1 = scatter(xtrain(1, ctrain(1:ntr)==1),xtrain(2, ctrain(1:ntr)==1), markersize, 'o', 'k','filled'); hold on;
 p2 = scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o','k'); hold off;
- text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 legend([p1, p2], '$c=1$', '$c=0$','Fontsize',Fontsize, 'Location', 'northeast')
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 legend box off
@@ -174,7 +174,7 @@ c = colorbar();
 colormap(cmap)
 p1 = scatter(xtrain(1, ctrain(1:ntr)==1),xtrain(2, ctrain(1:ntr)==1), markersize, 'o', 'k','filled'); hold on;
 p2 = scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o','k'); hold off;
- text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 legend([p1, p2], '$c=1$', '$c=0$','Fontsize',Fontsize, 'Location', 'northeast')
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 legend box off
@@ -182,11 +182,11 @@ legend box off
 
 nexttile(5)
 i=i+1;
-[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x(iKG)*ones(d,n^d)], model, post);
+[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x(iKG)*ones(d,n^d)], post);
 
 h1 = plot_gp(x, mu_g_cond, sigma2_g_cond, C(1,:), linewidth); hold on;
 h2 = plot(x, g-g(iKG), 'color', C(2,:), 'linewidth', linewidth);  hold on;
- 
+
 
 xlabel('$x$', 'Fontsize', Fontsize)
 ylabel('$g(x)$', 'Fontsize', Fontsize)
@@ -212,11 +212,11 @@ legend box off
 
 nexttile(6)
 i=i+1;
-[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x(iCEI)*ones(d,n^d)], model, post);
+[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x(iCEI)*ones(d,n^d)], post);
 
 h1 = plot_gp(x, mu_g_cond, sigma2_g_cond, C(1,:), linewidth); hold on;
 h2 = plot(x, g-g(iCEI), 'color', C(2,:), 'linewidth', linewidth);  hold on;
- 
+
 
 xlabel('$x$', 'Fontsize', Fontsize)
 ylabel('$g(x)$', 'Fontsize', Fontsize)
@@ -243,7 +243,7 @@ legend box off
 %%
 
 
- 
+
 mr = 1;
 mc = 3;
 i = 0;
@@ -253,7 +253,7 @@ fig.Color =  [1 1 1];
 
 tiledlayout(mr,mc, 'TileSpacing' , 'tight', 'Padding', 'tight')
 
- nexttile
+nexttile
 i=i+1;
 
 h1 = plot_gp(x, mu_g_cond, sigma2_g_cond, C(1,:), linewidth); hold on;
@@ -272,16 +272,16 @@ set(gca,'YTick', linspace(min(ytick), max(ytick), 3), 'Fontsize', Fontsize)
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 box off
 % pbaspect([1 1 1])
- vline(max_x,'Linewidth',linewidth, 'ymax', max_y,  'LineStyle', '--', ...
+vline(max_x,'Linewidth',linewidth, 'ymax', max_y,  'LineStyle', '--', ...
     'Linewidth', 1); hold off;
- [xt,b] = sort([0,x1 1]);
+[xt,b] = sort([0,x1 1]);
 xticks(xt)
 lgs = {'0', '$x_1$', '1'};
 xticklabels(lgs(b))
 legend([h1 h2], 'Posterior GP : $p(g|\mathcal{D})$','True value function $g(x)$')
 legend box off
 
-[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = prediction_bin(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; max_x*ones(d,n^d)], model, post);
+[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; max_x*ones(d,n^d)], post);
 
 nexttile
 legend_pos = [-0.1,1];
@@ -293,7 +293,7 @@ Y = normcdf(mvnrnd(mu_g_cond,Sigma2_g_cond,10000));
 p3 = plot(x, normcdf(g-g(idx)), 'color', C(2,:), 'linewidth', linewidth);  hold off;
 
 xlabel('$x$', 'Fontsize', Fontsize)
- ylabel('$P(c=1|x,x_1)$', 'Fontsize', Fontsize)
+ylabel('$P(c=1|x,x_1)$', 'Fontsize', Fontsize)
 set(gca,'XTick',[0 0.5 1],'Fontsize', Fontsize)
 ytick = get(gca,'YTick');
 set(gca,'YTick', linspace(min(ytick), max(ytick), 3), 'Fontsize', Fontsize)
@@ -304,13 +304,13 @@ box off
 legend([p3, p2, p1], '$P(x>x_1)$', '$p(\Phi[f(x,x_1)]|\mathcal{D})$', '$\mu_c(x, x_1)$')
 legend box off
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
- [xt,b] = sort([0,x1, 1]);
+[xt,b] = sort([0,x1, 1]);
 xticks(xt)
 lgs = {'0', '$x_1$', '1'};
 xticklabels(lgs(b))
 
 
- [max_y,b] = max(var_muc);
+[max_y,b] = max(var_muc);
 max_x = x(b);
 
 

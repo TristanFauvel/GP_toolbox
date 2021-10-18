@@ -39,10 +39,22 @@ x_test = x;
 y_test = y;
 
 %% GP classification with the correct hyperparameters
-theta =theta_true ; 
-
+theta.cov =theta_true ; 
+theta.mean = 0;
 % Compute the predictive distribution
-[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx,var_muc, dvar_muc_dx]= prediction_bin(theta, x_tr, c_tr, x_test, model, post, link);
+D = 1;
+meanfun = 0;
+type = 'classification'; 
+ hyps.ncov_hyp =2; % number of hyperparameters for the covariance function
+hyps.nmean_hyp =1; % number of hyperparameters for the mean function
+   hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+lb = 0;
+ub = 1;
+
+model = gp_classification_model(D, meanfun, kernelfun, regularization, hyps, lb,ub, type, link, modeltype);
+
+[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx,var_muc, dvar_muc_dx]= model.prediction(theta, x_tr, c_tr, x_test, post);
 
 
 %% Plotting !
@@ -78,9 +90,9 @@ box off
 title('True hyperparameters');
 
 % GP classification with the wrong hyperparameters
-theta = rand(size(theta_true));
+theta.cov = rand(size(theta_true));
 
-[mu_c,  mu_y, sigma2_y]= prediction_bin(theta, x_tr, c_tr, x_test, model, post, link);
+[mu_c,  mu_y, sigma2_y]= model.prediction(theta, x_tr, c_tr, x_test, post);
 
 subplot(mr,mc,3)
 b = plot_gp(x, mu_y, sigma2_y, C(1,:), linewidth); hold on
@@ -107,11 +119,10 @@ title('Wrong hyperparameters');
 
 
 %% Local optimization of hyperparameters
-options=[];
-theta = minFunc(@(hyp)negloglike_bin(hyp, x_tr, c_tr, kernelfun), theta, options); % Minimize the negative log-likelihood
-
+theta = model.model_selection(x_tr, c_tr, theta, 'cov');
+ 
 %% Prediction with the new hyperparameters
-[mu_c,  mu_y, sigma2_y]= prediction_bin(theta, x_tr, c_tr, x_test, model, post, link);
+[mu_c,  mu_y, sigma2_y]= model.prediction(theta, x_tr, c_tr, x_test, post);
 
 subplot(mr,mc,5)
 b = plot_gp(x, mu_y, sigma2_y, C(1,:), linewidth); hold on

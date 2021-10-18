@@ -14,15 +14,20 @@ function [C, dC, dC_dx] = Gaussian_kernelfun(theta, x0, x, training, regularizat
 % OUTPUT
 % C  = [N_tr, N_tst]:           covariance of p(y|x)
 % dC = [N_tr, N_tst, ntheta]:   derivative of C w.r.t theta
-DEFAULT('regularization', 'nugget'); % do not regularize the base kernels
+DEFAULT('regularization', 'nugget','x', x0); % do not regularize the base kernels
 
 % opts = namevaluepairtostruct(struct( ...
 %     'regularization', 'nugget' ...
 %     ), varargin);
 % UNPACK_STRUCT(opts, false)
+ 
+ 
+if isempty(theta)
+    C = 2;
+    return
+end
 
 
-DEFAULT('x', x0);
 
 if any(isnan([x(:);x0(:)]))
     error('x is NaN')

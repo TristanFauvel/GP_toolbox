@@ -22,7 +22,7 @@ theta_true = [rand(d,1);2];
 x_range= linspace(0,10,n);
 [p,q] = meshgrid(x_range);
 x= [p(:),q(:)]';
-y = mvnrnd(constant_mean(x,0), kernelfun(theta_truex,x, true, 'nugget')); %generate a function
+y = mvnrnd(constant_mean(x,0), kernelfun(theta_true,x,x, true, 'nugget')); %generate a function
 y=y-mean(y);
 
 link = @normcdf;
@@ -42,9 +42,23 @@ ytest = y;
 ptest = p;
 
 %% With true hyperparameters
-theta = theta_true;
+theta.cov = theta_true;
 
-[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx,var_muc, dvar_muc_dx]= prediction_bin(theta, xtrain, ctrain, xtest, model, post);
+
+D = 1;
+meanfun = 0;
+type = 'classification';
+hyps.ncov_hyp =3; % number of hyperparameters for the covariance function
+hyps.nmean_hyp =1; % number of hyperparameters for the mean function
+hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+lb = 0;
+ub = 1;
+
+model = gp_classification_model(D, meanfun, kernelfun, regularization, hyps, lb,ub, type, link, modeltype);
+
+
+[mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx,var_muc, dvar_muc_dx]= model.prediction(theta, xtrain, ctrain, xtest, post);
 Xlim= [0,10];
 Ylim = [-5,5];
 
@@ -88,9 +102,10 @@ title('$\mu_c$, true hyperparameters')
 
 
 %% With wrong hyperparameters
-theta = 0*rand(size(theta_true));
+theta.cov = 0*rand(size(theta_true));
+theta.mean= 0;
 
-[mu_c,  mu_y, sigma2_y]= prediction_bin(theta, xtrain, ctrain, xtest, model, post);
+[mu_c,  mu_y, sigma2_y]= model.prediction(theta, xtrain, ctrain, xtest, post);
 
 i = i +1;
 subplot(mr, mc, i)
@@ -111,11 +126,10 @@ pbaspect([1,1,1]);
 title('$\mu_c$, wrong hyperparameters')
 
 %% Local optimization of hyperparameters
-options=[];
-theta = minFunc(@(hyp)negloglike_bin(hyp, xtrain, ctrain, kernelfun), theta, options);
+theta = model.model_selection(xtrain, ctrain, theta, 'cov');
 
 % Prediction with the new hyperparameters
-[mu_c,  mu_y, sigma2_y]= prediction_bin(theta, xtrain, ctrain, xtest, model, post);
+[mu_c,  mu_y, sigma2_y]= model.prediction(theta, xtrain, ctrain, xtest, post);
 
 i = i +1;
 subplot(mr, mc,i)
