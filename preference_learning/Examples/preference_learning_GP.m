@@ -52,9 +52,6 @@ ytrain= f(rd_idx);
 ctrain = link(ytrain)>rand(nsamp,1);
 
 regularization = 'nugget';
-model.kernelfun = kernelfun;
-model.link = link;
-model.modeltype = modeltype;
 meanfun = 0;
 type = 'preference';
 hyps.ncov_hyp =2; % number of hyperparameters for the covariance function

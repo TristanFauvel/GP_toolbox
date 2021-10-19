@@ -28,19 +28,19 @@ if decoupled_bases
     w =randn(nfeatures,1);
     sample_prior = @(x) (phi(x)*w)';
 
-    K = kernelfun(theta,xtrain,xtrain, 1, regularization); %ntr x ntr
+    K = kernelfun(theta.cov,xtrain,xtrain, 1, regularization); %ntr x ntr
 
     v =  (K\(ytrain - sample_prior(xtrain)'))'; %1 x ntr
-    update =  @(x) v*kernelfun(theta,xtrain,x, 0, regularization); % 1 x ntest
+    update =  @(x) v*kernelfun(theta.cov,xtrain,x, 0, regularization); % 1 x ntest
     sample_g = @(x) sample_prior(x) + update(x); % 1 x ntest
     dsample_g_dx = @(x) dprior_dx(x, w, dphi_dx) + dupdate_dx(x, v, theta, xtrain, kernelfun,regularization); % D x ntest x ntest
     decomposition.sample_prior = sample_prior;
     decomposition.update = update;
 else
     A=Phi'*Phi +1e-12*eye(size(Phi,2)); % A = nugget_regularization(A);
-    theta = A\(Phi'*(ytrain));
-    sample_g= @(x) phi(x)*theta;
-    dsample_g_dx = @(x) dphi_dx(x)*theta;
+    T = A\(Phi'*(ytrain));
+    sample_g= @(x) phi(x)*T;
+    dsample_g_dx = @(x) dphi_dx(x)*T;
     decomposition = [];
 end
 return
@@ -57,7 +57,7 @@ function dudx = dupdate_dx(x, v, theta, xtrain, kernelfun, regularization)
 
 dudx = NaN(size(x,1), size(x,2), size(x,2));
 for i = 1:size(x,2)
-    [k, ~, dkdx]= kernelfun(theta,xtrain,x(:,i), 0, regularization);
+    [k, ~, dkdx]= kernelfun(theta.cov,xtrain,x(:,i), 0, regularization);
     dkdx = squeeze(dkdx);
     dudx(:,i,i) =mtimesx(v,dkdx);
 end

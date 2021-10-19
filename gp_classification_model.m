@@ -3,13 +3,18 @@ classdef gp_classification_model < gpmodel
         link
         modeltype
         type
+        condition
     end
     methods
-        function model = gp_classification_model(D, meanfun, kernelfun, regularization, hyps, lb, ub, type, link, modeltype)
-            model = model@gpmodel(D, meanfun, kernelfun, regularization, hyps, lb, ub);
+        function model = gp_classification_model(D, meanfun, kernelfun, regularization, hyps, lb, ub, type, link, modeltype, kernelname, condition)
+            model = model@gpmodel(D, meanfun, kernelfun, regularization, hyps, lb, ub, kernelname);
             model.link = link;
             model.modeltype = modeltype;
             model.type = type;
+            
+            if nargout>11
+                model.condition = condition;
+            end
         end
         function [output1,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc, dvar_muc_dx,post] =  prediction(model, hyps, xtrain, ctrain, xtest, post)
             theta = hyps.cov;
@@ -255,8 +260,8 @@ classdef gp_classification_model < gpmodel
             MaxIt =  1e3;
             
             
-            kernelfun = model.kernelfun; 
-            regularization = model.regularization; 
+            kernelfun = model.kernelfun;
+            regularization = model.regularization;
             ctrain = ctrain(:);
             
             % covariance and derivative
@@ -306,10 +311,6 @@ classdef gp_classification_model < gpmodel
                         + 0.5*ystar'*yoverC...
                         + 0.5*logdet(eye(n) + K*D);
                 end
-                
-                
-                
-                
             elseif strcmp(model.modeltype, 'exp_prop')
                 [nu_tilde, tau_tilde, nu_cav, tau_cav] ...
                     = siteparams(ctrain, K, model.link, 'MaxIt', MaxIt, 'tol', tol);
@@ -377,6 +378,52 @@ classdef gp_classification_model < gpmodel
                     error('modeltype must be ''laplace'' or ''exp_prop''')
                 end
             end
+        end
+        
+        function [g_mu_y,  dmuy_dx] = to_maximize_mean(theta, xtrain_norm, ctrain, x,model, post)
+            if any(isnan(x(:)))
+                error('x is NaN')
+            end
+            if isempty(post)
+                warning('Precomputing the approximate posterior is more efficient')
+            end
+            
+            if strcmp(model.type, 'classification')
+                [~,  g_mu_y, ~, ~, ~, dmuy_dx] = model.prediction(theta, xtrain_norm, ctrain, x, post);
+                dmuy_dx= squeeze(dmuy_dx);
+            elseif strcmp(model.type, 'preference')
+                [D,n]= size(x);
+                [~,  g_mu_y, ~, ~, ~, dmuy_dx] = prediction_bin(theta, xtrain_norm, ctrain, [x; model.condition.x0*ones(1,n)], model, post);
+                dmuy_dx= squeeze(dmuy_dx(1:D,:,:));
+            end
+        end
+        
+        function [g_mu_y,  dmuy_dx] = to_maximize_proba(theta, xtrain_norm, ctrain, x,model, post)
+            if any(isnan(x(:)))
+                error('x is NaN')
+            end
+            if isempty(post)
+                warning('Precomputing the approximate posterior is more efficient')
+            end
+            
+            if strcmp(model.type, 'classification')
+                [mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx] = model.prediction(theta, xtrain_norm, ctrain, x, post);
+                dmuc_dx= squeeze(dmuc_dx);
+            elseif strcmp(model.type, 'preference')
+                [D,n]= size(x);
+                [mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx] = prediction_bin(theta, xtrain_norm, ctrain, [x; model.condition.x0*ones(1,n)], model, post);
+                dmuc_dx= squeeze(dmuc_dx(1:D,:,:));
+            end
+        end
+        
+        function [xmax, mu_c_max] =  maxproba(theta, xtrain_norm, ctrain, post)
+            %% Return the maximum of the GP mean
+            init_guess = model.max_proba;
+            options.method = 'lbfgs';
+            options.verbose = 1;
+            ncandidates = 5;
+            [xmax, mu_c_max] = multistart_minConf(@(x) model.to_maximize_proba(theta, xtrain_norm, ctrain, x, post), ...
+                model.lb_norm,  model.ub_norm, ncandidates, init_guess, options, 'objective', 'max');
         end
     end
 end

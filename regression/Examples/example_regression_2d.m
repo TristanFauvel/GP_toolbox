@@ -29,14 +29,14 @@ mean_y = mean(y_tr);
 y_norm = y_tr - mean_y;
 
 meanfun= @constant_mean;
-kernel_name = 'ARD';
+kernelname = 'ARD';
 
-if strcmp(kernel_name, 'ARD')
+if strcmp(kernelname, 'ARD')
     %ARD kernel
     ncov_hyp=1+D;
     nmean_hyp=1;
     kernelfun = @ARD_kernelfun;
-elseif strcmp(kernel_name, 'Gaussian_wnoise')
+elseif strcmp(kernelname, 'Gaussian_wnoise')
     %Gaussian kernel
     ncov_hyp=3;
     nmean_hyp=1;
@@ -52,7 +52,7 @@ hyps.nmean_hyp =nmean_hyp; % number of hyperparameters for the mean function
 hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
 hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
 
-model = gp_regression_model(D, meanfun, kernelfun, regularization, hyps, lb, ub);
+model = gp_regression_model(D, meanfun, kernelfun, regularization, hyps, lb, ub, kernelname);
 
 
 [mu_y, sigma2_y]= model.prediction(theta, x_norm, y_norm, x_test_norm,[]);

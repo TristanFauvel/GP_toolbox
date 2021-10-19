@@ -18,14 +18,14 @@ objective = str2func(objective);
 objective = objective();
 objective = @(x) objective.do_eval(x);
 
- %% Data definition
+%% Data definition
 % Discretize space
 n=1000;
 x = linspace(xbounds(1), xbounds(2),n);
 
 % Function we want to sample from :
 y = objective(x);
- 
+
 % Number of points in the training set
 ntr =250;
 
@@ -48,19 +48,19 @@ meanfun= @constant_mean;
 
 %Choice of the kernel : ARD kernel
 kernelfun = @ARD_kernelfun;
-  
- 
+
+
 % Initialize hyperparameters
 % theta.cov = [1,2,1];
- D = 1;
+D = 1;
 regularization = 'nugget';
 type = 'regression';
- hyps.ncov_hyp =2; % number of hyperparameters for the covariance function
+hyps.ncov_hyp =2; % number of hyperparameters for the covariance function
 hyps.nmean_hyp =1; % number of hyperparameters for the mean function
-   hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
 hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
 lb = xbounds(1); ub = xbounds(2); %bounds of the space
-model = gp_regression_model(D, meanfun, kernelfun, regularization, hyps, lb, ub);
+model = gp_regression_model(D, meanfun, kernelfun, regularization, hyps, lb, ub, kernelname);
 
 % Compute the posterior distribution
 theta.cov = [1,2];
@@ -90,7 +90,7 @@ update = 'all';
 options=[];
 hyp=[theta.cov, theta.mean];
 
-hyp = model.model_selection(x_norm, y_norm, update);        
+hyp = model.model_selection(x_norm, y_norm, update);
 
 % hyp = minFunc(@(hyp)minimize_negloglike(hyp, x_norm, y_norm, kernelfun, meanfun, ncov_hyp, nmean_hyp, update), hyp, options);
 

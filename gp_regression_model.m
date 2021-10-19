@@ -1,10 +1,9 @@
-classdef gp_regression_model < gpmodel   
+classdef gp_regression_model < gpmodel
     properties
-       type = 'regression'; 
+        type = 'regression';
     end
     methods
-        %%
-        function [output1, sigma2_y,dmu_dx, dsigma2_dx, Sigma2_y, dSigma2_dx, post] =  prediction(model, theta, xtrain, ytrain, xtest, post)      
+        function [output1, sigma2_y,dmuy_dx, dsigma2_dx, Sigma2_y, dSigma2_dx, post] =  prediction(model, theta, xtrain, ytrain, xtest, post)
             regularization = model.regularization;
             kernelfun = model.kernelfun;
             meanfun = model.meanfun;
@@ -20,7 +19,7 @@ classdef gp_regression_model < gpmodel
                 mu_y = meanfun(xtest, theta.mean)';
                 Sigma2_y = kernelfun(theta.cov, xtest, xtest, true, regularization);
                 sigma2_y = diag(Sigma2_y);
-                dmu_dx = [];
+                dmuy_dx = [];
                 dsigma2_dx = [];
                 dSigma2_dx = [];
                 post = [];
@@ -73,6 +72,8 @@ classdef gp_regression_model < gpmodel
                     if nargout > 1
                         v= L\k;
                         sigma2_y=diag_ks-diag(v'*v);
+                        sigma2_y(sigma2_y<0)=0;
+
                     end
                     if nargout > 4
                         Sigma2_y =  ks- v'*v;  % full covariance matrix (see 2.24 Rasmussen and Williams), = ks - (k'/K)*k;
@@ -83,18 +84,17 @@ classdef gp_regression_model < gpmodel
                     
                     if nargout > 2
                         %koverK = (k'*invK); % (k'/K);
-                        dmu_dx = squeeze(mtimesx(dk_dx, 'T', K\(ytrain-prior_mean_tr(:)))); %dprior_mean_test_dx +
+                        dmuy_dx = squeeze(mtimesx(dk_dx, 'T', K\(ytrain-prior_mean_tr(:)))); %dprior_mean_test_dx +
                         dsigma2_dx = 2*squeeze(ddiagks_dx) -2*squeeze(sum(mtimesx(dk_dx, 'T', invK).*k', 2));
                         
                         dSigma2_dx =  dks_dx - 2*mtimesx(mtimesx(dk_dx, 'T', invK),k);
                     end
                     output1 = mu_y;
-                else
+                 else
                     output1 = post;
                 end
             end
             
-            sigma2_y(sigma2_y<0)=0;
         end
         
         %%
@@ -130,16 +130,15 @@ classdef gp_regression_model < gpmodel
             end
         end
         
-                       
-        function [mu_y,  dmuy_dx] = to_maximize_mean_GP(theta, xtrain, ytrain, x, kernelfun, post)
+        
+        function [mu_y,  dmuy_dx] = to_maximize_mean(theta, xtrain, ytrain, x,post)
             
             if any(isnan(x(:)))
                 error('x is NaN')
-            end            
-            [mu_y, sigma2_y, dmu_dx] =  model.prediction(theta, xtrain, ytrain, x, post);
-                       
-            mu_y = -mu_y;
-            dmuy_dx= -squeeze(dmu_dx);            
-        end        
+            end
+            [mu_y, sigma2_y, dmuy_dx] =  model.prediction(theta, xtrain, ytrain, x, post);
+            dmuy_dx= squeeze(dmuy_dx);
+        end
+        
     end
 end

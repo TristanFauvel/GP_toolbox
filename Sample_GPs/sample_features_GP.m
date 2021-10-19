@@ -5,6 +5,7 @@ function [phi, dphi_dx] = sample_features_GP(theta, model, approximation)
 nfeatures = approximation.nfeatures;
 kernelname = model.kernelname;
 D = model.D;
+theta = theta.cov;
 switch approximation.method
     case 'SSGP'
 

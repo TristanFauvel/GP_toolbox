@@ -47,10 +47,10 @@ for j = 1:N
     end
     [a,b] = min(scores(j,:),[], 2);
         best_kernel{j,1} = kernelfuns{b};
-         best_kernel_name{j,1} = kernelnames{b};
+         best_kernelname{j,1} = kernelnames{b};
 end
 benchmarks_table.Kernel = best_kernel;
-benchmarks_table.Kernel_name = best_kernel_name;
+benchmarks_table.kernelname = best_kernelname;
 
 
 save([pathname, '/Benchmarks/benchmarks_table.mat'], 'benchmarks_table')

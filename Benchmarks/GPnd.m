@@ -20,13 +20,13 @@ classdef GPnd
                  kernelname = 'Matern52';
             end
             if nargin <2
-                theta= [-1;1];
+                theta.cov= [-1;1];
             end
             if nargin <1
                 D = 1;
             end
             rng(seed)
-            obj.theta= theta;
+            obj.theta = theta;
             obj.D = D;
             obj.xbounds = repmat([0, 1], D, 1);
            

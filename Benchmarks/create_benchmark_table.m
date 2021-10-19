@@ -29,8 +29,8 @@ fName = categorical(fName);
 Name = categorical(Name);
 benchmarks_table = table(Name, fName, D, ARD, Matern32, Matern52);
 
-Kernel_name = categorical(benchmarks_table.Kernel_name);
-benchmarks_table.Kernel_name  = Kernel_name ;
+kernelname = categorical(benchmarks_table.kernelname);
+benchmarks_table.kernelname  = kernelname ;
 
 Kernel= categorical(benchmarks_table.Kernel);
 benchmarks_table.Kernel  = Kernel ;
@@ -75,7 +75,7 @@ T = benchmarks_table(:,[1,3,8]);
 % T = [T, Ta];
 
 for i = 1:size(benchmarks_table, 1)
-    %     hyps = benchmarks_table(i,:).(char(benchmarks_table(i,:).Kernel_name));
+    %     hyps = benchmarks_table(i,:).(char(benchmarks_table(i,:).kernelname));
     %    T(i,8) = hyps;
     bounds =  space_bounds{i,1};
     
@@ -96,12 +96,12 @@ for i = 1:size(benchmarks_table, 1)
     sb = [sb, '$'];
     V{i,1}= char(sb);
     
-    if T(i,:).Kernel_name == 'Matern32'
-        T(i,:).Kernel_name = 'Matérn 3/2';
-    elseif T(i,:).Kernel_name == 'Matern52'
-        T(i,:).Kernel_name =  'Matérn 5/2';
-    elseif T(i,:).Kernel_name == 'ARD'
-        T(i,:).Kernel_name = 'SE-ARD';
+    if T(i,:).kernelname == 'Matern32'
+        T(i,:).kernelname = 'Matérn 3/2';
+    elseif T(i,:).kernelname == 'Matern52'
+        T(i,:).kernelname =  'Matérn 5/2';
+    elseif T(i,:).kernelname == 'ARD'
+        T(i,:).kernelname = 'SE-ARD';
     end
 end
 

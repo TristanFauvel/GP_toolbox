@@ -26,9 +26,9 @@ if decoupled_bases
         sample_g = @(x) sample_prior(x);
         dsample_g_dx = @(x) dprior_dx(x,w, dphi_dx)';        
     else
-        K = kernelfun(theta,xtrain,xtrain, 1, model.regularization);
+        K = kernelfun(theta.cov,xtrain,xtrain, 1, model.regularization);
         v =  (K\(ytrain(:) - sample_prior(xtrain)'+noise))';
-        update =  @(x) v*kernelfun(theta,xtrain,x, 0, model.regularization);
+        update =  @(x) v*kernelfun(theta.cov,xtrain,x, 0, model.regularization);
         sample_g = @(x) sample_prior(x) + update(x);
         dsample_g_dx = @(x) dprior_dx(x,w, dphi_dx)' + dupdate_dx(x, v, theta, xtrain, kernelfun, regularization)';
      end
@@ -36,7 +36,7 @@ else
     sig = 1e-9;
     A=Phi'*Phi+sig*eye(nfeatures); % A = nugget_regularization(A);
     
-    theta = mvnrnd(A\(Phi'*ytrain), sig*inv(A))';
+    T = mvnrnd(A\(Phi'*ytrain), sig*inv(A))';
     
 
     %mu = Phi'*Phi+sig*eye(nfeatures)\(Phi'*ytrain);
@@ -46,13 +46,13 @@ else
 %Hernandez lobato: method: 
 %       theta = sample_theta(nfeatures, Phi', sig, xtrain',ytrain);
 
-sample_g= @(x) phi(x)*theta; % + meanfun(theta, x');
-    dsample_g_dx = @(x) dphi_dx(x)*theta; % + dmean_dx(meanfun, theta, x);
+    sample_g= @(x) phi(x)*T ; % + meanfun(theta, x');
+    dsample_g_dx = @(x) dphi_dx(x)*T; % + dmean_dx(meanfun, theta, x);
     
 end
 end
 function dudx = dupdate_dx(x, v, theta, xtrain, kernelfun, regularization)
-[~, ~, dkdx]= kernelfun(theta,xtrain,x, 0, regularization);
+[~, ~, dkdx]= kernelfun(theta.cov,xtrain,x, 0, regularization);
 dkdx = squeeze(dkdx);
 dudx =mtimesx(v,dkdx);
 end
@@ -62,7 +62,7 @@ dpdx = w'*dphi_dx(x);
 end
 
 function dmdx = dmean_dx(meanfun,theta, x)
-[~,~, dmdx] = meanfun(theta, x');
+[~,~, dmdx] = meanfun(theta.mean, x');
 end
 
 function theta= sample_theta(nFeatures, Z, sigma0, xx, yy)

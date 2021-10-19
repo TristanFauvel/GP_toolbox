@@ -12,7 +12,7 @@ xbounds = obj.xbounds;
 D = obj.D;
 
 if isempty(details) || isempty(details.kernelname)
-    kernelname = char(benchmarks_table(benchmarks_table.fName == objective, :).Kernel_name);
+    kernelname = char(benchmarks_table(benchmarks_table.fName == objective, :).kernelname);
     kernelfun = str2func(char(benchmarks_table(benchmarks_table.fName == objective, :).Kernel));
 elseif ~isempty(details) && ~isempty(details.kernelname)
     kernelfun = str2func([details.kernelname, '_kernelfun']);

@@ -1,8 +1,11 @@
+%Copyright 2021 Tristan Fauvel
+%This software is distributed under the MIT License. Please refer to the file LICENCE.txt included for details.
 classdef gpmodel
     properties
         D
         meanfun
         kernelfun
+        kernelname
         regularization
         hyp_lb
         hyp_ub
@@ -10,9 +13,12 @@ classdef gpmodel
         nmean_hyp
         ub
         lb
-    end
+        ub_norm
+        lb_norm
+        max_muy = [];
+     end
     methods
-        function model = gpmodel(D, meanfun, kernelfun, regularization, hyps, ub, lb)
+        function model = gpmodel(D, meanfun, kernelfun, regularization, hyps, lb, ub, kernelname)
             model.D = D;
             model.meanfun = meanfun;
             model.kernelfun = kernelfun;
@@ -23,6 +29,10 @@ classdef gpmodel
             model.nmean_hyp = hyps.nmean_hyp;
             model.ub = ub;
             model.lb = lb;
+            model.lb_norm = zeros(size(lb));
+            model.ub_norm = ones(size(ub));
+            model.kernelname = kernelname;
+            
         end
         
         function learned_hyp = model_selection(model, xtrain, ytrain, theta, update)
@@ -33,6 +43,9 @@ classdef gpmodel
                 case 'mean'
                     model.hyp_lb(1:model.ncov_hyp) = theta.cov;
                     model.hyp_ub(1:model.ncov_hyp) = theta.cov;
+                case 'none'
+                    learned_hyp = theta;
+                    return
             end
             %update_types = {'cov' , 'mean', 'all', 'none'};
             
@@ -61,6 +74,16 @@ classdef gpmodel
                     dnegL(1:model.ncov_hyp)=0;
                 end
             end
+        end
+        
+        function [xmax, ymax] =  maxmean(theta, xtrain_norm, ctrain, post)
+            %% Return the maximum of the GP mean
+            init_guess = model.max_muy;
+            options.method = 'lbfgs';
+            options.verbose = 1;
+            ncandidates = 5;
+            [xmax, ymax] = multistart_minConf(@(x) model.to_maximize_mean(theta, xtrain_norm, ctrain, x, post), ...
+                model.lb_norm,  model.ub_norm, ncandidates, init_guess, options, 'objective', 'max');
         end
     end
 end
