@@ -77,7 +77,7 @@ mu_y = mu_y + mean_y;
 graphics_style_paper;
 % Plot the result
 fig = figure();
-fig.Color =  [1 1 1];
+fig.Color =  background_color;
 plot(x,y); hold on;
 plot(x,mu_y,'r'); hold on;
 scatter(x_tr, y_tr,markersize, 'k', 'filled') ; hold on;
@@ -99,7 +99,7 @@ hyp = model.model_selection(x_norm, y_norm, update);
 mu_y = mu_y + mean_y;
 
 fig = figure();
-fig.Color =  [1 1 1];
+fig.Color =  background_color;
 plot(x,y); hold on;
 scatter(x_tr, y_tr, markersize, 'k', 'filled') ; hold on;
 errorshaded(x, mu_y, sqrt(sigma2_y), 'Color', 'red','DisplayName','Prediction'); hold off

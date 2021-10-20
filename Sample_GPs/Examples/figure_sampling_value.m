@@ -88,7 +88,7 @@ legend_pos = [-0.14,1.0];
 mr =1;
 mc = 3;
 fig=figure('units','centimeters','outerposition',1+[0 0 16 height(mr)]);
-fig.Color =  [1 1 1];
+fig.Color =  background_color;
 i = 0;
 tiledlayout(mr,mc, 'TileSpacing' , 'tight', 'Padding', 'tight')
 

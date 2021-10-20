@@ -49,7 +49,7 @@ mc = 5;
 legend_pos = [0.02,1];
 
 fig=figure('units','centimeters','outerposition',1+[0 0 width height(mr)]);
-fig.Color =  [1 1 1];
+fig.Color =  background_color;
 layout = tiledlayout(mr,mc, 'TileSpacing', 'tight', 'padding','compact');
 i = 0;
 ticks = [-0.5,0.5]./lengthscale;

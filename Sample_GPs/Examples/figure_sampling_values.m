@@ -81,7 +81,7 @@ end
 
 
 fig=figure('units','centimeters','outerposition',1+[0 0 16 1.5/2*16]);
-fig.Color =  [1 1 1];
+fig.Color =  background_color;
 
 mr =2;
 mc = 3;
@@ -178,7 +178,7 @@ xlabel('$x$')
 
 
 fig=figure('units','centimeters','outerposition',1+[0 0 16 1.5/2*16]);
-fig.Color =  [1 1 1];
+fig.Color =  background_color;
 options.handle = fig;
 options.alpha = 0.3;
 options.line_width = linewidth;

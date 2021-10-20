@@ -81,7 +81,7 @@ xmax = x(id_xmax);
 legend_pos = [-0.18,1.15];
 
 fig=figure('units','centimeters','outerposition',1+[0 0 16 1.2/2*16]);
-fig.Color =  [1 1 1];
+fig.Color =  background_color;
 
 mr = 1;
 mc = 3;

@@ -70,14 +70,14 @@ y_test = y;
 
 if d==1
     fig = figure();
-    fig.Color =  [1 1 1];
+    fig.Color =  background_color;
     plot(x,y); hold on;
     scatter(x_tr, y_tr) ; hold on;
     errorshaded(x, mu_y, sqrt(sigma2_y), 'Color', 'red','DisplayName','Prediction'); hold off
     pbaspect([1,1,1])
 elseif d==2
     fig = figure();
-    fig.Color =  [1 1 1];
+    fig.Color =  background_color;
     subplot(1,2,1)
     imagesc(x1range, x2range, reshape(y, n,n));
     pbaspect([1,1,1])
@@ -100,13 +100,13 @@ theta.cov = hyp;
 
 if d==1
     fig = figure();
-    fig.Color =  [1 1 1];
+    fig.Color =  background_color;
     plot(x,y); hold on;
     scatter(x_tr, y_tr) ; hold on;
     errorshaded(x, mu_y, sqrt(sigma2_y), 'Color', 'red','DisplayName','Prediction'); hold off
 elseif d==2
     fig = figure();
-    fig.Color =  [1 1 1];
+    fig.Color =  background_color;
     subplot(1,2,1)
     imagesc(x1range, x2range, reshape(y, n,n));
     pbaspect([1,1,1])
