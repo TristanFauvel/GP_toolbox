@@ -35,3 +35,4 @@ colororder(C)
 % colors_chart =  [cmap(1,:);cmap(end,:)];
 letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 background = [1,1,1];
+background_color = [1,1,1];

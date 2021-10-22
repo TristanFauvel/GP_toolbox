@@ -3,7 +3,7 @@ classdef gp_regression_model < gpmodel
         type = 'regression';
     end
     methods
-        function [output1, sigma2_y,dmuy_dx, dsigma2_dx, Sigma2_y, dSigma2_dx, post] =  prediction(model, theta, xtrain, ytrain, xtest, post)
+        function [output1 sigma2_y,dmuy_dx, dsigma2_dx, Sigma2_y, dSigma2_dx, post] =  prediction(model, theta, xtrain, ytrain, xtest, post)
             regularization = model.regularization;
             kernelfun = model.kernelfun;
             meanfun = model.meanfun;

@@ -1,4 +1,4 @@
-fact = 1;
+fact = 2;
 colo= othercolor('GnBu7');
 markersize = fact*10;
 Fontsize = fact*9;
@@ -16,8 +16,8 @@ cmap = flipud(RdBu);
 cmap(cmap<0) = 0;
 letter_font = Fontsize;
 
-fwidth = 16;
-fheight = [0.9/2*16, 1.5/2*16, 1.5/2*16, 16];
+fwidth = 21;
+fheight = 2*[0.7/2*16, 0.6*16, 1.5/2*16, 16];
 
 % RdBu=cbrewer('div', 'RdBu', 255, 'spline');
 % cmap = flipud(RdBu);
@@ -39,5 +39,9 @@ colororder(C)
 % colors_chart =  [cmap(1,:);cmap(end,:)];
 letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 background = 0.1373*[1 1 1];
+foreground = [1,1,1];
 
 background_color = [1,1,1];
+
+w = [0,0,0];
+k = [1,1,1];

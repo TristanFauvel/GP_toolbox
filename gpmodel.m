@@ -47,11 +47,7 @@ classdef gpmodel
                     learned_hyp = theta;
                     return
             end
-            %update_types = {'cov' , 'mean', 'all', 'none'};
             
-            %else% ~any(strcmp(update_types, update))
-            %    error('Specify a valid type of hyperparameters update')
-            % end
             options_theta.method = 'lbfgs';
             hyp = multistart_minConf(@(hyp) model.minimize_negloglike(xtrain, ytrain, update, hyp), model.hyp_lb, model.hyp_ub, 10, [], options_theta);
             learned_hyp.cov = hyp(1:model.ncov_hyp);
@@ -76,7 +72,7 @@ classdef gpmodel
             end
         end
         
-        function [xmax, ymax] =  maxmean(theta, xtrain_norm, ctrain, post)
+        function [xmax, ymax] =  maxmean(model, theta, xtrain_norm, ctrain, post)
             %% Return the maximum of the GP mean
             init_guess = model.max_muy;
             options.method = 'lbfgs';

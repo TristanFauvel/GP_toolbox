@@ -1,4 +1,4 @@
-function [C, dC, dC_dx] = linear_kernelfun(theta, x0, x)
+function [C, dC, dC_dx] = linear_kernelfun(theta, x0, x, ~, regularization)
 %[dx2, dC, dC_dx] = linear_kernelfun(theta, x0, x)
 
 %% C = covfun(theta, x0)

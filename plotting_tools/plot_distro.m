@@ -1,4 +1,9 @@
-function [p1,p2, h] = plot_distro(x, mu_c, Y, col1, col2,linewidth)
+function [p1,p2, h] = plot_distro(x, mu_c, Y, col1, col2,linewidth, varargin)
+opts = namevaluepairtostruct(struct( ...
+    'background', [1 1 1] ...
+    ), varargin);
+
+UNPACK_STRUCT(opts, false)
 num_quantiles= 10;
 quantiles = linspace(0,0.5,num_quantiles+1);%0:0.05:0.5;
 quantiles = quantiles(1:end);
@@ -16,7 +21,7 @@ for i = 1:num_quantiles
 %     edges = [median(:)+du(:); flipdim(median(:)-dd(:),1)];
     edges = [du(:); flipdim(dd(:),1)];
 
-    hc1{i} = fill([x'; flipdim(x',1)], edges, color_spectrum(2*s,col2), 'EdgeColor', 'none'); hold on;
+    hc1{i} = fill([x'; flipdim(x',1)], edges, color_spectrum(2*s,col2, background), 'EdgeColor', 'none'); hold on;
 end
 p2 = plot(x, median, '-', 'color', col2, 'Linewidth', linewidth); hold on;
 
@@ -27,9 +32,9 @@ p1 = plot(x, mu_c, '-', 'color', col1, 'Linewidth', linewidth); hold on;
 alpha(1);
 h = hc1{1};
 end
-function col = color_spectrum(p, col)
-no_col = [1 1 1];
-full_col = col;
-col = (1 - p)*no_col + p*full_col;
+function col = color_spectrum(p, col, background)
+no_col  = background(:);
+full_col = col(:);
+col = ((1 - p)*no_col + p*full_col)';
 end
 

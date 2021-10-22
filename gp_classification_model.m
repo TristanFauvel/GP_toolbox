@@ -253,7 +253,7 @@ classdef gp_classification_model < gpmodel
                 output1 = mu_c;
             end
         end
-        
+        %%
         function [negL, dnegL] = negloglike(model, hyps, xtrain, ctrain)
             theta = hyps.cov;
             tol = 1e-7;
@@ -379,8 +379,8 @@ classdef gp_classification_model < gpmodel
                 end
             end
         end
-        
-        function [g_mu_y,  dmuy_dx] = to_maximize_mean(theta, xtrain_norm, ctrain, x,model, post)
+        %%
+        function [g_mu_y,  dmuy_dx] = to_maximize_mean(model,theta, xtrain_norm, ctrain, x, post)
             if any(isnan(x(:)))
                 error('x is NaN')
             end
@@ -393,12 +393,12 @@ classdef gp_classification_model < gpmodel
                 dmuy_dx= squeeze(dmuy_dx);
             elseif strcmp(model.type, 'preference')
                 [D,n]= size(x);
-                [~,  g_mu_y, ~, ~, ~, dmuy_dx] = prediction_bin(theta, xtrain_norm, ctrain, [x; model.condition.x0*ones(1,n)], model, post);
+                [~,  g_mu_y, ~, ~, ~, dmuy_dx] = model.prediction(theta, xtrain_norm, ctrain, [x; model.condition.x0*ones(1,n)],post);
                 dmuy_dx= squeeze(dmuy_dx(1:D,:,:));
             end
         end
-        
-        function [g_mu_y,  dmuy_dx] = to_maximize_proba(theta, xtrain_norm, ctrain, x,model, post)
+        %%
+        function [g_mu_y,  dmuy_dx] = to_maximize_proba(model, theta, xtrain_norm, ctrain, x,  post)
             if any(isnan(x(:)))
                 error('x is NaN')
             end
@@ -415,9 +415,9 @@ classdef gp_classification_model < gpmodel
                 dmuc_dx= squeeze(dmuc_dx(1:D,:,:));
             end
         end
-        
-        function [xmax, mu_c_max] =  maxproba(theta, xtrain_norm, ctrain, post)
-            %% Return the maximum of the GP mean
+        %%
+        function [xmax, mu_c_max] =  maxproba(model, theta, xtrain_norm, ctrain, post)
+            % Return the maximum of the GP mean
             init_guess = model.max_proba;
             options.method = 'lbfgs';
             options.verbose = 1;
