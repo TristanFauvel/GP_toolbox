@@ -34,8 +34,8 @@ rng(6)
 
 % Sample training data
 i_tr= randsample(n,ntr);
-x_tr = x(:,i_tr);
-y_tr = y(:, i_tr);
+xtrain = x(:,i_tr);
+ytrain = y(:, i_tr);
 
 % Choose test data
 x_test = x;
@@ -48,7 +48,7 @@ meanfun= @constant_mean;
 
 %Choice of the kernel : ARD kernel
 kernelfun = @ARD_kernelfun;
-
+kernelname = 'ARD';
 
 % Initialize hyperparameters
 % theta.cov = [1,2,1];
@@ -67,9 +67,9 @@ theta.cov = [1,2];
 theta.mean = zeros(hyps.nmean_hyp,1);
 
 x_test_norm =(x_test- xbounds(1))./(xbounds(2)-xbounds(1));
-x_norm = (x_tr- xbounds(1))./(xbounds(2)-xbounds(1));
-mean_y = mean(y_tr);
-y_norm = y_tr - mean_y;
+x_norm = (xtrain- xbounds(1))./(xbounds(2)-xbounds(1));
+mean_y = mean(ytrain);
+y_norm = ytrain - mean_y;
 
 [mu_y, sigma2_y]= model.prediction(theta, x_norm, y_norm, x_test_norm, []);
 mu_y = mu_y + mean_y;
@@ -80,19 +80,16 @@ fig = figure();
 fig.Color =  background_color;
 plot(x,y); hold on;
 plot(x,mu_y,'r'); hold on;
-scatter(x_tr, y_tr,markersize, 'k', 'filled') ; hold on;
+scatter(xtrain, ytrain,markersize, 'k', 'filled') ; hold on;
 errorshaded(x, mu_y, sqrt(sigma2_y), 'Color', 'red','DisplayName','Prediction'); hold off
 box off
 
 
-%% Local optimization of hyperparameters
+%% Optimization of hyperparameters
 update = 'all';
 options=[];
-hyp=[theta.cov, theta.mean];
 
-hyp = model.model_selection(x_norm, y_norm, update);
-
-% hyp = minFunc(@(hyp)minimize_negloglike(hyp, x_norm, y_norm, kernelfun, meanfun, ncov_hyp, nmean_hyp, update), hyp, options);
+hyp = model.model_selection(x_norm, y_norm, theta,  update);
 
 %% Prediction with the new hyperparameters
 [mu_y, sigma2_y]= model.prediction(theta, x_norm, y_norm, x_test_norm, []);
@@ -101,7 +98,7 @@ mu_y = mu_y + mean_y;
 fig = figure();
 fig.Color =  background_color;
 plot(x,y); hold on;
-scatter(x_tr, y_tr, markersize, 'k', 'filled') ; hold on;
+scatter(xtrain, ytrain, markersize, 'k', 'filled') ; hold on;
 errorshaded(x, mu_y, sqrt(sigma2_y), 'Color', 'red','DisplayName','Prediction'); hold off
 title('Hyperparameters inferred using ML');
 box off

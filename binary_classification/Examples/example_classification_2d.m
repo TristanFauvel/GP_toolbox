@@ -14,6 +14,8 @@ post = [];
 regularization = 'nugget';
 
 kernelfun = @ARD_kernelfun;
+kernelname = 'ARD';
+
 d= 2; % Dimension of the input space
 
 theta_true = [rand(d,1);2];
@@ -55,7 +57,7 @@ hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
 lb = 0;
 ub = 1;
 
-model = gp_classification_model(D, meanfun, kernelfun, regularization, hyps, lb,ub, type, link, modeltype);
+ model = gp_classification_model(D, meanfun, kernelfun, regularization, hyps, lb,ub, type, link, modeltype, kernelname);
 
 
 [mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx,var_muc, dvar_muc_dx]= model.prediction(theta, xtrain, ctrain, xtest, post);

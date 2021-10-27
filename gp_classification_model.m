@@ -3,17 +3,16 @@ classdef gp_classification_model < gpmodel
         link
         modeltype
         type
-        condition
+        ns = 0;
     end
     methods
-        function model = gp_classification_model(D, meanfun, kernelfun, regularization, hyps, lb, ub, type, link, modeltype, kernelname, condition)
+        function model = gp_classification_model(D, meanfun, kernelfun, regularization, hyps, lb, ub, type, link, modeltype, kernelname, ns)
             model = model@gpmodel(D, meanfun, kernelfun, regularization, hyps, lb, ub, kernelname);
             model.link = link;
             model.modeltype = modeltype;
-            model.type = type;
-            
-            if nargout>11
-                model.condition = condition;
+            model.type = type;          
+            if nargin>11
+            model.ns = ns;
             end
         end
         function [output1,  mu_y, sigma2_y, Sigma2_y, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc, dvar_muc_dx,post] =  prediction(model, hyps, xtrain, ctrain, xtest, post)
@@ -100,7 +99,7 @@ classdef gp_classification_model < gpmodel
             
             if strcmp(modeltype, 'laplace')
                 if comp_post
-                    % find y= maximum of p(y_tr|c_tr, xtrain), (19.5.19 in Barber book)
+                    % find y= maximum of p(y_tr|ctrain, xtrain), (19.5.19 in Barber book)
                     ystar = siteparams(ctrain, K, link, 'tol', tol, 'MaxIt', MaxIt);
                     % compute 'noise' matrix (Eq 19.5.17 in Barber book)
                     
@@ -159,10 +158,10 @@ classdef gp_classification_model < gpmodel
             
             if ~isempty(xtest)
                 
-                % mean of p(y|x, c_tr, xtrain) (Eq 19.5.24 in Barber book)
+                % mean of p(y|x, ctrain, xtrain) (Eq 19.5.24 in Barber book)
                 mu_y = k'*dloglike;
                 
-                % standard deviation of p(y|x, c_tr, xtrain) (Eq 19.5.26 in Barber book)
+                % standard deviation of p(y|x, ctrain, xtrain) (Eq 19.5.26 in Barber book)
                 %sigma2_y = diag_ks-sum((k'/(K + invS)).*k', 2);
                 sigma2_y = diag_ks-sum((k'*invKS).*k', 2);
                 sigma2_y(sigma2_y<0) = 0;
@@ -174,7 +173,7 @@ classdef gp_classification_model < gpmodel
                         Sigma2_y = nugget_regularization(Sigma2_y);
                     end
                 end
-                % mean of p(c|x, c_tr, xtrain) (Eq 19.5.27 in Barber book)
+                % mean of p(c|x, ctrain, xtrain) (Eq 19.5.27 in Barber book)
                 if strcmp(func2str(link),'logistic')
                     nu = sqrt(pi)/4;
                     mu_c = 0.5+0.5*erf(nu.*mu_y./sqrt(1+2*nu*sigma2_y));
@@ -280,7 +279,7 @@ classdef gp_classification_model < gpmodel
             
             if strcmp(model.modeltype, 'laplace')
                 
-                % find y= maximum of p(y_tr|c_tr, xtrain), (19.5.19 in Barber book)
+                % find y= maximum of p(y_tr|ctrain, xtrain), (19.5.19 in Barber book)
                 ystar = siteparams(ctrain, K, model.link, 'tol', tol, 'MaxIt', MaxIt);
                 
                 % compute 'noise' matrix (Eq 19.5.17 in Barber book)
@@ -398,7 +397,7 @@ classdef gp_classification_model < gpmodel
             end
         end
         %%
-        function [g_mu_y,  dmuy_dx] = to_maximize_proba(model, theta, xtrain_norm, ctrain, x,  post)
+        function [mu_c,  dmuc_dx] = to_maximize_proba(model, theta, xtrain_norm, ctrain, x,  post)
             if any(isnan(x(:)))
                 error('x is NaN')
             end
@@ -411,14 +410,14 @@ classdef gp_classification_model < gpmodel
                 dmuc_dx= squeeze(dmuc_dx);
             elseif strcmp(model.type, 'preference')
                 [D,n]= size(x);
-                [mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx] = prediction_bin(theta, xtrain_norm, ctrain, [x; model.condition.x0*ones(1,n)], model, post);
+                [mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx] = model.prediction(theta, xtrain_norm, ctrain, [x; model.condition.x0*ones(1,n)], model, post);
                 dmuc_dx= squeeze(dmuc_dx(1:D,:,:));
             end
         end
         %%
         function [xmax, mu_c_max] =  maxproba(model, theta, xtrain_norm, ctrain, post)
             % Return the maximum of the GP mean
-            init_guess = model.max_proba;
+            init_guess = [];
             options.method = 'lbfgs';
             options.verbose = 1;
             ncandidates = 5;

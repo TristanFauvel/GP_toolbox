@@ -36,17 +36,17 @@ if isfield(condition, 'y0')
     
     sample_prior = @(x) (phi(x)*w)';
     
-    K = base_kernelfun(theta,condition.x0, condition.x0, 'true', regularization);
+    K = base_kernelfun(theta.cov,condition.x0, condition.x0, 'true', regularization);
     
     v1 =  (K\(condition.y0 - sample_prior(condition.x0)'))';
-    update_1 =  @(x) v1*base_kernelfun(theta,condition.x0,x, 0, regularization);
+    update_1 =  @(x) v1*base_kernelfun(theta.cov,condition.x0,x, 0, regularization);
     
     cond_sample_prior = @(x) sample_prior(x) + update_1(x);
     cond_sample_prior_pref = @(x) cond_sample_prior(x(1:D,:)) - cond_sample_prior(x(D+1:end,:));
     
     K = post.K;
     v2 =  (K\(y_data - cond_sample_prior_pref(xtrain)'))';
-    update_2 =  @(x) v2*kernelfun(theta,xtrain,x, 0, regularization);
+    update_2 =  @(x) v2*kernelfun(theta.cov,xtrain,x, 0, regularization);
     sample_g = @(x) cond_sample_prior(x) + update_2([x;condition.x0.*ones(D,size(x,2))]);
     dsample_g_dx = @(x) dcond_prior_dx(x, D, w, v1, dphi_dx, base_kernelfun, theta, condition.x0, regularization) + dupdate_dx(x, x0, D, v2, theta, xtrain, kernelfun, regularization); % Dxntest
     
@@ -63,7 +63,7 @@ else
         sample_prior = @(x) (phi_pref(x)*w)';
         
         v =  (post.K\(y_data - sample_prior(xtrain)'))';
-        update =  @(x) v*kernelfun(theta,xtrain,x, 0, regularization);
+        update =  @(x) v*kernelfun(theta.cov,xtrain,x, 0, regularization);
         sample_g = @(x) sample_prior([x;x0.*ones(D,size(x,2))]) + update([x;x0.*ones(D,size(x,2))]);
         dsample_g_dx = @(x) dprior_dx(x, x0, D, w, dphi_pref_dx) + dupdate_dx(x, x0, D, v, theta, xtrain, kernelfun, regularization);
         decomposition.update = update;
@@ -82,7 +82,7 @@ function dudx = dupdate_dx(x, x0, D, v, theta, xtrain, kernelfun, regularization
 if size(x,2) >1
     error('Derivative only implemented for size(x,2) == 1')
 end
-[~, ~, dkdx]= kernelfun(theta,xtrain,[x;x0.*ones(D,size(x,2))], 0, regularization);
+[~, ~, dkdx]= kernelfun(theta.cov,xtrain,[x;x0.*ones(D,size(x,2))], 0, regularization);
 dkdx = squeeze(dkdx); % ntr*d
 dkdx = dkdx(:,1:D);
 dudx =mtimesx(v,dkdx)';
@@ -96,7 +96,7 @@ function dpdx = dcond_prior_dx(x, D, w, v1, dphi_dx, base_kernelfun, theta, x0, 
 if size(x,2) >1
     error('Derivative only implemented for size(x,2) == 1')
 end
-[~, ~, dkdx]= base_kernelfun(theta,x0,x, 0, regularization); % 1 x 1 x 1 x D
+[~, ~, dkdx]= base_kernelfun(theta.cov,x0,x, 0, regularization); % 1 x 1 x 1 x D
 if ~ (isequal(size(dkdx), [1, 1, 1, D])  || isequal(size(dkdx), [1, 1]))
     error('Error in the kernel derivative dimensions')
 end

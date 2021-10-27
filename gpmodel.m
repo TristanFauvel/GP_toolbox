@@ -16,6 +16,7 @@ classdef gpmodel
         ub_norm
         lb_norm
         max_muy = [];
+        xbest_norm = NaN;
      end
     methods
         function model = gpmodel(D, meanfun, kernelfun, regularization, hyps, lb, ub, kernelname)
@@ -77,9 +78,11 @@ classdef gpmodel
             init_guess = model.max_muy;
             options.method = 'lbfgs';
             options.verbose = 1;
-            ncandidates = 5;
+            ncandidates = 5;           
             [xmax, ymax] = multistart_minConf(@(x) model.to_maximize_mean(theta, xtrain_norm, ctrain, x, post), ...
                 model.lb_norm,  model.ub_norm, ncandidates, init_guess, options, 'objective', 'max');
-        end
+           
+            xmax = xmax(1:model.D);
+       end
     end
 end

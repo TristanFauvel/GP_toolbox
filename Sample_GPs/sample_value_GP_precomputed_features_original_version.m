@@ -28,7 +28,7 @@ if decoupled_bases
     sample_prior = @(x) (phi_pref(x)*w)';
         
     v =  (post.K\(y_data - sample_prior(x_data)'))';
-    update =  @(x) v*kernelfun(hyp,x_data,x, 0);
+    update =  @(x) v*kernelfun(hyp.cov,x_data,x, 0);
     sample_g = @(x) sample_prior([x;x0.*ones(D,size(x,2))]) + update([x;x0.*ones(D,size(x,2))]);
     dsample_g_dx = @(x) dprior_dx(x, x0, D, w, dphi_pref_dx) + dupdate_dx(x, x0, D, v, hyp, x_data, kernelfun);
 else

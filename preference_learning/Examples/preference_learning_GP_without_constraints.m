@@ -27,14 +27,9 @@ x0 = x(:,1);
 
 modeltype = 'exp_prop'; % Approximation method
 base_kernelfun =  @Matern52_kernelfun;%kernel used within the preference learning kernel, for subject = computer
-base_kernelname = 'Matern52';
+kernelname = 'Matern52';
 approximationimation = 'RRGP';
-kernelfun = @(theta, xi, xj, training, reg) preference_kernelfun(theta, base_kernelfun, xi, xj, training, reg);
 link = @normcdf; %inverse link function for the classification model
-
-% gfunc = @(x) forretal08(x)/10;
-% gfunc = @(x) normpdf(x, 0.5, 0.2);
-% g = gfunc(x)-gfunc(x0);
 
 theta.cov= [-1;1];
 g = mvnrnd(zeros(1,n),base_kernelfun(theta.cov, x, x, 'false', regularization));
@@ -64,7 +59,7 @@ hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
 hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
 D = 1;
  
-model = gp_classification_model(D, meanfun, kernelfun, regularization, hyps, lb, ub, type, link, modeltype);
+model = gp_preference_model(D, meanfun, base_kernelfun, regularization, hyps, lb, ub, type, link, modeltype, kernelname, []);
 
 
 %%
@@ -88,7 +83,6 @@ mc = 3;
 i = 0;
 tiledlayout(mr,mc, 'TileSpacing' , 'tight', 'Padding', 'tight')
 
-% nexttile([1,2])
 cl = [0,1];
 nexttile
 i=i+1;
@@ -99,13 +93,9 @@ title('$P(x''>x)$')
 set(gca,'YDir','normal')
 set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1])
 pbaspect([1 1 1])
-% c = colorbar;
-% c.Limits = [0,1];
-% set(c, 'XTick', [0,1]);
 colormap(cmap)
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 
-% nexttile([1,2])
 nexttile
 i=i+1;
 imagesc(x, x, reshape(mu_c, n,n),cl); hold on;
@@ -114,33 +104,12 @@ scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o'
 xlabel('$x$')
 ylabel('$x''$')
 title('$\mu_c(x,x'')$')
-% title('$P(x''>x | \mathcal{D})$')
 set(gca,'YDir','normal')
 set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1])
 pbaspect([1 1 1])
-% c = colorbar;
-% c.Limits = [0,1];
-% set(c, 'XTick', [0,1]);
 colormap(cmap)
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 
-% nexttile([1,2])
-% nexttile
-% i=i+1;
-% imagesc(x, x, reshape(mu_f, n,n)); hold on;
-% scatter(xtrain(1, ctrain(1:ntr)==1),xtrain(2, ctrain(1:ntr)==1), markersize, 'o', 'k','filled'); hold on;
-% scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o','k'); hold off;
-% xlabel('$x$')
-% ylabel('$x''$')
-% title('$\mu_f(x,x'')$')
-% set(gca,'YDir','normal')
-% set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1])
-% pbaspect([1 1 1])
-% c = colorbar;
-%text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
-% colormap(cmap)
-
-% nexttile([1,2])
 nexttile
 i=i+1;
 options.handle = fig;
@@ -157,7 +126,6 @@ ylabel('$g(x)$', 'Fontsize', Fontsize)
 set(gca,'XTick',[0 0.5 1])
 ytick = get(gca,'YTick');
 set(gca,'YTick', linspace(min(ytick), max(ytick), 3))
-%title('Inferred value function $g(x)$','Fontsize', Fontsize)
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 box off
 pbaspect([1 1 1])

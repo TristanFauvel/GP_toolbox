@@ -17,13 +17,13 @@ y = objective.do_eval(x); % sin(x(1,:)).*sin(x(2,:));
 
 ntr =400;
 i_tr= randsample(n*n,ntr);
-x_tr = x(:,i_tr);
+xtrain = x(:,i_tr);
 y_tr = y(:, i_tr);
 
 x_test = x;
 y_test = y;
 
-x_norm = (x_tr - lb)./(ub - lb);
+x_norm = (xtrain - lb)./(ub - lb);
 x_test_norm = (x_test - lb)./(ub - lb);
 mean_y = mean(y_tr);
 y_norm = y_tr - mean_y;

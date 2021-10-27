@@ -98,20 +98,20 @@ classdef gp_regression_model < gpmodel
         end
         
         %%
-        function [negL, dnegL] = negloglike(model, theta, x_tr, y_tr)
+        function [negL, dnegL] = negloglike(model, theta, xtrain, y_tr)
             
             N = numel(y_tr);
             % covariance and derivative
             if nargout>1
-                [K, dK] = model.kernelfun(theta.cov, x_tr,x_tr, true, model.regularization);
+                [K, dK] = model.kernelfun(theta.cov, xtrain,xtrain, true, model.regularization);
             else
-                K = model.kernelfun(theta.cov, x_tr,x_tr, true, model.regularization);
+                K = model.kernelfun(theta.cov, xtrain,xtrain, true, model.regularization);
             end
             
             if nargout>1
-                [prior_mean, dprior_mean_dtheta]=model.meanfun(x_tr, theta.mean);
+                [prior_mean, dprior_mean_dtheta]=model.meanfun(xtrain, theta.mean);
             else
-                prior_mean= model.meanfun(x_tr, theta.mean);
+                prior_mean= model.meanfun(xtrain, theta.mean);
             end
             
             L = chol(K)'; %in Rasmussen and Williams L = cholesky(K) is a lower triangular matrix, whereas in matlab it is an upper one
@@ -131,7 +131,7 @@ classdef gp_regression_model < gpmodel
         end
         
         
-        function [mu_y,  dmuy_dx] = to_maximize_mean(theta, xtrain, ytrain, x,post)
+        function [mu_y,  dmuy_dx] = to_maximize_mean(model, theta, xtrain, ytrain, x,post)
             
             if any(isnan(x(:)))
                 error('x is NaN')

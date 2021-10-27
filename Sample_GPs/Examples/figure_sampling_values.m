@@ -21,22 +21,23 @@ approximationimation = 'RRGP';
 
 modeltype = 'exp_prop'; % Approximation method
 base_kernelfun =  @Matern52_kernelfun;%kernel used within the preference learning kernel, for subject = computer
-base_kernelname = 'Matern52';
-theta = [log(1/10),0];
-
+kernelname = 'Matern52';
+theta.cov = [log(1/10),0];
+theta.mean = 0;
+regularization = 'nugget';
 % 
 % base_kernelfun =  @ARD_kernelfun;%kernel used within the preference learning kernel, for subject = computer
-% base_kernelname = 'ARD';
+% kernelname = 'ARD';
 % theta = [4,0];
 
-kernelfun = @(theta, xi, xj, training) conditional_preference_kernelfun(theta, base_kernelfun, xi, xj, training);
+kernelfun = @(theta, xi, xj, training, regularization) conditional_preference_kernelfun(theta, base_kernelfun, xi, xj, training, regularization,x0);
 link = @normcdf; %inverse link function for the classification model
 
 % gfunc = @(x) forretal08(x)/10;
 % gfunc = @(x) normpdf(x, 0.5, 0.2);
 % g = gfunc(x)-gfunc(x0);
 
-g = mvnrnd(zeros(1,n),base_kernelfun(theta, x, x, 'false'));
+g = mvnrnd(zeros(1,n),base_kernelfun(theta.cov, x, x, 'false', regularization));
 g = g-g(1);
 
 % figure(); plot(g);
@@ -49,6 +50,22 @@ rd_idx = randsample(size(x2d,2), nsamp, 'true');
 xtrain= x2d(:,rd_idx);
 ytrain= f(rd_idx);
 ctrain = link(ytrain)>rand(nsamp,1);
+
+post = [];
+% Compute the predictive distribution
+D = 1;
+meanfun = 0;
+type = 'classification'; 
+ hyps.ncov_hyp =2; % number of hyperparameters for the covariance function
+hyps.nmean_hyp =1; % number of hyperparameters for the mean function
+   hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+lb = 0;
+ub = 1;
+condition.x0 = x0;
+condition.y0 = 0;
+
+model = gp_preference_model(D, meanfun, kernelfun, regularization, hyps, lb,ub, type, link, modeltype, kernelname, condition, base_kernelfun);
 
 
 [mu_c,  mu_f, sigma2_f, Sigma2_f] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, post);
@@ -69,11 +86,14 @@ samples_prior = NaN(nsamps, n);
 samples_f =  NaN(nsamps, n*n);
 updates = NaN(nsamps, n);
 D = 1;
-nfeatures = 128;
-approximationimation = 'RRGP';
 
-for j = 1:model.nsamps
-    [sample_f, samples_g(j,:),decomposition] = sample_preference_GP(x, theta, xtrain, ctrain, base_kernelname,model, approximationimation, decoupled_bases, base_kernelfun, nfeatures, condition, post);
+
+approximation.method = 'RRGP'; %%RRGP
+approximation.nfeatures = 256;
+approximation.decoupled_bases = 1;
+
+for j = 1:nsamps
+    [sample_f, samples_g(j,:),decomposition] = sample_preference_GP(x, theta, xtrain, ctrain, model, approximation, post);
     samples_prior(j,:) = decomposition.sample_prior([x;x0.*ones(D,size(x,2))]);
     updates(j,:) = decomposition.update([x;x0.*ones(D,size(x,2))]);
     samples_f(j,:) = sample_f;

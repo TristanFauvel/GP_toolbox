@@ -7,7 +7,7 @@ n=1000;
 rng(10)
 
 meanfun= @constant_mean;
-
+lb = 0; ub = 5;
 % %ARD kernel with noise
 % ncov_hyp=3;
 % nmean_hyp=1;
@@ -19,13 +19,22 @@ ncov_hyp=2;
 nmean_hyp=1;
 kernelfun = @ARD_kernelfun;
 kernelfun = @Matern52_kernelfun;
-
+kernelname = 'Matern52';
 theta_true = [1,2];
 
+D = 1;
+regularization = 'nugget';
+type = 'regression';
+hyps.ncov_hyp =3; % number of hyperparameters for the covariance function
+hyps.nmean_hyp =1; % number of hyperparameters for the mean function
+hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
+model = gp_regression_model(D, meanfun, kernelfun, regularization, hyps, lb, ub, kernelname);
 
-x = linspace(0,5,n);
 
-y = mvnrnd(meanfun(x,0), kernelfun(theta_truex,x, true, 'nugget'));
+x = linspace(lb, ub, n);
+
+y = mvnrnd(meanfun(x,0), kernelfun(theta_true, x,x, true, 'nugget'));
 
 h=figure(1);
 h.Name = 'True function';
@@ -41,7 +50,7 @@ idx= randsample(n,maxiter);
 
 for ntr= 1:maxiter
     i_tr = idx(1:ntr);
-    x_tr = x(:,i_tr);
+    xtrain = x(:,i_tr);
     y_tr = y(:, i_tr); %+ 0.1*randn(1,ntr);
     
     x_test = x;
@@ -53,13 +62,13 @@ for ntr= 1:maxiter
     theta.cov = theta_true;
     theta.mean = 0;
     
-    [mu_y, sigma2_y]= prediction(theta, x_tr, y_tr, x_test, kernelfun, meanfun);
+    [mu_y, sigma2_y]= model.prediction(theta, xtrain, y_tr, x_test,[]);
     
     h=figure(2);
     h.Name = 'Bayesian optimisation before hyperparameters optimization';
     h.Color =  [1 1 1];
     plot(x,y,'LineWidth',1.5); hold on;
-    scatter(x_tr, y_tr) ; hold on;
+    scatter(xtrain, y_tr) ; hold on;
     errorshaded(x, mu_y, sqrt(sigma2_y), 'Color', 'red','DisplayName','Prediction'); hold off
     xlabel('x','Fontsize',14)
     ylabel('f(x)','Fontsize',14)
@@ -67,20 +76,20 @@ for ntr= 1:maxiter
     
         
     %% Prediction with the new hyperparameters
-    [mu_y, sigma2_y]= prediction(theta, x_tr, y_tr, x_test, kernelfun, meanfun);
+    [mu_y, sigma2_y]= model.prediction(theta, xtrain, y_tr, x_test, []);
     
     
     c= othercolor('GnBu7');
-    K= kernelfun(theta_true, x(1:10:end),x(1:10:end));
+    K= kernelfun(theta_true, x(1:10:end),x(1:10:end), [], regularization);
     
     xplot =  x(1:10:end);
-    [~,~,~, ~, K] =  prediction(theta, x_tr, y_tr, xplot, kernelfun, meanfun);
+    [~,~,~, ~, K] =  model.prediction(theta, xtrain, y_tr, xplot, []);
     
     h=figure(2);
     h.Name = 'Bayesian optimisation after hyperparameters optimization';
     h.Color =  [1 1 1];
     plot(x,y,'LineWidth',1.5); hold on;
-    scatter(x_tr, y_tr) ; hold on;
+    scatter(xtrain, y_tr) ; hold on;
     errorshaded(x, mu_y, sqrt(sigma2_y), 'Color', 'red','DisplayName','Prediction'); hold off
     xlabel('x','Fontsize',14)
     ylabel('f(x)','Fontsize',14)
@@ -106,7 +115,7 @@ for ntr= 1:maxiter
     h.Name = 'Bayesian optimisation after hyperparameters optimization';
     h.Color =  [1 1 1];
     plot(x,y,'LineWidth',1.5); hold on;
-    scatter(x_tr, y_tr) ; hold on;
+    scatter(xtrain, y_tr) ; hold on;
     errorshaded(x, mu_y, sqrt(sigma2_y), 'Color', 'red','DisplayName','Prediction'); hold off
     ylim([-5 5])
     box off 

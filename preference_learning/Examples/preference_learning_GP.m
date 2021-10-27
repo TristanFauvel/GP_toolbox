@@ -25,16 +25,11 @@ modeltype = 'exp_prop'; % Approximation method
 original_kernelfun =  @Matern52_kernelfun;%kernel used within the preference learning kernel, for subject = computer
 x0 = 0;
 
-base_kernelname = 'Matern52';
+kernelname = 'Matern52';
 
 
 approximationimation = 'RRGP';
-
-base_kernelfun = @(theta, xi, xj, training, reg) conditioned_kernelfun(theta, original_kernelfun, xi, xj, training, x0, reg);
-% kernelfun = @(theta, xi, xj, training) preference_kernelfun(theta, base_kernelfun, xi, xj, training);
-kernelfun_cond= @(theta, xi, xj, training, reg) conditional_preference_kernelfun(theta, original_kernelfun, xi, xj, training, reg,x0);
-kernelfun= @(theta, xi, xj, training, reg) preference_kernelfun(theta, original_kernelfun, xi, xj, training, reg);
-
+ 
 link = @normcdf; %inverse link function for the classification model
 
 theta.mean =0;
@@ -60,13 +55,14 @@ hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
 hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
 D = 1;
  
-model = gp_classification_model(D, meanfun, kernelfun, regularization, hyps, lb, ub, type, link, modeltype);
+model = gp_preference_model(D, meanfun, base_kernelfun, regularization, hyps, lb, ub, type, link, modeltype, kernelname,  []);
+model_cond = gp_preference_model(D, meanfun, base_kernelfun_cond, regularization, hyps, lb, ub, type, link, modeltype, kernelname,  []);
 
 [mu_c,  mu_f, sigma2_f] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, post);
 [~,  mu_g, sigma2_g, Sigma2_g] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], post);
      
-[mu_c_cond,  mu_f_cond, sigma2_f_cond] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, post);
-[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(d,n^d)], post);
+[mu_c_cond,  mu_f_cond, sigma2_f_cond] = model_cond.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, post);
+[mu_c_cond_x0,  mu_g_cond, sigma2_g_cond, Sigma2_g_cond, dmuc_dx, dmuy_dx, dsigma2y_dx, dSigma2y_dx, var_muc] = model_cond.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(d,n^d)], post);
  
 
 %% Find the true global optimum of g

@@ -3,46 +3,26 @@ graphics_style_paper;
 figure_path = '/home/tfauvel/Documents/PhD/Figures/Thesis_figures/Chapter_1/';
 
 
-approximation.method = 'RRGP'; %'RRGP'
-
-kernelname = 'Gaussian';
-
-if strcmp(kernelname,'ARD')
-    kernelfun = @ARD_kernelfun;
-    theta.cov = [-2*log(0.1),-2*log(0.1), 0];
-    lengthscale = exp(-theta.cov(1)/2);
-elseif strcmp(kernelname,'Gaussian')
-    kernelfun = @Gaussian_kernelfun;
-    theta.cov = [-2*log(0.1), 0];
-    lengthscale = exp(-theta.cov(1)/2);
-elseif strcmp(kernelname,'Matern52')
-    kernelfun = @Matern52_kernelfun;
-    lengthscale = 1/10;
-    theta.cov = [log(lengthscale),0];
-elseif strcmp(kernelname,'Gaussian')
-    kernelfun = @Matern32_kernelfun;
-    lengthscale = 1/10;
-    theta.cov = [log(lengthscale),0];
-end
-
-theta.mean = 0;
-
-D = 2;
-n= 100;
-lb = 0;
-ub = 1;
-xrange = linspace(lb, ub, n);
-[xx,yy]= ndgrid(xrange,xrange);
-xx= xx(:)';
-yy = yy(:)';
-x = [xx;yy];
-x0 = [0.5;0.5];
 meanfun = @constant_mean;
-K = kernelfun(theta.cov,x0,x, 'false', 'nugget');
+% kernelfun = @ARD_kernelfun;
+% kernelname = 'ARD';
+% method = 'RRGP'; %'RRGP'
+% theta = [-2*log(0.1),0];
+% lengthscale = exp(-theta(1)/2);
+kernelfun = @Matern52_kernelfun;
+kernelname = 'Matern52';
+method = 'RRGP'; %'RRGP'
+lengthscale = 1/10;
+theta.cov = [log(lengthscale),0];
+ D = 1;
+n= 100;
+lb = 0; ub = 1;
+x = linspace(lb, ub,n);
 
-regularization = 'nugget';
+
+ regularization = 'nugget';
 type = 'regression';
-hyps.ncov_hyp =numel(theta.cov); % number of hyperparameters for the covariance function
+hyps.ncov_hyp =2; % number of hyperparameters for the covariance function
 hyps.nmean_hyp =1; % number of hyperparameters for the mean function
 hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
 hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
@@ -50,104 +30,116 @@ model = gp_regression_model(D, meanfun, kernelfun, regularization, hyps, lb, ub,
 
 
 
-m = 64;
-approximation.nfeatures = m;
+
+x0 = 0.5;
+
+regularization = 'nugget';
+K = kernelfun(theta.cov,x0,x, true, regularization);
+
+approximation.nfeatures = 4;
+approximation.method = method;
+
 phi = sample_features_GP(theta, model, approximation);
 K1 = phi(x0)*phi(x)';
 
-m = 128;
-approximation.nfeatures = m;
+approximation.nfeatures  = 8;
 phi = sample_features_GP(theta, model, approximation);
 K2 = phi(x0)*phi(x)';
 
-m = 256;
-approximation.nfeatures = m;
+approximation.nfeatures  = 16;
 phi = sample_features_GP(theta, model, approximation);
 K3 = phi(x0)*phi(x)';
 
-m = 512;
-approximation.nfeatures = m;
+approximation.nfeatures = 32;
 phi = sample_features_GP(theta, model, approximation);
 K4 = phi(x0)*phi(x)';
 
-m = 1024;
-approximation.nfeatures = m;
+approximation.nfeatures = 64;
 phi = sample_features_GP(theta, model, approximation);
-K5 =phi(x0)*phi(x)';
+K5 = phi(x0)*phi(x)';
 
 mr = 1;
-mc = 5;
+mc = 4;
 legend_pos = [0.02,1];
-
-clim= [0,1];
 
 fig=figure('units','centimeters','outerposition',1+[0 0 fwidth fheight(mr)]);
 fig.Color =  background_color;
 layout = tiledlayout(mr,mc, 'TileSpacing', 'tight', 'padding','compact');
 i = 0;
+% 
+% nexttile();
+% i=i+1;
+% ax1 = imagesc(x, x, K); hold off;
+% xlabel('$x$','Fontsize',Fontsize)
+% ylabel('$x''$','Fontsize',Fontsize)
+% title({'Squared exponential kernel','$K(x,x'') = \sigma^{2}e^{\frac{\parallel(x-x'')\parallel^2}{2\lambda^2}}$'},'Fontsize',Fontsize, 'interpreter', 'latex')
+% set(gca,'YDir','normal')
+% pbaspect([1 1 1])
+% text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
+% box off
+% % colorbar
+% colormap(cmap)
+
+% nexttile();
+% i=i+1;
+% plot(x, K1, 'Color',  C(2,:),'LineWidth', linewidth/2); hold on;
+% plot(x, K, 'Color',  C(1,:),'LineWidth', linewidth/2); hold off;
+% box off
+% xlabel('$x$')
+% set(gca,'YLim',[-0.1,1],'YTick',[0,0.5,1])
+
+% ylabel('$K(x_0,x)$')
+
 ticks = [-0.5,0.5]./lengthscale;
 % ylim = [0,1];
 nexttile();
 i=i+1;
-imagesc(xrange, xrange, reshape(K2,n,n), clim);
+plot(x, K2, 'Color',  C(2,:),'LineWidth', linewidth/2); hold on;
+plot(x, K, 'Color',  C(1,:),'LineWidth', linewidth/2); hold off;
 box off
 xlabel('$x$')
 ylim = get(gca, 'YLim');
 set(gca,'YLim',ylim,'YTick',[0,0.5,1], 'Xtick',[0,0.5, 1])
 set(gca,'xticklabel',{[num2str(ticks(1)),'$\lambda$'], '0', [num2str(ticks(2)),'$\lambda$']}, 'Fontsize', Fontsize)
 % text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
-title('$m = 128$', 'Fontsize', Fontsize)
-pbaspect([1 1 1])
+title('$m = 8$', 'Fontsize', Fontsize)
 
 nexttile();
 i=i+1;
-imagesc(xrange, xrange,reshape(K3,n,n), clim);
+plot(x, K3, 'Color',  C(2,:),'LineWidth', linewidth/2); hold on;
+plot(x, K, 'Color',  C(1,:),'LineWidth', linewidth/2); hold off;
 box off
 xlabel('$x$')
 set(gca,'YLim',ylim,'YTick',[0,0.5,1], 'Xtick',[0,0.5, 1])
 set(gca,'xticklabel',{[num2str(ticks(1)),'$\lambda$'], '0', [num2str(ticks(2)),'$\lambda$']}, 'Fontsize', Fontsize)
 % text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
-title('$m =256$', 'Fontsize', Fontsize)
-pbaspect([1 1 1])
+title('$m = 16$', 'Fontsize', Fontsize)
 
 nexttile();
 i=i+1;
-imagesc(xrange, xrange,reshape(K4,n,n), clim);
+plot(x, K4, 'Color',  C(2,:),'LineWidth', linewidth/2); hold on;
+plot(x, K, 'Color',  C(1,:),'LineWidth', linewidth/2); hold off;
 box off
 xlabel('$x$')
 set(gca,'YLim',ylim,'YTick',[0,0.5,1], 'Xtick',[0,0.5, 1])
 set(gca,'xticklabel',{[num2str(ticks(1)),'$\lambda$'], '0', [num2str(ticks(2)),'$\lambda$']}, 'Fontsize', Fontsize)
 % text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
-title('$m = 512$', 'Fontsize', Fontsize)
-pbaspect([1 1 1])
+title('$m = 32$', 'Fontsize', Fontsize)
 
 nexttile();
 i=i+1;
-imagesc(xrange, xrange,reshape(K5,n,n), clim);
+plot(x, K5, 'Color',  C(2,:),'LineWidth', linewidth/2); hold on;
+plot(x, K, 'Color',  C(1,:),'LineWidth', linewidth/2); hold off;
 box off
 xlabel('$x$')
 set(gca,'YLim',ylim,'YTick',[0,0.5,1], 'Xtick',[0,0.5, 1])
 set(gca,'xticklabel',{[num2str(ticks(1)),'$\lambda$'], '0', [num2str(ticks(2)),'$\lambda$']}, 'Fontsize', Fontsize)
 % text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
-title('$m = 1024$', 'Fontsize', Fontsize)
-pbaspect([1 1 1])
-
-nexttile();
-i=i+1;
-imagesc(xrange, xrange,reshape(K,n,n), clim);
-box off
-xlabel('$x$')
-set(gca,'YLim',ylim,'YTick',[0,0.5,1], 'Xtick',[0,0.5, 1])
-set(gca,'xticklabel',{[num2str(ticks(1)),'$\lambda$'], '0', [num2str(ticks(2)),'$\lambda$']}, 'Fontsize', Fontsize)
-% text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
-title('True', 'Fontsize', Fontsize)
-pbaspect([1 1 1])
+title('$m = 64$', 'Fontsize', Fontsize)
 
 
 figname  = 'approximation';
 folder = [figure_path,figname];
-figname  = 'approximation_2D';
-
 savefig(fig, [folder,'/', figname, '.fig'])
 exportgraphics(fig, [folder,'/' , figname, '.pdf']);
 exportgraphics(fig, [folder,'/' , figname, '.png'], 'Resolution', 300);

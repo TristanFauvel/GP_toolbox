@@ -59,20 +59,20 @@ ntr = 5;
 i_tr= randsample(n,ntr);
 % i_tr= 1:10:n^d;
 ntr=numel(i_tr);
-x_tr = x(:,i_tr);
+xtrain = x(:,i_tr);
 y_tr = y(:, i_tr)+ randn(1,ntr);
 
 x_test = x;
 y_test = y;
 
 
-[mu_y, sigma2_y]= prediction(theta, x_tr, y_tr, x_test, kernelfun, meanfun);
+[mu_y, sigma2_y]= prediction(theta, xtrain, y_tr, x_test, kernelfun, meanfun);
 
 if d==1
     fig = figure();
     fig.Color =  background_color;
     plot(x,y); hold on;
-    scatter(x_tr, y_tr) ; hold on;
+    scatter(xtrain, y_tr) ; hold on;
     errorshaded(x, mu_y, sqrt(sigma2_y), 'Color', 'red','DisplayName','Prediction'); hold off
     pbaspect([1,1,1])
 elseif d==2
@@ -92,17 +92,17 @@ update = 'cov';
 
 %% Local optimization of hyperparameters
 options=[];
-hyp = minFunc(@(hyp)negloglike_zero_mean(hyp, x_tr, y_tr, kernelfun, meanfun, ncov_hyp, nmean_hyp, update), theta.cov, options);
+hyp = minFunc(@(hyp)negloglike_zero_mean(hyp, xtrain, y_tr, kernelfun, meanfun, ncov_hyp, nmean_hyp, update), theta.cov, options);
 theta.cov = hyp;
 
 %% Prediction with the new hyperparameters
-[mu_y, sigma2_y]= prediction(theta, x_tr, y_tr, x_test, kernelfun, meanfun);
+[mu_y, sigma2_y]= prediction(theta, xtrain, y_tr, x_test, kernelfun, meanfun);
 
 if d==1
     fig = figure();
     fig.Color =  background_color;
     plot(x,y); hold on;
-    scatter(x_tr, y_tr) ; hold on;
+    scatter(xtrain, y_tr) ; hold on;
     errorshaded(x, mu_y, sqrt(sigma2_y), 'Color', 'red','DisplayName','Prediction'); hold off
 elseif d==2
     fig = figure();
@@ -117,16 +117,16 @@ elseif d==2
     title('Regression function')
 end
 % update = 'all';
-% neg = @(hyp) minimize_negloglike(hyp, x_tr, y_tr, kernelfun, meanfun, ncov_hyp, nmean_hyp, update);
+% neg = @(hyp) minimize_negloglike(hyp, xtrain, y_tr, kernelfun, meanfun, ncov_hyp, nmean_hyp, update);
 % result= squeeze(test_deriv(neg, hyp, 1e-12));
-% [negL, dnegL] =minimize_negloglike(hyp, x_tr, y_tr, kernelfun, meanfun,ncov_hyp, nmean_hyp, update);
+% [negL, dnegL] =minimize_negloglike(hyp, xtrain, y_tr, kernelfun, meanfun,ncov_hyp, nmean_hyp, update);
 % R=sqrt((dnegL-squeeze(result)).^2);
 % figure()
 % plot(result); hold on;
 % plot(dnegL); hold off;
 %
-% [prior_mean, dprior_mean_dtheta]=meanfun(x_tr, theta.mean);
-% pm= @(theta) meanfun(x_tr, theta);
+% [prior_mean, dprior_mean_dtheta]=meanfun(xtrain, theta.mean);
+% pm= @(theta) meanfun(xtrain, theta);
 % result= squeeze(test_deriv(pm, theta.mean, 1e-12));
 % figure()
 % plot(result); hold on;
@@ -142,9 +142,9 @@ end
 % plot(result(:)); hold on;
 % plot(dK(:)); hold off;
 %
-% k=@(x_test) kernelfun(theta.cov, x_tr, x_test);
+% k=@(x_test) kernelfun(theta.cov, xtrain, x_test);
 % result= squeeze(test_deriv(k, x_test(1), 1e-8));
-% [K, dK, dK_dx] = kernelfun(theta.cov, x_tr, x_test(1));
+% [K, dK, dK_dx] = kernelfun(theta.cov, xtrain, x_test(1));
 % R=sqrt((dK_dx(:)-result(:)).^2);
 % max(R)
 % figure()

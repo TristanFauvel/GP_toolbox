@@ -72,8 +72,8 @@ switch approximation.method
 
         end
         if strcmp(kernelname, 'Matern32') || strcmp(kernelname, 'Matern52')
-        sqrtSlambda = sqrt(Matern_spectral_density(sqrtlambda, nu, theta, D));
-        elseif strcmp(kernelname, 'ARD')
+               sqrtSlambda = sqrt(Matern_spectral_density(sqrtlambda, nu, theta, D));
+        elseif strcmp(kernelname, 'ARD') || strcmp(kernelname, 'Gaussian')
              sqrtSlambda = sqrt(SE_ARD_spectral_density(sqrtlambda, theta, D));
         end
         phi = @(x) (sqrtSlambda.* phi_j(x))'; % ntest x nfeatures
