@@ -406,11 +406,11 @@ classdef gp_classification_model < gpmodel
             end
             
             if strcmp(model.type, 'classification')
-                [mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx] = model.prediction(theta, xtrain_norm, ctrain, x, post);
+                [mu_c,  ~, ~, ~, dmuc_dx] = model.prediction(theta, xtrain_norm, ctrain, x, post);
                 dmuc_dx= squeeze(dmuc_dx);
             elseif strcmp(model.type, 'preference')
                 [D,n]= size(x);
-                [mu_c,  mu_y, sigma2_y, Sigma2_y, dmuc_dx] = model.prediction(theta, xtrain_norm, ctrain, [x; model.condition.x0*ones(1,n)], model, post);
+                [mu_c,  ~, ~, ~, dmuc_dx] = model.prediction(theta, xtrain_norm, ctrain, [x; model.condition.x0*ones(1,n)], model, post);
                 dmuc_dx= squeeze(dmuc_dx(1:D,:,:));
             end
         end
@@ -423,6 +423,20 @@ classdef gp_classification_model < gpmodel
             ncandidates = 5;
             [xmax, mu_c_max] = multistart_minConf(@(x) model.to_maximize_proba(theta, xtrain_norm, ctrain, x, post), ...
                 model.lb_norm,  model.ub_norm, ncandidates, init_guess, options, 'objective', 'max');
+        end
+
+        function [sample_f, dsample_f_dx, decomposition] = draw_sample_GP(model, theta, xtrain, ytrain, approximation)        
+            % The decomposition corresponds to the prior and update terms in
+            % the decoupled bases approximation.
+            if isempty(model.phi)
+                model = approximate_kernel(model, theta, approximation);
+            end
+            
+            approximation.phi = model.phi;
+            approximation.dphi_dx = model.dphi_dx;            
+ 
+            [sample_f, dsample_f_dx, decomposition] = sample_binary_GP_precomputed_features(xtrain, ctrain, theta,model, approximation, post);
+
         end
     end
 end

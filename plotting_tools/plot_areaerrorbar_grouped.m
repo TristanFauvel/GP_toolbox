@@ -53,7 +53,7 @@ for i = 1:nplots
         case 'var', error{i} = (data_std{i}.^2);
         case 'c95', error{i} = (data_std{i}./sqrt(size(data{i},1))).*1.96;
     end
-    
+
 end
 colors =  options.colors;
 plots = [];
@@ -63,7 +63,7 @@ x_vector = [options.x_axis', fliplr(options.x_axis')];
 if options.semilogy
     error = cell2mat(error');
     data_mean = cell2mat(data_mean');
-    
+
     h =  semilogy(options.x_axis, data_mean', ...
         'LineWidth', options.line_width);
     hold on;
@@ -71,33 +71,33 @@ if options.semilogy
     for i = 1:nplots
         patch = fill(x_vector, [(data_mean(i,:) + error(i,:)),fliplr(data_mean(i,:)-error(i,:))], colors(i,:));
         set(patch, 'edgecolor', 'none');
-                set(patch, 'facecolor',colors(i,:));
+        set(patch, 'facecolor',colors(i,:));
 
         set(patch, 'FaceAlpha', options.alpha);
         hold on;
     end
     plots = h;
 else
-    for i = 1:nplots     
-    if nplots>size(colors,1)
-        h =  plot(options.x_axis, data_mean{i}, ...
-        'LineWidth', options.line_width, 'LineStyle', options.lines{i}); hold on;
-        plots = [plots, h];
-        patch = fill(x_vector, [data_mean{i}+error{i},fliplr(data_mean{i}-error{i})], h.Color);
-        set(patch, 'edgecolor', 'none');
-        set(patch, 'FaceAlpha', options.alpha);
-        hold on;
-         
-    else
-        patch = fill(x_vector, [data_mean{i}+error{i},fliplr(data_mean{i}-error{i})], colors(i,:));
-    set(patch, 'edgecolor', 'none');
-    set(patch, 'FaceAlpha', options.alpha);
-    hold on;
-    h =  plot(options.x_axis, data_mean{i}, 'color',colors(i,:), ...
-        'LineWidth', options.line_width, 'LineStyle', options.lines{i});
-        plots = [plots, h];
+    for i = 1:nplots
+        if nplots>size(colors,1)
+            h =  plot(options.x_axis, data_mean{i}, ...
+                'LineWidth', options.line_width, 'LineStyle', options.lines{i}); hold on;
+            plots = [plots, h];
+            patch = fill(x_vector, [data_mean{i}+error{i},fliplr(data_mean{i}-error{i})], h.Color);
+            set(patch, 'edgecolor', 'none');
+            set(patch, 'FaceAlpha', options.alpha);
+            hold on;
 
+        else
+            patch = fill(x_vector, [data_mean{i}+error{i},fliplr(data_mean{i}-error{i})], colors(i,:));
+            set(patch, 'edgecolor', 'none');
+            set(patch, 'FaceAlpha', options.alpha);
+            hold on;
+            h =  plot(options.x_axis, data_mean{i}, 'color',colors(i,:), ...
+                'LineWidth', options.line_width, 'LineStyle', options.lines{i});
+            plots = [plots, h];
+
+        end
     end
-end
-set(gca, 'xlim', options.xlim)
+    set(gca, 'xlim', options.xlim)
 end

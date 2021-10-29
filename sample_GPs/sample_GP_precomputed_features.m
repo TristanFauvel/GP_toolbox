@@ -1,10 +1,12 @@
-function [sample_g, dsample_g_dx] = sample_GP_precomputed_features(theta,phi, dphi_dx, xtrain, ytrain, model,approximation)
+function [sample_g, dsample_g_dx] = sample_GP_precomputed_features(xtrain, ytrain, theta,model, approximation)
 %% SSGP : Method based on the Sparse-Spectrum GP, Lazaro-Gredilla 2010
 %% RRGP: Method based on the Reduced-Rank GP, Solin 2019
 %D = size(xtrain,1); %dimension
 
 % xtrain : (2*dimension)*n
 %ytrain : n x 1
+phi = approximation.phi;
+dphi_dx = approximation.dphi_dx;
 
 Phi = phi(xtrain); % n x m
 nfeatures = size(Phi,2);

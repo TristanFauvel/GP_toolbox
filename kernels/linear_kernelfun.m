@@ -48,20 +48,11 @@ end
 
 
 
-if nargout>2
-    %dC = 0;
-
-%     xtemp0 = permute((x0- theta(2)), [2 3 1]);
-%     xtemp  =  permute((x- theta(2)), [2 3 1]);
-%     dx = (xtemp0-permute(xtemp, [2 1, 3]));
-%     dC_dx = exp(theta(1))*dx;
-    
-    
+if nargout>2      
     dC_dx = zeros(n0,n,n,nd);
     for i =1:n0
         for j= 1:n
-%             dC_dx(i,j,j,:) =  (x0(:,i)-theta(2));%x0(:,i)-x(:,j);
-              dC_dx(i,j,j,:) =  (x0(:,i)-theta(2));%x0(:,i)-x(:,j);
+              dC_dx(i,j,j,:) =  (x0(:,i)-theta(2));
         end
     end
     dC_dx = exp(theta(1))*dC_dx;
@@ -71,31 +62,5 @@ if strcmp(regularization ,'nugget')
     C = nugget_regularization(C);
 end
 
-% C0 = x0'*x;
-% C = theta(1)^2*C0 + theta(2)^2;
-% 
-% 
-% %% compute derivative
-% if nargout>1    && nargout<3
-%     dC = zeros(n0,n, 2);
-%     
-%     dC(:, :, 1) = 2*theta(1)*C0;
-% 
-%     dC(:, :, 2) =   2*theta(2);
-%     
-%    
-% end
-% 
-% 
-% 
-% if nargout>2
-%     dC = 0;
-% 
-%     xtemp0 = permute(x0, [2 3 1]);
-%     xtemp  =  permute(x, [2 3 1]);
-%     dx = (xtemp0-permute(xtemp, [2 1, 3]));
-%     dC_dx = theta(1)^2*dx;
-%     
-% end
 
 return

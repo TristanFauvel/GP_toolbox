@@ -2,7 +2,7 @@
 >Copyright Tristan Fauvel (2021)
 >This software is distributed under the MIT License. Please refer to the file LICENCE.txt included for details
 
-**GP_toolbox** is a **Matlab** toolbox for Gaussian process regression, classification and preference learning.
+**GP_toolbox** is a **Matlab** toolbox for Gaussian process regression, classification and preference learning.The code is available at https://github.com/TristanFauvel/GP_toolbox. 
 This toolbox was design so as to be highly flexible. The main reason why you may want to use this code instead of toolboxes such as the GPML toolbox is that this code is transparent and easy to modify. It also allows using state-of-the-art methods for approximate sampling from GP.
 
 ## Installation
@@ -71,7 +71,7 @@ Observations `ctrain` are binary (0 or 1).
 
 ## Approximate sampling from GP
 
-To perform approximate sampling, you can use the corresponding method in the model class, by specifying the approximation type in the `approximation` structure.
+To perform approximate sampling, you can use the method `model.draw_sample_GP()`, by specifying the approximation type in the `approximation` structure.
 
 The following methods are implemented to compute the features for finite dimensional kernel approximation:
  - [x] Sparse-spectrum approximation with random Fourier features (Lazaro-Gredilla et al, 2010) (`approximation.method = 'SSGP'`).
@@ -81,7 +81,7 @@ The following methods are implemented for approximate sampling:
   - [x] Weight-space approximation (Lazaro-Gredilla et al, 2010) (`approximation.decoupled_bases = 0`).
   - [x] Decoupled-bases approximation (Wilson et al, 2020) (`approximation.decoupled_bases = 1`).
 
-
+In order to precompute the kernel approximation, use `model = approximate_kernel()` (note however, that if you change the model hyperparameters `theta`, you need to recompute the kernel approximation).
 
 
 ## Kernels
@@ -111,61 +111,3 @@ For a given base kernel `base_kernelfun`, the preference kernel is defined using
 ## Future features
  - [ ] Allow for non-zero mean in expectation-propagation approximation.
  - [ ] Allow for non-zero mean when using approximate sampling methods.
-
-
-
-delete prediction.m
-negloglike.m
-prediction_bin.m
-negloglike_bin.m
-minimize_negloglike.m
-
-to_maximize_mean_gp
-
-
-hyp_lb = -10*ones(1,2);
-            hyp_ub = 10*ones(1,2);
-
-normalize the inputs in the prediction (to deal only with non-nrmalized ones).
-
-
-With first  input [], a kernelfun or meanfun returns the number of hyperparameters;
-
-if isempty(theta)
-    C = nd+1;
-    return
-end
-
-
-
-BO toolbox documentation :
-The BO toolbox is based on the GP toolbox. The code is divided into 5 main parts:
-- Active learning
-- Standard BO
-- Binary BO
-- Preferential BO
-- Benchmarks analysis: some code to analyze synthetic experiments on benchmarks.
-
-
-Standard BO
-
-Binary BO:
-List of acquisition functions :
-- BKG() :  Binary knowledge gradient
-- EI_Tesch() : Binary Expected improvement, as defiend by Tesch et al (2013)
-- TS_binary : Thompson sampling
-- random_acquisition
-
-Preferential BO:
-
-Standard BO
-
-BO loops :
-
-
-Benchmarks
-
-
-
-
-Contextual BO:

@@ -17,6 +17,8 @@ classdef gpmodel
         lb_norm
         max_muy = [];
         xbest_norm = NaN;
+        phi = []
+        dphi_dx = [];
      end
     methods
         function model = gpmodel(D, meanfun, kernelfun, regularization, hyps, lb, ub, kernelname)
@@ -83,6 +85,12 @@ classdef gpmodel
                 model.lb_norm,  model.ub_norm, ncandidates, init_guess, options, 'objective', 'max');
            
             xmax = xmax(1:model.D);
-       end
+        end
+
+        function model = approximate_kernel(model, theta, approximation)
+            [phi, dphi_dx] = sample_features_GP(theta, model, approximation);
+            model.phi = phi;
+            model.dphi_dx = dphi_dx;
+        end
     end
 end

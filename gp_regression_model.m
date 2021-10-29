@@ -139,6 +139,18 @@ classdef gp_regression_model < gpmodel
             [mu_y, sigma2_y, dmuy_dx] =  model.prediction(theta, xtrain, ytrain, x, post);
             dmuy_dx= squeeze(dmuy_dx);
         end
-        
+
+
+        function [sample_f, dsample_f_dx] = draw_sample_GP(model, theta, xtrain, ytrain, approximation)        
+            % The decomposition corresponds to the prior and update terms in
+            % the decoupled bases approximation.
+            if isempty(model.phi)
+                model = approximate_kernel(model, theta, approximation);
+            end
+            approximation.phi = model.phi;
+            approximation.dphi_dx = model.dphi_dx;
+
+            [sample_f, dsample_f_dx] = sample_GP_precomputed_features(xtrain, ytrain, theta, model, approximation);
+        end
     end
 end

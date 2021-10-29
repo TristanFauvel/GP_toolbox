@@ -1,13 +1,9 @@
 clear all
 add_gp_module
-figure_path = '/home/tfauvel/Documents/PhD/Figures/Thesis_figures/Chapter_1/';
 close all
 rng(1)
 graphics_style_paper;
-letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-link = @normcdf; %inverse link function
-regularization = 'nugget';
 post = [];
 %% Define the range of parameters
 n = 50;
@@ -22,8 +18,11 @@ x2d = [p(:), q(:)]';
 
 
 modeltype = 'exp_prop'; % Approximation method
-original_kernelfun =  @Matern52_kernelfun;%kernel used within the preference learning kernel, for subject = computer
+kernelfun =  @Matern52_kernelfun;%kernel used within the preference learning kernel, for subject = computer
 x0 = 0;
+
+condition.x0 = x0;
+condition.y0 = 0;
 
 kernelname = 'Matern52';
 
@@ -34,8 +33,8 @@ link = @normcdf; %inverse link function for the classification model
 
 theta.mean =0;
 theta.cov= [-1;1];
-g = mvnrnd(zeros(1,n),base_kernelfun(theta.cov, x, x, 'false', 'no'));
-%g = g-g(1);
+g = mvnrnd(zeros(1,n),kernelfun(theta.cov, x, x, 'false', 'no'));
+g = g-g(1);
 
 f = g-g';
 f= f(:);
@@ -55,8 +54,8 @@ hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
 hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
 D = 1;
  
-model = gp_preference_model(D, meanfun, base_kernelfun, regularization, hyps, lb, ub, type, link, modeltype, kernelname,  []);
-model_cond = gp_preference_model(D, meanfun, base_kernelfun_cond, regularization, hyps, lb, ub, type, link, modeltype, kernelname,  []);
+model = gp_preference_model(D, meanfun, kernelfun, regularization, hyps, lb, ub, type, link, modeltype, kernelname,  []);
+model_cond = gp_preference_model(D, meanfun, kernelfun, regularization, hyps, lb, ub, type, link, modeltype, kernelname,  condition);
 
 [mu_c,  mu_f, sigma2_f] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), x2d, post);
 [~,  mu_g, sigma2_g, Sigma2_g] = model.prediction(theta, xtrain(:,1:ntr), ctrain(1:ntr), [x; x0*ones(1,n^d)], post);
@@ -78,8 +77,6 @@ fig.Color =  background_color;
 
 
 tiledlayout(mr,mc, 'TileSpacing' , 'tight', 'Padding', 'tight')
-
-% nexttile([1,2])
 cl = [0,1];
 nexttile
 i=i+1;
@@ -98,7 +95,6 @@ set(c, 'XTick', [0,1]);
 colormap(cmap)
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 
-% nexttile([1,2])
 nexttile
 i=i+1;
 imagesc(x, x, reshape(mu_c_cond, n,n),cl); hold on;
@@ -107,7 +103,7 @@ p2 = scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize
 xlabel('$x$', 'Fontsize', Fontsize)
 ylabel('$x''$', 'Fontsize', Fontsize)
 title('$\mu_c(x,x'')$','Fontsize', Fontsize)
-% title('$P(x''>x | \mathcal{D})$')
+
 set(gca,'YDir','normal')
 set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1], 'Fontsize', Fontsize)
 pbaspect([1 1 1])
@@ -120,23 +116,8 @@ colormap(cmap)
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 legend([p1, p2], '$c=1$', '$c=0$','Fontsize',Fontsize, 'Location', 'northeast')
 legend boxoff
-% nexttile([1,2])
-% nexttile
-% i=i+1;
-% imagesc(x, x, reshape(mu_f, n,n)); hold on;
-% scatter(xtrain(1, ctrain(1:ntr)==1),xtrain(2, ctrain(1:ntr)==1), markersize, 'o', 'k','filled'); hold on;
-% scatter(xtrain(1, ctrain(1:ntr)==0),xtrain(2, ctrain(1:ntr)==0), markersize, 'o','k'); hold off;
-% xlabel('$x$')
-% ylabel('$x''$')
-% title('$\mu_f(x,x'')$')
-% set(gca,'YDir','normal')
-% set(gca,'XTick',[0 0.5 1],'YTick',[0 0.5 1])
-% pbaspect([1 1 1])
-% c = colorbar;
-%text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
-% colormap(cmap)
 
-% nexttile([1,2])
+
 nexttile
 i=i+1;
 
@@ -148,16 +129,9 @@ ylabel('$g(x)$', 'Fontsize', Fontsize)
 set(gca,'XTick',[0 0.5 1],'Fontsize', Fontsize)
 ytick = get(gca,'YTick');
 set(gca,'YTick', linspace(min(ytick), max(ytick), 3), 'Fontsize', Fontsize)
-%title('Inferred value function $g(x)$','Fontsize', Fontsize)
 text(legend_pos(1), legend_pos(2),['$\bf{', letters(i), '}$'],'Units','normalized','Fontsize', letter_font)
 box off
 pbaspect([1 1 1])
 legend([h1 h2], 'Posterior GP','True value function')
 legend box off
-
-figname  = 'preference_learning_GP';
-folder = [figure_path,figname];
-savefig(fig, [folder,'/', figname, '.fig'])
-exportgraphics(fig, [folder,'/' , figname, '.pdf']);
-exportgraphics(fig, [folder,'/' , figname, '.png'], 'Resolution', 300);
 
