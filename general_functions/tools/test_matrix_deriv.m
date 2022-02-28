@@ -1,4 +1,4 @@
-function dF = test_matrix_deriv(f, x, eta, Icheck, verbose)
+function dF = test_matrix_negderiv(f, x, eta, Icheck, verbose)
 % Test derivatives when the input of the function is a matrix;
 
 DEFAULT('eta', 1e-6);

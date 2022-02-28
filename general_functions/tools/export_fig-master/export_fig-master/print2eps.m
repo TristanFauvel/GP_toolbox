@@ -110,6 +110,8 @@ function print2eps(name, fig, export_options, varargin)
 % 20/01/20: Added comment about unsupported patch transparency in some Ghostscript versions (issue #285)
 % 10/12/20: Enabled user-specified regexp replacements in the generated EPS file (issue #324)
 % 11/03/21: Added documentation about export_options.regexprep; added sanity check (issue #324)
+% 21/07/21: Fixed misleading warning message about regexprep field when it's empty (issue #338)
+% 26/08/21: Added a short pause to avoid unintended image cropping (issue #318)
 %}
 
     options = {'-loose'};
@@ -321,6 +323,9 @@ function print2eps(name, fig, export_options, varargin)
     if using_hg2
         origAlphaColors = eps_maintainAlpha(fig);
     end
+
+    % Ensure that everything is fully rendered, to avoid cropping (issue #318)
+    drawnow; pause(0.01);
 
     % Print to eps file
     print(fig, options{:}, name);
@@ -535,6 +540,7 @@ function print2eps(name, fig, export_options, varargin)
 
         % 2. Create a bitmap image and use crop_borders to create the relative
         %    bb with respect to the PageBoundingBox
+        drawnow; pause(0.02);  % avoid unintended cropping (issue #318)
         [A, bcol] = print2array(fig, 1, renderer);
         [aa, aa, aa, bb_rel] = crop_borders(A, bcol, bb_padding, crop_amounts); %#ok<ASGLU>
 
@@ -573,7 +579,7 @@ function print2eps(name, fig, export_options, varargin)
     fstrm = regexprep(fstrm, '\n([-\d.]+ [-\d.]+) ([-\d.]+ [-\d.]+) ([-\d.]+ [-\d.]+) 3 MP\nPP\n\3 \2 \1 3 MP\nPP\n','\n$1 $2 $3 0 0 4 MP\nPP\n');
 
     % If user requested a regexprep replacement of string(s), do this now (issue #324)
-    if isstruct(export_options) && isfield(export_options,'regexprep') %&& ~isempty(export_options.regexprep)
+    if isstruct(export_options) && isfield(export_options,'regexprep') && ~isempty(export_options.regexprep)  %issue #338
         try
             oldStrOrRegexp = export_options.regexprep{1};
             newStrOrRegexp = export_options.regexprep{2};
@@ -585,6 +591,8 @@ function print2eps(name, fig, export_options, varargin)
 
     % Write out the fixed eps file
     read_write_entire_textfile(name, fstrm);
+
+    drawnow; pause(0.01);
 end
 
 function [StoredColors, fstrm, foundFlags] = eps_maintainAlpha(fig, fstrm, StoredColors)

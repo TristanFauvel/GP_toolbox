@@ -38,7 +38,7 @@ colororder(C)
 % colors_chart =  [0, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980; 1, 0, 0];
 % colors_chart =  [cmap(1,:);cmap(end,:)];
 letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-background = 0.1373*[1 1 1];
+background = 35/255*[1 1 1];
 foreground = [1,1,1];
 
 background_color = [1,1,1];

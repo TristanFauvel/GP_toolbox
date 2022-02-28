@@ -17,13 +17,10 @@
    * Simply add GP_toolbox to your Matlab path
 
 ## User guide
-   * Each /Examples subfolder includes detailed description about how to use the toolbox. 
+   * Please refer to `documentation.md`.
+   * Each /Examples subfolder includes detailed description about how to use the toolbox.
    * You can use GP_toolbox with BO_toolbox for Bayesian optimization (https://github.com/TristanFauvel/BO_toolbox)
 
 
 ## License
    This software is distributed under the MIT License. Please refer to the file LICENCE.txt included for details.
-
-## Future features
-- [ ] Allow for non-zero mean in expectation-propagation approximation.
-- [ ] Allow for non-zero mean when using approximate sampling methods.

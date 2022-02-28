@@ -7,8 +7,8 @@ function [sample_g, dsample_g_dx, decomposition] = sample_binary_GP_precomputed_
 decoupled_bases = approximation.decoupled_bases;
 kernelfun = model.kernelfun;
 regularization = model.regularization;
-phi=approximation.phi;
-dphi_dx = approximation.dphi_dx;
+phi= model.phi;
+dphi_dx = model.dphi_dx;
 
 if isempty(post)
 post =model.prediction(theta, xtrain, ctrain, [], post);

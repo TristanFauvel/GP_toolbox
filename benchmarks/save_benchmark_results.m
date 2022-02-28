@@ -1,15 +1,16 @@
-function save_benchmark_results(acquisition_name, xtrain, xtrain_norm, ctrain, score, xbest, g, objective, pathname)
+function save_benchmark_results(acquisition_name, structure_name, xtrain, ctrain, score, xbest, objective, pathname, task)
 
-fi = ['xtrain_',acquisition_name];
+fi = ['xtrain_',structure_name];
 experiment.(fi) = xtrain;
-fi = ['xtrain_norm_',acquisition_name];
-experiment.(fi) = xtrain_norm;
-fi = ['ctrain_',acquisition_name];
+fi = ['ctrain_',structure_name];
 experiment.(fi) = ctrain;
-fi = ['score_',acquisition_name];
+fi = ['score_',structure_name];
 experiment.(fi) = score;
-fi = ['xbest_',acquisition_name];
+fi = ['xbest_',structure_name];
 experiment.(fi) = xbest;
-     filename = [pathname,objective,'_',acquisition_name];
-    save(filename, 'experiment')
- 
+filename = [pathname,'/',task, '_', objective,'_',acquisition_name,'.mat'];
+
+if ~isfolder(pathname)
+    mkdir(pathname)
+end
+save(filename, 'experiment')

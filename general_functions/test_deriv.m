@@ -1,6 +1,5 @@
 function dF = test_deriv(f, x, eta, Icheck, verbose)
-% dF = test_deriv(f, x, eta, Icheck, verbose)
- 
+
 DEFAULT('eta', 1e-6);
 DEFAULT('Icheck', 1:size(x,1));
 DEFAULT('verbose', 0);

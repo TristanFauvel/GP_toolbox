@@ -40,17 +40,4 @@ if isequal(x,xp)
     C = nugget_regularization(C);
 end
 return
-
-% 
-% theta= [log(1/10), 0];
-% base_kernelfun = @Matern52_kernelfun;
-% xtest = rand(2,10);
-% kernelfun = @(theta, xi, xj, training, reg) conditioned_kernelfun(theta, base_kernelfun, xi, xj, training, x0, reg);
-% f = @(xt) kernelfun(theta, xi, xt, training, reg)
-% [~ ,~,dk]= kernelfun(theta, xi, xtest, training, reg);
-% t = test_matrix_deriv(f, xtest, 1e-12);
-% 
-% figure()
-% plot(dk(:)); hold on;
-% plot(t(:)); hold off;
-% max((dk(:)-t(:)).^2)
+ 

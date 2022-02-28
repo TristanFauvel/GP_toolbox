@@ -1,6 +1,7 @@
 function [p1,p2, h] = plot_distro(x, mu_c, Y, col1, col2,linewidth, varargin)
 opts = namevaluepairtostruct(struct( ...
-    'background', [1 1 1] ...
+    'background', [1 1 1], ...
+    'plot_mean', 1 ...
     ), varargin);
 
 UNPACK_STRUCT(opts, false)
@@ -23,9 +24,14 @@ for i = 1:num_quantiles
 
     hc1{i} = fill([x'; flipdim(x',1)], edges, color_spectrum(2*s,col2, background), 'EdgeColor', 'none'); hold on;
 end
-p2 = plot(x, median, '-', 'color', col2, 'Linewidth', linewidth); hold on;
 
+p2 = plot(x, median, '-', 'color', col2, 'Linewidth', linewidth); hold on;
+ 
+if plot_mean
 p1 = plot(x, mu_c, '-', 'color', col1, 'Linewidth', linewidth); hold on;
+else
+    p1 = [];
+end
 
 % plot(x, mu_y+sqrt(sigma2_y), 'color', col, 'Linewidth', linewidth); hold on;
 % plot(x, mu_y-sqrt(sigma2_y), 'color', col, 'Linewidth', linewidth); hold on;

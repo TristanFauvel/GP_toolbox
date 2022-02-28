@@ -1,4 +1,10 @@
-function [g, theta, model] = load_benchmarks(objective, details, benchmarks_table, rescaling, type)
+function [g, theta, model] = load_benchmarks(objective, details, benchmarks_table, rescaling, type, varargin)
+opts = namevaluepairtostruct(struct( ...
+    'modeltype', 'exp_prop', ...
+    'link', @normcdf...
+    ), varargin);
+
+UNPACK_STRUCT(opts, false)
 
 obj = str2func(objective);
 
@@ -27,7 +33,7 @@ elseif ~isempty(details) && ~isempty(details.theta)
 end
 
 meanfun = @constant_mean;
-hyps.ncov_hyp =2; % number of hyperparameters for the covariance function
+hyps.ncov_hyp =numel(theta.cov); % number of hyperparameters for the covariance function
 hyps.nmean_hyp =1; % number of hyperparameters for the mean function
 hyps.hyp_lb = -10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
 hyps.hyp_ub = 10*ones(hyps.ncov_hyp  + hyps.nmean_hyp,1);
@@ -38,35 +44,16 @@ ub = xbounds(:,2);
 
 % theta.mean = 0;
 regularization = 'nugget';
-
+ns = 0; %number of context variables
 if strcmp(type, 'regression')
     model = gp_regression_model(D, meanfun, kernelfun, regularization, hyps, lb,ub, kernelname);
 elseif strcmp(type, 'classification')
-    link = @normcdf;
-        modeltype = 'exp_prop';
-    model = gp_classification_model(D, meanfun, kernelfun, regularization, hyps, lb,ub, type, link, modeltype, kernelname);
-    
+    model = gp_classification_model(D, meanfun, kernelfun, regularization, hyps, lb,ub, type, link, modeltype, kernelname, ns);
 elseif strcmp(type, 'preference')
     condition.x0 = zeros(D,1);
     condition.y0 = 0;
     link = @normcdf;
-    modeltype = 'exp_prop';
-    model = gp_preference_model(D, meanfun, kernelfun, regularization, hyps, lb,ub, type, link, modeltype, kernelname, condition);
+    model = gp_preference_model(D, meanfun, kernelfun, regularization, hyps, lb,ub, type, link, modeltype, kernelname, condition, ns);
 end
 
-
-
-% model.hyp_lb = -10*ones(size(theta));
-% model.hyp_ub = 10*ones(size(theta));
-%
-% model.lb_norm = zeros(D,1);
-% model.ub_norm = ones(D,1);
-% model.lb = xbounds(:,1);
-% model.ub = xbounds(:,2);
-
-% model.kernelname = kernelname;
-% model.kernelfun = kernelfun;
-% model.meanfun = @constant_mean;
-% model.regularization = 'nugget';
-% model.D = D;
 return
