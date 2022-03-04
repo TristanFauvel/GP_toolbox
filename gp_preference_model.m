@@ -38,8 +38,7 @@ classdef gp_preference_model < gp_classification_model
         function [sample_normalized, sample] = sample_max_GP(model, approximation, xtrain_norm, ctrain, theta, post)
             options.method = 'lbfgs';
             options.verbose = 1;
-            ncandidates = optim.AF_ncandidates;
-
+            ncandidates = 5;
             approximation.phi = model.phi;
             approximation.dphi_dx = model.dphi_dx;
             approximation.phi_pref = model.phi_pref;

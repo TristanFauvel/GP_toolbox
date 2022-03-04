@@ -238,6 +238,7 @@ classdef gp_classification_model < gpmodel
                         var_muc = (mu_c - 2*tfn_output) - mu_c.^2;
 
                         var_muc(sigma2_y==0) = 0;
+                        var_muc(var_muc<0) = 0;
                     else
                         var_muc = [];
                         warning('The computation of $V(\pi(x))$ is not implemented for this link function')
